@@ -1,0 +1,8 @@
+.transition-max-height {
+  max-height: 0px;
+  overflow: hidden;
+}
+
+.transition-max-height.duration-500 {
+  transition: max-height 0.5s ease-in-out;
+}
