@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { IDedicationsByUserId } from '../../interfaces/dedications/dedications.interfaces'
+import { CancelIcon, CheckIcon, DeleteIcon, EditIcon } from '../../assets'
 
 interface Props {
   weeks: string[]
@@ -116,25 +117,13 @@ export function TableDedications({
                       onClick={handleSaveClick}
                       className="text-green-600 hover:text-green-800"
                     >
-                      <img
-                        src="/assets/save.svg"
-                        alt="save"
-                        width={20}
-                        height={20}
-                        className="inline-block"
-                      />
+                      <CheckIcon />
                     </button>
                     <button
                       onClick={onCancelEdit}
                       className="text-red-600 hover:text-red-800"
                     >
-                      <img
-                        src="/assets/cancel.svg"
-                        alt="cancel"
-                        width={20}
-                        height={20}
-                        className="inline-block"
-                      />
+                      <CancelIcon />
                     </button>
                   </>
                 ) : (
@@ -142,26 +131,14 @@ export function TableDedications({
                     onClick={() => onEditDedication(dedication)}
                     className="text-blue-600 hover:text-blue-800"
                   >
-                    <img
-                      src="/assets/edit.svg"
-                      alt="edit"
-                      width={20}
-                      height={20}
-                      className="inline-block"
-                    />
+                    <EditIcon />
                   </button>
                 )}
                 <button
                   onClick={() => onDeleteDedication(dedication.id)}
                   className="text-red-600 hover:text-red-800"
                 >
-                  <img
-                    src="/assets/delete.svg"
-                    alt="delete"
-                    width={20}
-                    height={20}
-                    className="inline-block"
-                  />
+                  <DeleteIcon />
                 </button>
               </td>
             </tr>

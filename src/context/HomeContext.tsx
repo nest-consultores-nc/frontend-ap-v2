@@ -7,7 +7,7 @@ import React, {
 } from 'react'
 
 interface AuthState {
-  id: string
+  id: number
   token: string
   isAuth: boolean
   role: string
@@ -23,9 +23,9 @@ interface HomeProviderProps {
   children: ReactNode
 }
 
-const HomeProvider: React.FC<HomeProviderProps> = (props) => {
+const HomeProvider: React.FC<HomeProviderProps> = ({ children }) => {
   const [auth, setAuth] = useState<AuthState>({
-    id: '',
+    id: 0,
     token: '',
     isAuth: false,
     role: '',
@@ -35,7 +35,7 @@ const HomeProvider: React.FC<HomeProviderProps> = (props) => {
 
   return (
     <HomeContext.Provider value={[auth, setAuth]}>
-      {props.children}
+      {children}
     </HomeContext.Provider>
   )
 }

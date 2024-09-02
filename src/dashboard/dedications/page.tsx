@@ -138,6 +138,14 @@ export default function Dedications() {
             success: true,
             msg: 'Dedicación actualizada correctamente',
           })
+
+          setDedicationData({
+            user_id: '9',
+            project_id: '',
+            week: '',
+            dedicated: 0,
+            consolidation: 0,
+          })
         } else {
           throw new Error(response.msg)
         }
@@ -288,7 +296,7 @@ export default function Dedications() {
             <div className="mt-2">
               <input
                 type="text"
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full rounded-md px-2 border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 placeholder="Ingresa el nombre del proyecto"
                 disabled
               />
@@ -304,8 +312,11 @@ export default function Dedications() {
                 value={dedicationData.project_id}
                 onChange={handleChange}
                 name="project_id"
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full rounded-md px-2 border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               >
+                <option value="" disabled>
+                  Seleccione un proyecto
+                </option>
                 {projects.map((project) => (
                   <option key={project.id} value={project.id}>
                     {project.client_name} - {project.project_name}
@@ -321,10 +332,13 @@ export default function Dedications() {
             <div className="mt-2">
               <select
                 name="week"
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full rounded-md px-2 border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 value={dedicationData.week}
                 onChange={handleChange}
               >
+                <option value="" disabled>
+                  Seleccione la semana
+                </option>
                 {weeks.map((week, index) => (
                   <option key={index} value={week}>
                     {week}
@@ -343,7 +357,7 @@ export default function Dedications() {
                 name="dedicated"
                 value={dedicationData.dedicated}
                 onChange={handleChange}
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full rounded-md px-2 border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 placeholder="Ingrese el porcentaje de dedicación"
               />
             </div>

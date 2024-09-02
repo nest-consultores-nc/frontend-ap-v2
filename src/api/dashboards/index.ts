@@ -7,7 +7,7 @@ export const getDedicationByNameQuery = async (
   path: string,
   token: string
 ): Promise<IDashboard> => {
-  const url = `${process.env.NEXT_PUBLIC_LOCAL_URL_BACKEND}/${path}`
+  const url = `http://localhost:3002/agencia-polux/api/v1/${path}`
 
   console.log(url)
 

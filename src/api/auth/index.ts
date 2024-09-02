@@ -1,21 +1,13 @@
-import { IClient } from '../../interfaces/clients'
-
 type ApiResponse<T> = {
   success: boolean
   msg: string
   data?: T
 }
 
-type ClientListResponse = {
-  clients: IClient[]
-}
-
-type ClientCreationResponse = ApiResponse<null>
-
-export const fetchFromApi = async <T>(
+export const queryLogin = async <T>(
   path: string,
-  token: string,
-  method: 'GET' | 'POST' = 'GET',
+  token: string = '',
+  method: 'GET' | 'POST' = 'POST',
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   body?: any
 ): Promise<ApiResponse<T>> => {
@@ -26,7 +18,7 @@ export const fetchFromApi = async <T>(
       method,
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
+        Authorization: token ? `Bearer ${token}` : '',
       },
       body: method === 'POST' ? JSON.stringify(body) : undefined,
     })
@@ -49,19 +41,3 @@ export const fetchFromApi = async <T>(
     return { success: false, msg: 'Error fetching data from the server' }
   }
 }
-
-export const getAllClients = (
-  token: string
-): Promise<ApiResponse<ClientListResponse>> =>
-  fetchFromApi<ClientListResponse>('/clientes-api/all-clients', token)
-
-interface ClientData {
-  client_name: string
-  client_description: string
-}
-
-export const createClientQuery = (
-  data: ClientData,
-  token: string
-): Promise<ClientCreationResponse> =>
-  fetchFromApi<null>('clientes-api/create-client', token, 'POST', data)
