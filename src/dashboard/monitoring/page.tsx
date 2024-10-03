@@ -1,13 +1,41 @@
 import { useEffect, useState } from 'react'
 import { IDedicationsByMonth } from '../../interfaces/dedications/dedications.interfaces'
 import { getAllUsersDedicationByMonth } from '../../api/dedications'
+import { useNavigate } from 'react-router-dom'
+import { checkTokenAndRedirect } from '../../functions/checkTokenAndRedirect'
+import { getDedicationByNameQuery } from '../../api/dashboards'
 
 export default function MonitoringPage() {
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [dedications, setDedications] = useState<IDedicationsByMonth[]>([])
 
-  const dashboard =
-    'https://app.powerbi.com/view?r=eyJrIjoiZDcwYmFkZjUtMDBkYS00ZjRjLWFiZWMtZjI1YWQxYzk1NDNmIiwidCI6ImQwZDljYzdlLTc3MzQtNGRjYS1hODZjLThlOTg3ZDhhOTQzYSJ9'
+  const [dashboardUrl, setDashboardUrl] = useState<string>('')
+  useEffect(() => {
+    checkTokenAndRedirect(navigate)
+  }, [navigate])
+
+  useEffect(() => {
+    const getDashboardByName = async () => {
+      try {
+        setLoading(true)
+        const data = await getDedicationByNameQuery(
+          'dashboards-api/get-dashboard/monitoreo',
+          localStorage.getItem('token')!
+        )
+
+        if (data && data.url) {
+          setDashboardUrl(data.url)
+        }
+        setLoading(false)
+      } catch (error) {
+        console.error(error)
+        setLoading(false)
+      }
+    }
+
+    getDashboardByName()
+  }, [])
 
   useEffect(() => {
     const updateDedication = async () => {
@@ -15,7 +43,7 @@ export default function MonitoringPage() {
         setLoading(true)
         const data = await getAllUsersDedicationByMonth(
           '/dedicacion-api/dedicaciones-por-mes',
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzbHVnIjoiYWRtaW4iLCJuYW1lIjoiTmVzdCBBZG1pbiIsImVtYWlsIjoibmVzdEBhZ2VuY2lhcG9sdXguY2wiLCJpYXQiOjE3MjMzOTY0MTAsImV4cCI6MTcyNTk4ODQxMH0.MHTE95G-OdsjKwzyJmqLPGJJrjwzZ41R0SpUYmAcsz0'
+          localStorage.getItem('token')!
         )
 
         setDedications(data)
@@ -32,10 +60,8 @@ export default function MonitoringPage() {
   return (
     <div className="flex w-full justify-center flex-col">
       <iframe
-        width="1100px"
+        src={dashboardUrl}
         height="600px"
-        className="dashboard-view"
-        src={dashboard}
         title="Reporte Agencia Polux"
         allowFullScreen={true}
       ></iframe>
@@ -79,9 +105,7 @@ export default function MonitoringPage() {
                     </th>
                     <td className="px-6 py-4">{project.client_name}</td>
                     <td className="px-6 py-4">{project.dedicated * 100} %</td>
-                    <td className="px-6 py-4">
-                      {new Date(project.week).toLocaleDateString()}
-                    </td>
+                    <td className="px-6 py-4">{project.week.toString()}</td>
                   </tr>
                 ))}
               </tbody>

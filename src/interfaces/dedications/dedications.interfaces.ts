@@ -7,7 +7,7 @@ export interface IDedications {
   id: number
   project_name: string
   client_name: string
-  week: Date
+  week: Date | string
   dedicated: number
 }
 

@@ -11,8 +11,7 @@ export const queryLogin = async <T>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   body?: any
 ): Promise<ApiResponse<T>> => {
-  const url = `http://localhost:3002/agencia-polux/api/v1/${path}`
-
+  const url = `https://agenciapolux-backend-production.up.railway.app/agencia-polux/api/v1/${path}`
   try {
     const response = await fetch(url, {
       method,
@@ -40,4 +39,24 @@ export const queryLogin = async <T>(
     console.error(`Error fetching from ${path}:`, error.message)
     return { success: false, msg: 'Error fetching data from the server' }
   }
+}
+
+export const checkToken = async <T>(
+  path: string,
+  token: string = '',
+  method: 'GET'
+): Promise<ApiResponse<T>> => {
+  const url = `https://agenciapolux-backend-production.up.railway.app/agencia-polux/api/v1/${path}`
+
+  const response = await fetch(url, {
+    method,
+    headers: {
+      'Content-Type': 'authorization',
+      Authorization: token ? `Bearer ${token}` : '',
+    },
+  })
+
+  const jsonResponse = await response.json()
+
+  return jsonResponse
 }

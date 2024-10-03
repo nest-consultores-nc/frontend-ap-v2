@@ -9,9 +9,11 @@ import {
   getTypesProjectsQuery,
 } from '../../api/projects/get-projects'
 import { createProjectQuery } from '../../api/projects/post-projects'
-import { Alerts } from '../../components'
-import InputSelect from '../../components/InputSelect/InputSelect'
-import HeaderPages from '../../components/HeaderPages/HeaderPages'
+import { Alerts, InputSelect } from '../../components'
+import { useNavigate } from 'react-router-dom'
+import { isFormValid } from '../../functions/isFormValid'
+import { HeaderPages } from '../../components'
+import { checkTokenAndRedirect } from '../../functions/checkTokenAndRedirect'
 
 interface ProjectFormData {
   types: IType[]
@@ -20,6 +22,7 @@ interface ProjectFormData {
 }
 
 export default function CreateProject() {
+  const navigate = useNavigate()
   const [data, setData] = useState<ProjectFormData>({
     types: [],
     categories: [],
@@ -36,16 +39,18 @@ export default function CreateProject() {
     project_type_id: 0,
     project_category_id: 0,
     project_client_id: 0,
-    project_or_activity: '',
+    project_or_activity: 'proyecto',
   })
+
+  useEffect(() => {
+    checkTokenAndRedirect(navigate)
+  }, [navigate])
 
   useEffect(() => {
     const fetchData = async () => {
       setError({ success: false, msg: '' })
 
-      const token =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzbHVnIjoiYWRtaW4iLCJuYW1lIjoiTmVzdCBBZG1pbiIsImVtYWlsIjoibmVzdEBhZ2VuY2lhcG9sdXguY2wiLCJpYXQiOjE3MjMzOTY0MTAsImV4cCI6MTcyNTk4ODQxMH0.MHTE95G-OdsjKwzyJmqLPGJJrjwzZ41R0SpUYmAcsz0'
-
+      const token = localStorage.getItem('token')!
       try {
         const [clientsResponse, typesResponse, categoriesResponse] =
           await Promise.all([
@@ -87,14 +92,16 @@ export default function CreateProject() {
     event.preventDefault()
     try {
       setAlert(false)
-      projectData.project_or_activity = 'proyecto'
+      if (projectData.project_type_id === 4) {
+        projectData.project_or_activity = 'actividad'
+      }
       projectData.project_client_id = Number(projectData.project_client_id)
       projectData.project_type_id = Number(projectData.project_type_id)
       projectData.project_category_id = Number(projectData.project_category_id)
 
       const response = await createProjectQuery(
         projectData,
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzbHVnIjoiYWRtaW4iLCJuYW1lIjoiTmVzdCBBZG1pbiIsImVtYWlsIjoibmVzdEBhZ2VuY2lhcG9sdXguY2wiLCJpYXQiOjE3MjMzOTY0MTAsImV4cCI6MTcyNTk4ODQxMH0.MHTE95G-OdsjKwzyJmqLPGJJrjwzZ41R0SpUYmAcsz0'
+        localStorage.getItem('token')!
       )
 
       setError({ success: response.success, msg: response.msg })
@@ -142,58 +149,53 @@ export default function CreateProject() {
           <label className="block text-sm font-medium leading-6 text-gray-900">
             Ingrese Nombre del Proyecto
           </label>
-          <div className="mt-2">
-            <input
-              type="text"
-              name="project_name"
-              value={projectData.project_name}
-              onChange={handleChange}
-              className="block w-full rounded-md border-0 px-1 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              placeholder="Ingresa el nombre del proyecto"
-            />
-          </div>
+          <input
+            type="text"
+            name="project_name"
+            value={projectData.project_name}
+            onChange={handleChange}
+            className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm  placeholder:text-gray-400  focus:border-gray-400 sm:text-sm sm:leading-6"
+            placeholder="Ingresa el nombre del proyecto"
+          />
         </div>
 
         <div className="col-span-full">
           <label className="block text-sm font-medium leading-6 text-gray-900">
             Descripción del Proyecto
           </label>
-          <div className="mt-2">
-            <textarea
-              className="block w-full rounded-md border-0 px-1 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              placeholder="Describe brevemente el proyecto"
-              name="description"
-              value={projectData.description}
-              onChange={handleChange}
-            ></textarea>
-          </div>
+          <textarea
+            className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm   placeholder:text-gray-400 focus:border-gray-400  sm:text-sm sm:leading-6"
+            placeholder="Describe brevemente el proyecto"
+            name="description"
+            value={projectData.description}
+            onChange={handleChange}
+          ></textarea>
         </div>
 
         <div className="col-span-full">
           <label className="block text-sm font-medium leading-6 text-gray-900">
             Seleccione el Cliente
           </label>
-          <div className="mt-2">
-            <select
-              name="project_client_id"
-              value={projectData.project_client_id}
-              onChange={handleChange}
-              className="block w-full rounded-md border-0 px-1 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-            >
-              <option value="">Seleccione un cliente</option>
-              {data.clients.map(({ id, client_name }) => (
-                <option key={id} value={id}>
-                  {client_name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <select
+            name="project_client_id"
+            value={projectData.project_client_id}
+            onChange={handleChange}
+            className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm   placeholder:text-gray-400 focus:border-gray-40  sm:text-sm sm:leading-6"
+          >
+            <option value="">Seleccione un cliente</option>
+            {data.clients.map(({ id, client_name }) => (
+              <option key={id} value={id}>
+                {client_name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="col-span-full">
           {data.types && (
             <InputSelect
               title="Tipo de Proyecto"
+              defaultOption="Seleccione el Tipo de Proyecto"
               options={data.types}
               name="project_type_id"
               value={projectData.project_type_id}
@@ -206,6 +208,7 @@ export default function CreateProject() {
           {data.categories && (
             <InputSelect
               title="Seleccione la Categoría del Proyecto"
+              defaultOption="Seleccione la Categoría del Proyecto"
               options={data.categories}
               name="project_category_id"
               value={projectData.project_category_id}
@@ -217,18 +220,19 @@ export default function CreateProject() {
 
       <div className="mt-6 flex items-center justify-end gap-x-6">
         <button
-          type="button"
-          className="text-sm font-semibold leading-6 text-gray-900"
-        >
-          Cancelar
-        </button>
-        <button
           type="submit"
-          className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          disabled={!isFormValid(projectData)}
+          className={`rounded-md px-3 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 
+    ${
+      isFormValid(projectData)
+        ? 'bg-indigo-600 text-white hover:bg-indigo-500 focus-visible:outline-indigo-600'
+        : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+    }`}
         >
           Guardar
         </button>
       </div>
+      <pre>{JSON.stringify(projectData, null, 2)}</pre>
     </form>
   )
 }

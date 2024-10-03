@@ -2,20 +2,25 @@
 import { useEffect, useState } from 'react'
 import { IRole, IWorkday } from '../../interfaces/roles/roles.interface'
 import { getAllRolesAndWorkday } from '../../api/roles'
-import HeaderPages from '../../components/HeaderPages/HeaderPages'
-import { LoadingSpinner } from '../../components'
+import { LoadingSpinner, HeaderPages } from '../../components'
+import { useNavigate } from 'react-router-dom'
+import { checkTokenAndRedirect } from '../../functions/checkTokenAndRedirect'
 
+const token = localStorage.getItem('token')!
 export default function CreateUser() {
   const [loading, setLoading] = useState(true)
   const [roles, setRoles] = useState<IRole[]>()
   const [workday, setWorkday] = useState<IWorkday[]>()
 
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    checkTokenAndRedirect(navigate)
+  }, [navigate])
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
-
-      const token =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzbHVnIjoiYWRtaW4iLCJuYW1lIjoiTmVzdCBBZG1pbiIsImVtYWlsIjoibmVzdEBhZ2VuY2lhcG9sdXguY2wiLCJpYXQiOjE3MjMzOTY0MTAsImV4cCI6MTcyNTk4ODQxMH0.MHTE95G-OdsjKwzyJmqLPGJJrjwzZ41R0SpUYmAcsz0'
 
       try {
         const { roles, workday } = await getAllRolesAndWorkday(
@@ -48,57 +53,49 @@ export default function CreateUser() {
           <label className="block text-sm font-medium leading-6 text-gray-900">
             Ingrese Nombre del Usuario
           </label>
-          <div className="mt-2">
-            <input
-              type="text"
-              name="username"
-              id="username"
-              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              placeholder="Ingresa el nombre del proyecto"
-            />
-          </div>
+          <input
+            type="text"
+            name="username"
+            id="username"
+            className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm  placeholder:text-gray-400  focus:border-gray-400 sm:text-sm sm:leading-6"
+            placeholder="Ingresa el nombre del proyecto"
+          />
         </div>
         <div className="col-span-full">
           <label className="block text-sm font-medium leading-6 text-gray-900">
             Correo Electrónico Asociado
           </label>
-          <div className="mt-2">
-            <input
-              type="text"
-              name="username"
-              id="username"
-              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              placeholder="Ingresa el nombre del proyecto"
-            />
-          </div>
+          <input
+            type="text"
+            name="username"
+            id="username"
+            className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm  placeholder:text-gray-400  focus:border-gray-400 sm:text-sm sm:leading-6"
+            placeholder="Ingresa el nombre del proyecto"
+          />
         </div>
         <div className="col-span-full">
           <label className="block text-sm font-medium leading-6 text-gray-900">
             Ingrese RUT
           </label>
-          <div className="mt-2">
-            <input
-              type="text"
-              name="username"
-              id="username"
-              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              placeholder="Ingresa el nombre del proyecto"
-            />
-          </div>
+          <input
+            type="text"
+            name="username"
+            id="username"
+            className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm  placeholder:text-gray-400  focus:border-gray-400 sm:text-sm sm:leading-6"
+            placeholder="Ingresa el nombre del proyecto"
+          />
         </div>
         <div className="col-span-full">
           <label className="block text-sm font-medium leading-6 text-gray-900">
             Ingrese Contraseña
           </label>
-          <div className="mt-2">
-            <input
-              type="text"
-              name="username"
-              id="username"
-              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              placeholder="Ingresa el nombre del proyecto"
-            />
-          </div>
+          <input
+            type="text"
+            name="username"
+            id="username"
+            className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm  placeholder:text-gray-400  focus:border-gray-400 sm:text-sm sm:leading-6"
+            placeholder="Ingresa el nombre del proyecto"
+          />
         </div>
 
         <div className="col-span-full">
@@ -109,15 +106,13 @@ export default function CreateUser() {
           {loading ? (
             <LoadingSpinner />
           ) : (
-            <div className="mt-2">
-              <select className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                {roles?.map(({ id, name }) => (
-                  <option key={id} value={id}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <select className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm   placeholder:text-gray-400 focus:border-gray-40  sm:text-sm sm:leading-6">
+              {roles?.map(({ id, name }) => (
+                <option key={id} value={id}>
+                  {name}
+                </option>
+              ))}
+            </select>
           )}
         </div>
         <div className="col-span-full">
@@ -128,15 +123,13 @@ export default function CreateUser() {
           {loading ? (
             <LoadingSpinner />
           ) : (
-            <div className="mt-2">
-              <select className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                {workday?.map(({ id, workday }) => (
-                  <option key={id} value={id}>
-                    {workday}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <select className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm   placeholder:text-gray-400 focus:border-gray-40  sm:text-sm sm:leading-6">
+              {workday?.map(({ id, workday }) => (
+                <option key={id} value={id}>
+                  {workday}
+                </option>
+              ))}
+            </select>
           )}
         </div>
       </div>

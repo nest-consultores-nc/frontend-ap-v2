@@ -18,6 +18,11 @@ export function TableHistoryDedications({
     }))
   }
 
+  const getMonthName = (fecha: string): string =>
+    new Date(fecha)
+      .toLocaleString('es-ES', { month: 'long', year: 'numeric' })
+      .toUpperCase()
+
   return (
     <>
       {historyDedications.map((dedication) => {
@@ -33,7 +38,7 @@ export function TableHistoryDedications({
             key={dedication.fecha}
             month={monthName}
             data={dedication.dedications}
-            isExpanded={expandedTables[monthName] || false}
+            isExpanded={expandedTables[getMonthName(monthName)] || false}
             toggleExpand={toggleExpand}
           />
         )

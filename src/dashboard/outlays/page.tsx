@@ -5,9 +5,10 @@ import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
 import { IProject } from '../../interfaces/projects/projects.interface'
 import { getAllProjects } from '../../api/projects/get-projects'
-import HeaderPages from '../../components/HeaderPages/HeaderPages'
+import { useNavigate } from 'react-router-dom'
+import { checkTokenAndRedirect } from '../../functions/checkTokenAndRedirect'
+import { HeaderPages } from '../../components'
 
-// Definición de interfaces para los datos
 interface IOutlay {
   amount: number
   date: string
@@ -25,17 +26,22 @@ export default function OutlaysPage() {
   >([])
   const [projectsOutlays, setProjectsOutlays] = useState<IOutlay[]>([])
   const [error, setError] = useState<string | null>(null)
-  console.log(loading, error, projectsAndActivities)
+  console.log(projectsAndActivities, loading, error)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    checkTokenAndRedirect(navigate)
+  }, [navigate])
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const data: any = await getAllProjects(
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzbHVnIjoiYWRtaW4iLCJuYW1lIjoiTmVzdCBBZG1pbiIsImVtYWlsIjoibmVzdEBhZ2VuY2lhcG9sdXguY2wiLCJpYXQiOjE3MjMzOTY0MTAsImV4cCI6MTcyNTk4ODQxMH0.MHTE95G-OdsjKwzyJmqLPGJJrjwzZ41R0SpUYmAcsz0',
+          localStorage.getItem('token')!,
           true
         )
-        setProjectsAndActivities(data) // Asumimos que 'data' es un arreglo de proyectos
+        setProjectsAndActivities(data)
       } catch (error) {
         setError('Error fetching projects')
         console.error('Error fetching projects:', error)
@@ -52,9 +58,9 @@ export default function OutlaysPage() {
     if (file && file.type === 'text/csv') {
       Papa.parse(file, {
         header: true,
-        skipEmptyLines: true, // Saltar las líneas vacías
+        skipEmptyLines: true,
         complete: (result) => {
-          console.log('Raw parsed data:', result.data) // Log para inspeccionar los datos sin procesar
+          console.log('Raw parsed data:', result.data)
 
           const currentDate = dayjs().format('YYYY-MM-DD HH:mm:ss')
           const updatedData = result.data
@@ -78,10 +84,10 @@ export default function OutlaysPage() {
             })
             .filter(Boolean)
 
-          console.log('Processed data:', updatedData) // Verificamos los datos procesados
+          console.log('Processed data:', updatedData)
 
           if (updatedData.length > 0) {
-            setProjectsOutlays(updatedData as IOutlay[]) // Actualizamos el estado solo si hay datos
+            setProjectsOutlays(updatedData as IOutlay[])
           } else {
             console.error('No valid data found in CSV')
           }

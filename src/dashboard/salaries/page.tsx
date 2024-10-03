@@ -1,35 +1,41 @@
 import { useEffect, useState } from 'react'
 import { IUserCSV, IUsers } from '../../interfaces/users/users.interface'
 import { getAllUsers } from '../../api/users'
-import HeaderPages from '../../components/HeaderPages/HeaderPages'
 import Papa from 'papaparse'
 import { saveAs } from 'file-saver'
-import dayjs from 'dayjs'
-
-interface ISalaries {
-  user_id: number
-  salarie: string | null
-  detail: string
-  date: string | null
-}
+import { useNavigate } from 'react-router-dom'
+import { getCurrentDate } from '../../functions/getCurrentDate'
+import { ISalaries } from '../../interfaces/salaries/salaries.interface'
+import {
+  Alerts,
+  SubmitButtonsCsv,
+  TableUploadSalaries,
+  HeaderPages,
+} from '../../components'
+import { createSalarieQuery } from '../../api/salaries/post-salaries'
+import { checkTokenAndRedirect } from '../../functions/checkTokenAndRedirect'
 
 export default function SalariesPage() {
   const [loading, setLoading] = useState<boolean>(true)
+  console.log(loading)
   const [salaries, setSalaries] = useState<ISalaries[]>([])
   const [users, setUsers] = useState<IUsers[]>([])
+  const [alert, setAlert] = useState(false)
+  const [error, setError] = useState({
+    success: false,
+    msg: '',
+  })
 
-  const [error, setError] = useState<string | null>(null)
-  console.log(error, loading)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    checkTokenAndRedirect(navigate)
+  }, [navigate])
+
   const handleDownloadCSV = () => {
-    const currentDate = new Date()
-    const firstDayOfCurrentMonth = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      1
-    )
+    const { currentDate } = getCurrentDate()
 
     // Formatear la fecha como AAAA-MM-DD
-    const formattedDate = firstDayOfCurrentMonth.toISOString().split('T')[0]
 
     // Formatear el mes como MMM-AA (en español)
     const monthOptions: Intl.DateTimeFormatOptions = { month: 'short' }
@@ -46,7 +52,7 @@ export default function SalariesPage() {
         detail: user.name,
         salarie: null,
         user_id: user.id,
-        date: formattedDate,
+        date: user.date!,
       })
     )
 
@@ -56,18 +62,45 @@ export default function SalariesPage() {
     saveAs(blob, `sueldos-${formattedMonthYear}.csv`)
   }
 
+  const handleSubmit = async () => {
+    try {
+      const response = await createSalarieQuery(
+        salaries,
+        localStorage.getItem('token')!
+      )
+      console.log(response)
+      setError({
+        success: response.success,
+        msg: response.msg,
+      })
+      setAlert(true)
+      setSalaries([])
+    } catch (error) {
+      console.log(error)
+      setAlert(true)
+
+      setError({
+        success: false,
+        msg: 'Ha ocurrido al intentar agregar los salarios.',
+      })
+    }
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
       try {
         const data: IUsers[] = await getAllUsers(
-          `users-api/obtener-usuarios `,
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzbHVnIjoiYWRtaW4iLCJuYW1lIjoiTmVzdCBBZG1pbiIsImVtYWlsIjoibmVzdEBhZ2VuY2lhcG9sdXguY2wiLCJpYXQiOjE3MjMzOTY0MTAsImV4cCI6MTcyNTk4ODQxMH0.MHTE95G-OdsjKwzyJmqLPGJJrjwzZ41R0SpUYmAcsz0'
+          `users-api/obtener-usuarios`,
+          localStorage.getItem('token')!
         )
-        console.log(data)
         setUsers(data)
       } catch (error) {
-        setError('Error fetching projects')
+        setError({
+          success: false,
+          msg: 'Ha ocurrido un error al traer a los usuarios',
+        })
+        setAlert(true)
         console.error('Error fetching projects:', error)
       } finally {
         setLoading(false)
@@ -82,11 +115,10 @@ export default function SalariesPage() {
     if (file && file.type === 'text/csv') {
       Papa.parse(file, {
         header: true,
-        skipEmptyLines: true, // Saltar las líneas vacías
+        skipEmptyLines: true,
         complete: (result) => {
           console.log('Raw parsed data:', result.data)
 
-          const currentDate = dayjs().format('YYYY-MM-DD HH:mm:ss')
           const updatedData = result.data
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map((row: any) => {
@@ -95,7 +127,8 @@ export default function SalariesPage() {
                   user_id: row.user_id,
                   salarie: row.salarie,
                   detail: row.detail,
-                  date: currentDate,
+                  date: row.date,
+                  //date: row.date,
                 }
               } else {
                 return null
@@ -108,7 +141,12 @@ export default function SalariesPage() {
           if (updatedData.length > 0) {
             setSalaries(updatedData as ISalaries[])
           } else {
-            console.error('No valid data found in CSV')
+            setError({
+              success: false,
+              msg: 'Revisa nuevamente el archivo CSV y recuerda que "user_id" y "salarie" son obligatorios.',
+            })
+            console.log(error)
+            setAlert(true)
           }
         },
         error: (error) => {
@@ -122,6 +160,18 @@ export default function SalariesPage() {
 
   return (
     <form>
+      {alert && (
+        <Alerts
+          message={
+            error.success === false
+              ? 'Ha ocurrido un error: '
+              : 'Registro Exitoso:'
+          }
+          success={error.success}
+          subtitle={error.msg}
+          close={() => setAlert(false)}
+        />
+      )}
       <HeaderPages
         titlePage="Registrar Sueldos"
         subTitlePage="Por favor, ingresa los datos en los campos correspondientes."
@@ -140,58 +190,14 @@ export default function SalariesPage() {
       </div>
 
       <div className="overflow-x-auto mt-4">
-        <table className="text-sm text-left text-gray-500">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-            <tr>
-              <th scope="col" className="px-6 py-3 w-1/6">
-                user_id
-              </th>
-              <th scope="col" className="px-6 py-3 w-1/6">
-                salarie
-              </th>
-              <th scope="col" className="px-6 py-3 w-1/6">
-                detail
-              </th>
-              <th scope="col" className="px-6 py-3 w-1/6">
-                date
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {salaries &&
-              salaries.map((user, index) => (
-                <tr key={index} className="bg-white border-b">
-                  <td className="px-6 py-4">{user.user_id}</td>
-                  <td className="px-6 py-4">{user.detail}</td>
-                  <td className="px-6 py-4">{user.salarie}</td>
-                  <td className="px-6 py-4">{user.date}</td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+        <TableUploadSalaries salaries={salaries} />
       </div>
 
-      <div className="mt-6 flex items-center justify-end gap-x-6">
-        <button
-          type="button"
-          className="text-sm font-semibold leading-6 text-gray-900"
-        >
-          Cancelar
-        </button>
-        <button
-          type="button"
-          onClick={handleDownloadCSV}
-          className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        >
-          Descargar CSV
-        </button>
-        <button
-          type="submit"
-          className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        >
-          Guardar
-        </button>
-      </div>
+      <SubmitButtonsCsv
+        handleDownloadCSV={handleDownloadCSV}
+        handleSubmit={handleSubmit}
+        hasData={salaries.length > 0}
+      />
     </form>
   )
 }

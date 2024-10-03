@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { getDedicationByNameQuery } from '../api/dashboards'
-import { IDashboardResponse } from '../interfaces/dashboards/dashboards.interface'
 
 export default function Page() {
   const [loading, setLoading] = useState(true)

@@ -1,9 +1,21 @@
 import { useEffect, useState } from 'react'
 import { getDedicationByNameQuery } from '../../api/dashboards'
+import { useNavigate } from 'react-router-dom'
+import { checkTokenAndRedirect } from '../../functions/checkTokenAndRedirect'
 
 export default function Home() {
   const [loading, setLoading] = useState(true)
   const [dashboardUrl, setDashboardUrl] = useState<string>('')
+
+  const navigate = useNavigate()
+  useEffect(() => {
+    checkTokenAndRedirect(navigate)
+
+    // Validamos que solo el admin y la directora ejecutiva puedan entrar aquí
+    const role = localStorage.getItem('role')
+    if (role !== 'admin' && role !== 'directoraejecutiva')
+      navigate('/dashboard/proyectos')
+  }, [navigate])
 
   useEffect(() => {
     const getDashboardByName = async () => {
@@ -11,7 +23,7 @@ export default function Home() {
         setLoading(true)
         const data = await getDedicationByNameQuery(
           'dashboards-api/get-dashboard/principal',
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzbHVnIjoiYWRtaW4iLCJuYW1lIjoiTmVzdCBBZG1pbiIsImVtYWlsIjoibmVzdEBhZ2VuY2lhcG9sdXguY2wiLCJpYXQiOjE3MjMzOTY0MTAsImV4cCI6MTcyNTk4ODQxMH0.MHTE95G-OdsjKwzyJmqLPGJJrjwzZ41R0SpUYmAcsz0'
+          localStorage.getItem('token')!
         )
 
         if (data && data.url) {

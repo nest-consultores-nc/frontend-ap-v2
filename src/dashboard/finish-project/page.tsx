@@ -3,9 +3,12 @@ import { IProject } from '../../interfaces/projects/projects.interface'
 import { getAllProjects } from '../../api/projects/get-projects'
 import { deleteProjectQuery } from '../../api/projects/delete-projects'
 import { Alerts, LoadingSpinner } from '../../components'
-import HeaderPages from '../../components/HeaderPages/HeaderPages'
+import { useNavigate } from 'react-router-dom'
+import { HeaderPages } from '../../components'
+import { checkTokenAndRedirect } from '../../functions/checkTokenAndRedirect'
 
 export default function FinishProject() {
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [projects, setProjects] = useState<IProject[]>([])
   const [alert, setAlert] = useState(false)
@@ -17,13 +20,14 @@ export default function FinishProject() {
   const [selectedDeleteProject, setSelectedDeleteProject] = useState<number>()
 
   useEffect(() => {
+    checkTokenAndRedirect(navigate)
+  }, [navigate])
+
+  useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
       try {
-        const data = await getAllProjects(
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzbHVnIjoiYWRtaW4iLCJuYW1lIjoiTmVzdCBBZG1pbiIsImVtYWlsIjoibmVzdEBhZ2VuY2lhcG9sdXguY2wiLCJpYXQiOjE3MjMzOTY0MTAsImV4cCI6MTcyNTk4ODQxMH0.MHTE95G-OdsjKwzyJmqLPGJJrjwzZ41R0SpUYmAcsz0', // Token de autenticación
-          true
-        )
+        const data = await getAllProjects(localStorage.getItem('token')!, true)
         setProjects(data.projects)
       } catch (error) {
         setError({ success: false, msg: 'Error al cargar los datos' })
@@ -46,7 +50,7 @@ export default function FinishProject() {
 
       const response = await deleteProjectQuery(
         selectedDeleteProject!,
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzbHVnIjoiYWRtaW4iLCJuYW1lIjoiTmVzdCBBZG1pbiIsImVtYWlsIjoibmVzdEBhZ2VuY2lhcG9sdXguY2wiLCJpYXQiOjE3MjMzOTY0MTAsImV4cCI6MTcyNTk4ODQxMH0.MHTE95G-OdsjKwzyJmqLPGJJrjwzZ41R0SpUYmAcsz0'
+        localStorage.getItem('token')!
       )
 
       setError({ success: response.success, msg: response.msg })
@@ -97,7 +101,7 @@ export default function FinishProject() {
               <select
                 value={selectedDeleteProject ?? ''}
                 onChange={handleChange}
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm   placeholder:text-gray-400 focus:border-gray-40  sm:text-sm sm:leading-6"
               >
                 <option value="" disabled>
                   Seleccione un proyecto
@@ -115,14 +119,13 @@ export default function FinishProject() {
 
       <div className="mt-6 flex items-center justify-end gap-x-6">
         <button
-          type="button"
-          className="text-sm font-semibold leading-6 text-gray-900"
-        >
-          Cancelar
-        </button>
-        <button
           type="submit"
-          className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          className={`rounded-md px-3 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 
+            ${
+              selectedDeleteProject
+                ? 'bg-indigo-600 text-white hover:bg-indigo-500 focus-visible:outline-indigo-600'
+                : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+            }`}
           disabled={!selectedDeleteProject || selectedDeleteProject === 0}
         >
           Confirmar

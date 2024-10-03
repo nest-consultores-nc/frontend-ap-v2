@@ -34,7 +34,11 @@ export function Alerts({
       </div>
       <button
         type="button"
-        className="ms-auto -mx-1.5 -my-1.5 bg-green-50 text-green-500 rounded-lg focus:ring-2 focus:ring-green-400 p-1.5 hover:bg-green-200 inline-flex items-center justify-center h-8 w-8 "
+        className={`ms-auto -mx-1.5 -my-1.5 rounded-lg focus:ring-2 p-1.5 hover:bg-opacity-80 inline-flex items-center justify-center h-8 w-8 ${
+          success
+            ? 'bg-green-50 text-green-500 focus:ring-green-400 hover:bg-green-200'
+            : 'bg-red-50 text-red-500 focus:ring-red-400 hover:bg-red-200'
+        }`}
         onClick={close}
       >
         <span className="sr-only">Close</span>

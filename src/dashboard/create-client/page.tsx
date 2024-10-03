@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createClientQuery } from '../../api/clients'
 import { Alerts } from '../../components'
-import HeaderPages from '../../components/HeaderPages/HeaderPages'
+import { useNavigate } from 'react-router-dom'
+import { checkTokenAndRedirect } from '../../functions/checkTokenAndRedirect'
+import { HeaderPages } from '../../components/index'
 interface ClientData {
   client_name: string
   client_description: string
@@ -18,6 +20,11 @@ export default function CreateClient() {
     client_description: '',
   })
 
+  const navigate = useNavigate()
+  useEffect(() => {
+    checkTokenAndRedirect(navigate)
+  }, [navigate])
+
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -30,8 +37,7 @@ export default function CreateClient() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     try {
-      const token =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzbHVnIjoiYWRtaW4iLCJuYW1lIjoiTmVzdCBBZG1pbiIsImVtYWlsIjoibmVzdEBhZ2VuY2lhcG9sdXguY2wiLCJpYXQiOjE3MjMzOTY0MTAsImV4cCI6MTcyNTk4ODQxMH0.MHTE95G-OdsjKwzyJmqLPGJJrjwzZ41R0SpUYmAcsz0'
+      const token = localStorage.getItem('token')!
       const response = await createClientQuery(data, token)
 
       if (response?.success) {
@@ -92,11 +98,11 @@ export default function CreateClient() {
             Nombre del Cliente
           </label>
           <div className="mt-2">
-            <div className="flex rounded-md shadow-sm sm:max-w-md">
+            <div className="flex shadow-sm">
               <input
                 type="text"
                 name="client_name"
-                className="block flex-1 border bg-transparent py-1 px-1 text-gray-900 placeholder:text-gray-400 sm:text-sm sm:leading-6"
+                className="outline-none flex-1 rounded border bg-transparent p-1 text-gray-900 placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:border-gray-400"
                 placeholder="Ingresa el nombre del cliente"
                 value={data.client_name}
                 onChange={handleChange}
@@ -111,7 +117,7 @@ export default function CreateClient() {
           </label>
           <div className="mt-2">
             <textarea
-              className="block w-full rounded-md border py-1.5 px-1 text-gray-900 shadow-sm placeholder:text-gray-400 sm:text-sm sm:leading-6"
+              className="block outline-none w-full rounded-md border p-1 text-gray-900 shadow-sm placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:border-gray-400"
               placeholder="Describe brevemente al cliente"
               name="client_description"
               value={data.client_description}

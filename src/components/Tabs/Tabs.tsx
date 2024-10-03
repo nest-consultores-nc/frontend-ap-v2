@@ -1,4 +1,4 @@
-export default function Tabs() {
+export function Tabs() {
   return (
     <ul className="flex flex-wrap text-sm font-medium text-center text-gray-500 dark:text-gray-400">
       <li className="me-2">

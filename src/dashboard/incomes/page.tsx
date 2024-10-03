@@ -1,45 +1,50 @@
-'use client'
-
 import { useEffect, useState } from 'react'
 import Papa from 'papaparse'
 import { saveAs } from 'file-saver'
 import dayjs from 'dayjs'
 import { IProject } from '../../interfaces/projects/projects.interface'
 import { getAllProjects } from '../../api/projects/get-projects'
-import HeaderPages from '../../components/HeaderPages/HeaderPages'
-
-// Definición de interfaces para los datos
-interface IIncomes {
-  detail: string
-  amount: string
-  uf: string
-  date: string
-  project_id: number
-  temporalities_id: string
-  month: string
-}
+import { useNavigate } from 'react-router-dom'
+import { Alerts, HeaderPages } from '../../components'
+import { TableUploadIncomes } from '../../components/TableUploadIncomes/TableUploadIncomes'
+import { IIncome } from '../../interfaces/income/income.interface'
+import { createIncomeQuery } from '../../api/income/post-income'
+import { SubmitButtonsCsv } from '../../components/SubmitButtonsCsv/SubmitButtonsCsv'
+import { checkTokenAndRedirect } from '../../functions/checkTokenAndRedirect'
 
 export default function IncomesPage() {
   const [loading, setLoading] = useState<boolean>(true)
   const [projectsAndActivities, setProjectsAndActivities] = useState<
     IProject[]
   >([])
-  const [projectsOutlays, setProjectsOutlays] = useState<IIncomes[]>([])
-  const [error, setError] = useState<string | null>(null)
-  console.log(loading, error)
+  const [projectsIncome, setProjectsIncome] = useState<IIncome[]>([])
+  const [alert, setAlert] = useState(false)
+  const [error, setError] = useState({
+    success: false,
+    msg: '',
+  })
+  console.log(projectsAndActivities, loading, error)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    checkTokenAndRedirect(navigate)
+  }, [navigate])
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
       try {
-        // TODO arreglar any
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const data: any = await getAllProjects(
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzbHVnIjoiYWRtaW4iLCJuYW1lIjoiTmVzdCBBZG1pbiIsImVtYWlsIjoibmVzdEBhZ2VuY2lhcG9sdXguY2wiLCJpYXQiOjE3MjMzOTY0MTAsImV4cCI6MTcyNTk4ODQxMH0.MHTE95G-OdsjKwzyJmqLPGJJrjwzZ41R0SpUYmAcsz0',
+        const { projects } = await getAllProjects(
+          localStorage.getItem('token')!,
           true
         )
-        setProjectsAndActivities(data) // Asumimos que 'data' es un arreglo de proyectos
+        setProjectsAndActivities(projects)
       } catch (error) {
-        setError('Error fetching projects')
+        setError({
+          success: false,
+          msg: 'Ha ocurrido un error al intentar traer los datos desde la base de datos',
+        })
+        setAlert(true)
         console.error('Error fetching projects:', error)
       } finally {
         setLoading(false)
@@ -49,7 +54,35 @@ export default function IncomesPage() {
     fetchData()
   }, [])
 
+  const handleSubmit = async () => {
+    try {
+      const response = await createIncomeQuery(
+        projectsIncome,
+        localStorage.getItem('token')!
+      )
+      console.log(response)
+      setError({
+        success: true,
+        msg: response.msg,
+      })
+      setAlert(true)
+      setProjectsIncome([])
+    } catch (error) {
+      console.log(error)
+      setAlert(true)
+      setError({
+        success: false,
+        msg: 'Ha ocurrido al intentar agregar los salarios.',
+      })
+    }
+  }
+
   const handleDownloadCSV = () => {
+    if (!Array.isArray(projectsAndActivities)) {
+      console.error('projectsAndActivities is not an array')
+      return
+    }
+
     const currentDate = new Date()
     const firstDayOfCurrentMonth = new Date(
       currentDate.getFullYear(),
@@ -57,34 +90,30 @@ export default function IncomesPage() {
       1
     )
 
-    // Formatear la fecha como AAAA-MM-DD
     const formattedDate = firstDayOfCurrentMonth.toISOString().split('T')[0]
-
-    // Formatear el mes como MMM-AA (en español)
     const monthOptions: Intl.DateTimeFormatOptions = { month: 'short' }
     const formattedMonth = new Intl.DateTimeFormat('es-ES', monthOptions)
       .format(currentDate)
       .toLowerCase()
       .replace('.', '')
 
-    const formattedYear = currentDate.getFullYear().toString().slice(-2) // Obtener los últimos dos dígitos del año
+    const formattedYear = currentDate.getFullYear().toString().slice(-2)
     const formattedMonthYear = `${formattedMonth}-${formattedYear}`
 
     const csvData = projectsAndActivities.map(
-      (project): IIncomes => ({
-        detail: project.project_name,
-        amount: '', // Placeholder de amount, puedes ajustarlo según tus necesidades
+      (project): IIncome => ({
+        detail: project.project_name + ' - ' + project.client.clientName,
+        amount: '',
         uf: '0.00',
-        date: formattedDate, // AAAA-MM-DD
+        date: formattedDate,
         project_id: project.id,
-        temporalities_id: '', // Placeholder de temporalities_id, ajusta según tus necesidades
-        month: formattedMonthYear, // MMM-AA
+        temporalities_id: '',
+        month: formattedMonthYear,
       })
     )
 
     const csv = Papa.unparse(csvData)
-
-    const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' }) // Aseguramos UTF-8
+    const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' })
     saveAs(blob, `incomes-${formattedMonthYear}.csv`)
   }
 
@@ -93,24 +122,29 @@ export default function IncomesPage() {
     if (file && file.type === 'text/csv') {
       Papa.parse(file, {
         header: true,
-        skipEmptyLines: true, // Saltar las líneas vacías
+        skipEmptyLines: true,
         complete: (result) => {
-          console.log('Raw parsed data:', result.data) // Log para inspeccionar los datos sin procesar
+          console.log('Raw parsed data:', result.data)
 
           const currentDate = dayjs().format('YYYY-MM-DD HH:mm:ss')
           const updatedData = result.data
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map((row: any) => {
-              if (row.project_id && row.date && row.temporalities_id) {
+              if (
+                row.project_id &&
+                row.date &&
+                row.temporalities_id &&
+                row.amount
+              ) {
                 return {
                   detail: row.detail,
                   amount: row.amount,
                   uf: row.uf,
-                  project_id: Number(row.project_id), // Convertimos a número
+                  project_id: Number(row.project_id),
                   date: row.date,
                   temporalities_id: row.temporalities_id,
                   month: row.month,
-                  created_at: currentDate, // Añadimos la fecha actual
+                  created_at: currentDate,
                 }
               } else {
                 return null
@@ -118,15 +152,24 @@ export default function IncomesPage() {
             })
             .filter(Boolean)
 
-          console.log('Processed data:', updatedData) // Verificamos los datos procesados
-
           if (updatedData.length > 0) {
-            setProjectsOutlays(updatedData as IIncomes[]) // Actualizamos el estado solo si hay datos
+            setProjectsIncome(updatedData as IIncome[])
           } else {
-            console.error('No valid data found in CSV')
+            setError({
+              success: false,
+              msg: 'Revisa nuevamente el archivo CSV y recuerda que "project_id", "date", "temporalities_id" y "amount" son obligatorios.',
+            })
+            console.log(error)
+            setAlert(true)
           }
         },
         error: (error) => {
+          setError({
+            success: false,
+            msg: 'Revisa nuevamente el archivo CSV y recuerda que "project_id", "date" y "temporalities_id" son obligatorios.',
+          })
+          console.log(error)
+          setAlert(true)
           console.error('Error reading CSV file:', error)
         },
       })
@@ -137,6 +180,18 @@ export default function IncomesPage() {
 
   return (
     <form>
+      {alert && (
+        <Alerts
+          message={
+            error.success === false
+              ? 'Ha ocurrido un error: '
+              : 'Registro Exitoso:'
+          }
+          success={error.success}
+          subtitle={error.msg}
+          close={() => setAlert(false)}
+        />
+      )}
       <HeaderPages
         titlePage="Registrar Ingresos"
         subTitlePage="Por favor, ingresa los datos en los campos correspondientes."
@@ -155,88 +210,14 @@ export default function IncomesPage() {
       </div>
 
       <div className="overflow-x-auto mt-4">
-        <table className="text-sm text-left text-gray-500">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-            <tr>
-              <th scope="col" className="px-6 py-3 w-1/6">
-                detail
-              </th>
-              <th scope="col" className="px-6 py-3 w-1/6">
-                amount
-              </th>
-              <th scope="col" className="px-6 py-3 w-1/6">
-                uf
-              </th>
-              <th scope="col" className="px-6 py-3 w-1/6">
-                date
-              </th>
-              <th scope="col" className="px-6 py-3 w-1/6">
-                project_id
-              </th>
-              <th scope="col" className="px-6 py-3 w-1/6">
-                temporalities_id
-              </th>
-              <th scope="col" className="px-6 py-3 w-1/6">
-                month
-              </th>
-              <th scope="col" className="px-6 py-3 w-1/6">
-                <span className="sr-only">Editar</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {projectsOutlays &&
-              projectsOutlays.map((project, index) => (
-                <tr key={index} className="bg-white border-b">
-                  <th
-                    scope="row"
-                    className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
-                  >
-                    {project.detail}
-                  </th>
-                  <td className="px-6 py-4">{project.amount || '1328571'}</td>
-                  <td className="px-6 py-4">{project.uf || '0.00'}</td>
-                  <td className="px-6 py-4">
-                    {new Date(project.date).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4">{project.project_id}</td>
-                  <td className="px-6 py-4">
-                    {project.temporalities_id || '2'}
-                  </td>
-                  <td className="px-6 py-4">
-                    {new Date(project.date).toLocaleString('default', {
-                      month: 'short',
-                    }) +
-                      '-' +
-                      new Date(project.date).getFullYear().toString().slice(-2)}
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+        <TableUploadIncomes projectsIncome={projectsIncome} />
       </div>
 
-      <div className="mt-6 flex items-center justify-end gap-x-6">
-        <button
-          type="button"
-          className="text-sm font-semibold leading-6 text-gray-900"
-        >
-          Cancelar
-        </button>
-        <button
-          type="button"
-          onClick={handleDownloadCSV}
-          className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        >
-          Descargar CSV
-        </button>
-        <button
-          type="submit"
-          className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        >
-          Guardar
-        </button>
-      </div>
+      <SubmitButtonsCsv
+        handleDownloadCSV={handleDownloadCSV}
+        handleSubmit={handleSubmit}
+        hasData={projectsIncome.length > 0}
+      />
     </form>
   )
 }

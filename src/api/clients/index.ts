@@ -19,7 +19,7 @@ export const fetchFromApi = async <T>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   body?: any
 ): Promise<ApiResponse<T>> => {
-  const url = `http://localhost:3002/agencia-polux/api/v1/${path}`
+  const url = `https://agenciapolux-backend-production.up.railway.app/agencia-polux/api/v1/${path}`
 
   try {
     const response = await fetch(url, {

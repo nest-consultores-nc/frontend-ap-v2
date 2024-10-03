@@ -1,7 +1,7 @@
-import { IRole, IWorkday } from '@/app/interfaces/roles/roles.interface'
+import { IRole, IWorkday } from '../../interfaces/roles/roles.interface'
 
 export const getAllRolesAndWorkday = async (path: string, token: string) => {
-  const url = `${process.env.NEXT_PUBLIC_BASE_URL_BACKEND}/${path}`
+  const url = `https://agenciapolux-backend-production.up.railway.app/agencia-polux/api/v1/${path}`
 
   try {
     const response = await fetch(url, {
@@ -22,6 +22,7 @@ export const getAllRolesAndWorkday = async (path: string, token: string) => {
       roles: data.roles as IRole[],
       workday: data.workday as IWorkday[],
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error('Error fetching roles:', error.message)
     return {

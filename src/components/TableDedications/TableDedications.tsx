@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { IDedicationsByUserId } from '../../interfaces/dedications/dedications.interfaces'
 import { CancelIcon, CheckIcon, DeleteIcon, EditIcon } from '../../assets'
 
@@ -10,7 +10,6 @@ interface Props {
   editingDedication: IDedicationsByUserId | null
   onSaveEditDedication: (dedication: IDedicationsByUserId) => void
   onCancelEdit: () => void
-  setCanFinish: Dispatch<SetStateAction<boolean>>
 }
 
 export function TableDedications({

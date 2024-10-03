@@ -5,6 +5,10 @@ import { isFormValid } from '../../functions/isFormValid'
 import { HomeContext } from '../../context/HomeContext'
 import { queryLogin } from '../../api/auth'
 import { ILogin } from '../../interfaces/auth/auth.interface'
+import { isLoginFormIsValid } from '../../functions/isLoginFormIsValid'
+import clsx from 'clsx'
+import { useAuthStore } from '../../store'
+import { Loading } from '../../assets/Loading'
 
 interface UserState {
   email: string
@@ -13,19 +17,21 @@ interface UserState {
 
 export default function Login() {
   const authContext = useContext(HomeContext)
+  const { setId, setEmail, setIsAuth, setToken, setRole, setName } =
+    useAuthStore()
+
   const [, setAuth] = authContext ?? [
     { id: 0, isAuth: false, token: '', role: '', name: '', email: '' },
     () => {},
   ]
   const navigate = useNavigate()
   const [user, setUser] = useState<UserState>({ email: '', password: '' })
-  const [errors, setErrors] = useState(false) // State to track errors
+  const [errors, setErrors] = useState(false)
+  const [loading, setLoading] = useState(false) 
 
   useEffect(() => {
-    if (localStorage.getItem('token')) {
-      navigate('/dashboard/inicio')
-    }
-  }, [navigate])
+    localStorage.clear()
+  }, [])
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUser({
@@ -41,6 +47,8 @@ export default function Login() {
       setErrors(true)
       return
     }
+
+    setLoading(true) 
 
     try {
       const response = await queryLogin<ILogin>(
@@ -60,6 +68,13 @@ export default function Login() {
         localStorage.setItem('email', email)
         localStorage.setItem('role', role)
 
+        setId(id.toString())
+        setEmail(email)
+        setIsAuth(true)
+        setToken(token)
+        setRole(role)
+        setName(name)
+
         setAuth({
           id,
           isAuth: true,
@@ -69,18 +84,20 @@ export default function Login() {
           email,
         })
 
-        navigate('/dashboard/inicio')
+        navigate('/dashboard')
       } else {
         setErrors(true)
       }
     } catch (error) {
       console.log(error)
       setErrors(true)
+    } finally {
+      setLoading(false) 
     }
   }
 
   return (
-    <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+    <div className="flex min-h-full flex-col h-screen justify-center align-middle px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         <img
           className="mx-auto h-16 w-auto"
@@ -101,8 +118,10 @@ export default function Login() {
                 onChange={handleInputChange}
                 type="email"
                 value={user.email}
+                placeholder="Ingrese su correo"
+                autoComplete="email"
                 required
-                className="block w-full rounded-md border-0 px-1 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full rounded-md border-2 px-1 py-1.5 text-gray-900 shadow-sm placeholder:text-gray-400 sm:text-sm sm:leading-6"
               />
             </div>
           </div>
@@ -119,28 +138,44 @@ export default function Login() {
                 type="password"
                 value={user.password}
                 required
+                placeholder="Ingrese su contraseña"
+                autoComplete="current-password"
                 onChange={handleInputChange}
-                className="block w-full rounded-md border-0 px-1 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full rounded-md border-2 px-1 py-1.5 text-gray-900 shadow-sm placeholder:text-gray-400 sm:text-sm sm:leading-6"
               />
             </div>
           </div>
 
+          <div>
+            <button
+              type="submit"
+              disabled={!isLoginFormIsValid(user) || loading} 
+              className={clsx(
+                'flex w-full justify-center items-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+                {
+                  'bg-indigo-600 text-white hover:bg-indigo-500 focus-visible:outline-indigo-600':
+                    isLoginFormIsValid(user) && !loading,
+                  'bg-gray-400 text-gray-300 cursor-not-allowed':
+                    !isLoginFormIsValid(user) || loading,
+                }
+              )}
+            >
+              {loading ? (
+                <>
+                  Iniciar Sesión
+                  <Loading />
+                </>
+              ) : (
+                'Iniciar Sesión'
+              )}
+            </button>
+          </div>
           {errors && (
-            <div className="text-red-600 text-sm mt-2">
+            <div className="bg-red-400 text-white p-1 text-sm rounded">
               Ha ocurrido un error al intentar iniciar sesión. Por favor,
               verifica tus credenciales e intenta nuevamente.
             </div>
           )}
-
-          <div>
-            <button
-              type="submit"
-              disabled={!isFormValid(user)}
-              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-              Iniciar Sesión
-            </button>
-          </div>
         </form>
       </div>
     </div>

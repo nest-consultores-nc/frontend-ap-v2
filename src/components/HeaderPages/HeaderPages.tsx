@@ -1,4 +1,4 @@
-export default function HeaderPages({
+export function HeaderPages({
   titlePage,
   subTitlePage,
 }: {

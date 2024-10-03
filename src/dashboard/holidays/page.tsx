@@ -1,4 +1,15 @@
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+
 export default function Holidays() {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!localStorage.getItem('token')) {
+      localStorage.clear()
+      navigate('/iniciar-sesion')
+    }
+  }, [navigate])
   return (
     <div className="relative max-w-sm">
       <div className="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">

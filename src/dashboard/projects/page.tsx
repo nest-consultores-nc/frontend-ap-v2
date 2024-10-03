@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
 import { IProject } from '../../interfaces/projects/projects.interface'
 import { getAllProjects } from '../../api/projects/get-projects'
-import HeaderPages from '../../components/HeaderPages/HeaderPages'
 import {
   LoadingSpinner,
   PaginationProjectsTable,
   ProjectsTable,
+  HeaderPages,
 } from '../../components'
+import { useNavigate } from 'react-router-dom'
+import { checkTokenAndRedirect } from '../../functions/checkTokenAndRedirect'
 
 export default function ProjectsPage() {
+  const navigate = useNavigate()
   const [projects, setProjects] = useState<IProject[]>([])
   const [showCurrentProjects, setShowCurrentProjects] = useState(true)
   const [loading, setLoading] = useState(true)
@@ -18,11 +21,15 @@ export default function ProjectsPage() {
   const projectsPerPage = 10
 
   useEffect(() => {
+    checkTokenAndRedirect(navigate)
+  }, [navigate])
+
+  useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
       try {
         const data = await getAllProjects(
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzbHVnIjoiYWRtaW4iLCJuYW1lIjoiTmVzdCBBZG1pbiIsImVtYWlsIjoibmVzdEBhZ2VuY2lhcG9sdXguY2wiLCJpYXQiOjE3MjMzOTY0MTAsImV4cCI6MTcyNTk4ODQxMH0.MHTE95G-OdsjKwzyJmqLPGJJrjwzZ41R0SpUYmAcsz0', // Token de autenticación
+          localStorage.getItem('token')!,
           showCurrentProjects
         )
         setProjects(data?.projects || [])

@@ -1,4 +1,4 @@
 export { CancelIcon as CancelIcon } from './CancelIcon'
-export { CheckIcon as CheckIcon } from './checkIcon'
-export { DeleteIcon as DeleteIcon } from './deleteIcon'
-export { EditIcon as EditIcon } from './editIcon'
+export { CheckIcon as CheckIcon } from './CheckIcon'
+export { DeleteIcon as DeleteIcon } from './DeleteIcon'
+export { EditIcon as EditIcon } from './EditIcon'

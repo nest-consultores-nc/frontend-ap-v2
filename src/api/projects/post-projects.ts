@@ -1,5 +1,5 @@
-import { IProjectData } from '@/app/interfaces/projects/project-form.interface'
 import { fetchFromApi } from '.'
+import { IProjectData } from '../../interfaces/projects/project-form.interface'
 
 export const createProjectQuery = async (data: IProjectData, token: string) => {
   const response = await fetchFromApi<{
