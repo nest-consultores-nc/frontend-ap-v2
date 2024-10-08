@@ -1,63 +1,71 @@
-'use client'
+'use client';
 
-import { useState, useMemo } from 'react'
-import { formatDateTime } from '../../functions/formatDateTime'
-import { ICosteoMensual } from '../../interfaces/costeo/costeo-mensual.interface'
-import { PaginationProjectsTable } from '../PaginationProjectsTable/PaginationProjectsTable'
-import { ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/24/outline'
+import { useState, useMemo } from 'react';
+import { ICosteoMensual } from '../../interfaces/costeo/costeo-mensual.interface';
+import { PaginationProjectsTable } from '../PaginationProjectsTable/PaginationProjectsTable';
+import { ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/24/outline';
 
-type SortKeys = keyof ICosteoMensual
-type SortOrder = 'asc' | 'desc'
+// Función para formatear la fecha a "yyyy-MM-dd"
+const formatDateToISO = (date: Date | string): string => {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0'); // Asegura dos dígitos para el mes
+  const day = String(d.getDate()).padStart(2, '0'); // Asegura dos dígitos para el día
+  return `${year}-${month}-${day}`; // Retorna solo la parte de la fecha
+};
+
+type SortKeys = keyof ICosteoMensual;
+type SortOrder = 'asc' | 'desc';
 
 function getSortValue(item: ICosteoMensual, key: SortKeys): string | number {
   if (key === 'date') {
-    return new Date(item[key]).getTime()
+    return new Date(item[key]).getTime();
   }
   if (typeof item[key] === 'number') {
-    return item[key] as number
+    return item[key] as number;
   }
-  return (item[key] as string).toLowerCase()
+  return (item[key] as string).toLowerCase();
 }
 
 export function TableResultCosteoMensual({ data }: { data: ICosteoMensual[] }) {
-  const [currentPage, setCurrentPage] = useState(1)
-  const [sortKey, setSortKey] = useState<SortKeys>('project_id')
-  const [sortOrder, setSortOrder] = useState<SortOrder>('asc')
-  const projectsPerPage = 10
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortKey, setSortKey] = useState<SortKeys>('project_id');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const projectsPerPage = 10;
 
   const sortedData = useMemo(() => {
     return [...data].sort((a, b) => {
-      const aValue = getSortValue(a, sortKey)
-      const bValue = getSortValue(b, sortKey)
+      const aValue = getSortValue(a, sortKey);
+      const bValue = getSortValue(b, sortKey);
 
-      if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1
-      if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1
-      return 0
-    })
-  }, [data, sortKey, sortOrder])
+      if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [data, sortKey, sortOrder]);
 
-  const indexOfLastProject = currentPage * projectsPerPage
-  const indexOfFirstProject = indexOfLastProject - projectsPerPage
-  const currentData = sortedData.slice(indexOfFirstProject, indexOfLastProject)
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
+  const indexOfLastProject = currentPage * projectsPerPage;
+  const indexOfFirstProject = indexOfLastProject - projectsPerPage;
+  const currentData = sortedData.slice(indexOfFirstProject, indexOfLastProject);
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   const handleSort = (key: SortKeys) => {
     if (key === sortKey) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
-      setSortKey(key)
-      setSortOrder('asc')
+      setSortKey(key);
+      setSortOrder('asc');
     }
-  }
+  };
 
   const SortIcon = ({ columnKey }: { columnKey: SortKeys }) => {
-    if (columnKey !== sortKey) return null
+    if (columnKey !== sortKey) return null;
     return sortOrder === 'asc' ? (
       <ArrowUpIcon className="inline w-4 h-4 ml-1" />
     ) : (
       <ArrowDownIcon className="inline w-4 h-4 ml-1" />
-    )
-  }
+    );
+  };
 
   return (
     <div className="overflow-x-auto mt-4">
@@ -66,45 +74,39 @@ export function TableResultCosteoMensual({ data }: { data: ICosteoMensual[] }) {
           <tr>
             <th
               className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('project_id')}
-            >
-              Project ID <SortIcon columnKey="project_id" />
-            </th>
-            <th
-              className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('salarie_cost')}
-            >
-              Salarie Cost <SortIcon columnKey="salarie_cost" />
-            </th>
-            <th
-              className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('direct_cost')}
-            >
-              Direct Cost <SortIcon columnKey="direct_cost" />
-            </th>
-            <th
-              className="px-6 py-3 cursor-pointer"
               onClick={() => handleSort('date')}
             >
-              Date <SortIcon columnKey="date" />
-            </th>
-            <th
-              className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('indirect_cost')}
-            >
-              Indirect Cost <SortIcon columnKey="indirect_cost" />
-            </th>
-            <th
-              className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('project_cost')}
-            >
-              Project Cost <SortIcon columnKey="project_cost" />
+              Fecha <SortIcon columnKey="date" />
             </th>
             <th
               className="px-6 py-3 cursor-pointer"
               onClick={() => handleSort('project_client')}
             >
-              Project Client <SortIcon columnKey="project_client" />
+              Cliente Proyecto <SortIcon columnKey="project_client" />
+            </th>
+            <th
+              className="px-6 py-3 cursor-pointer"
+              onClick={() => handleSort('salarie_cost')}
+            >
+              Costo Salario (MM$) <SortIcon columnKey="salarie_cost" />
+            </th>
+            <th
+              className="px-6 py-3 cursor-pointer"
+              onClick={() => handleSort('direct_cost')}
+            >
+              Costo Directo (MM$) <SortIcon columnKey="direct_cost" />
+            </th>
+            <th
+              className="px-6 py-3 cursor-pointer"
+              onClick={() => handleSort('indirect_cost')}
+            >
+              Costo Indirecto (MM$) <SortIcon columnKey="indirect_cost" />
+            </th>
+            <th
+              className="px-6 py-3 cursor-pointer"
+              onClick={() => handleSort('project_cost')}
+            >
+              Costo Proyecto (MM$) <SortIcon columnKey="project_cost" />
             </th>
           </tr>
         </thead>
@@ -121,25 +123,22 @@ export function TableResultCosteoMensual({ data }: { data: ICosteoMensual[] }) {
             }) => (
               <tr key={project_id} className="bg-white border-b">
                 <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                  {project_id}
-                </td>
-                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                  {salarie_cost}
-                </td>
-                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                  {direct_cost}
-                </td>
-                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                  {date && formatDateTime(date)}
-                </td>
-                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                  {indirect_cost}
-                </td>
-                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                  {project_cost}
+                  {date && formatDateToISO(date)} {/* Ajuste para mostrar solo la fecha */}
                 </td>
                 <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                   {project_client}
+                </td>
+                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                  {(salarie_cost / 100).toFixed(2)}
+                </td>
+                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                  {(direct_cost / 100).toFixed(2)}
+                </td>
+                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                  {(indirect_cost / 100).toFixed(2)}
+                </td>
+                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                  {(project_cost / 100).toFixed(2)}
                 </td>
               </tr>
             )
@@ -154,5 +153,5 @@ export function TableResultCosteoMensual({ data }: { data: ICosteoMensual[] }) {
         projectsPerPage={projectsPerPage}
       />
     </div>
-  )
+  );
 }

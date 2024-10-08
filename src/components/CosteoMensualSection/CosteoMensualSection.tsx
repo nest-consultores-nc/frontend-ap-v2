@@ -43,7 +43,7 @@ export function CosteoMensualSection() {
           Costeo Mensual
         </h2>
         <p className="mt-4 text-lg leading-6 text-gray-600">
-          Para generar el costeo mensual, selecciona el mes y año deseados.
+          Para actualizar el costeo mensual, selecciona el mes y año deseados.
         </p>
       </div>
 
@@ -79,14 +79,14 @@ export function CosteoMensualSection() {
                 : 'bg-gray-400 text-gray-200 cursor-not-allowed'
             }`}
         >
-          Generar
+          Actualizar
         </button>
       </div>
 
       {loading && (
         <LoadingCosteo
-          title="Generando costeo mensual..."
-          subtitle="Este proceso puede tardar unos momentos. Por favor, espere."
+          title="Actualizando costeo mensual..."
+          subtitle="Espera un momento. por favor."
         />
       )}
 

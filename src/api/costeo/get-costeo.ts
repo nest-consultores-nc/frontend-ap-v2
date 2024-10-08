@@ -11,7 +11,9 @@ export const getGenerarCosteoMensual = async (searchDate: string) => {
   )
 }
 export const getGenerarUtilidad = async () => {
-  return await fetchFromApiCosteo<IUtilidad>('utilidad')
+  const response = await fetchFromApiCosteo<IUtilidad>('utilidad')
+  console.log("Response from API:", response);
+  return response;
 }
 export const getGenerarIngresos = async (searchDate: string) => {
   const [anio, mes] = searchDate.split('-')

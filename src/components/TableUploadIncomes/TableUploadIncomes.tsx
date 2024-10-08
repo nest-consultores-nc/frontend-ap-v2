@@ -7,7 +7,7 @@ interface IIncomes {
   uf: string
   date: string
   project_id: number
-  temporalities_id: string
+  temporalities_name: string
   month: string
 }
 
@@ -73,14 +73,14 @@ export function TableUploadIncomes({ projectsIncome }: Props) {
               className="px-6 py-3 w-1/6 cursor-pointer"
               onClick={() => handleSort('detail')}
             >
-              Detail <SortIcon columnKey="detail" />
+              Detalle <SortIcon columnKey="detail" />
             </th>
             <th
               scope="col"
               className="px-6 py-3 w-1/6 cursor-pointer"
               onClick={() => handleSort('amount')}
             >
-              Amount <SortIcon columnKey="amount" />
+              Ingresos <SortIcon columnKey="amount" />
             </th>
             <th
               scope="col"
@@ -94,28 +94,28 @@ export function TableUploadIncomes({ projectsIncome }: Props) {
               className="px-6 py-3 w-1/6 cursor-pointer"
               onClick={() => handleSort('date')}
             >
-              Date <SortIcon columnKey="date" />
+              Fecha <SortIcon columnKey="date" />
             </th>
             <th
               scope="col"
               className="px-6 py-3 w-1/6 cursor-pointer"
               onClick={() => handleSort('project_id')}
             >
-              Project ID <SortIcon columnKey="project_id" />
+              ID Proyecto <SortIcon columnKey="project_id" />
             </th>
             <th
               scope="col"
               className="px-6 py-3 w-1/6 cursor-pointer"
-              onClick={() => handleSort('temporalities_id')}
+              onClick={() => handleSort('temporalities_name')}
             >
-              Temporalities ID <SortIcon columnKey="temporalities_id" />
+              Temporalidades  <SortIcon columnKey="temporalities_name" />
             </th>
             <th
               scope="col"
               className="px-6 py-3 w-1/6 cursor-pointer"
               onClick={() => handleSort('month')}
             >
-              Month <SortIcon columnKey="month" />
+              Mes <SortIcon columnKey="month" />
             </th>
           </tr>
         </thead>
@@ -132,7 +132,7 @@ export function TableUploadIncomes({ projectsIncome }: Props) {
               <td className="px-6 py-4">{income.uf || '0.00'}</td>
               <td className="px-6 py-4">{income.date.toString()}</td>
               <td className="px-6 py-4">{income.project_id}</td>
-              <td className="px-6 py-4">{income.temporalities_id || '2'}</td>
+              <td className="px-6 py-4">{income.temporalities_name || '2'}</td>
               <td className="px-6 py-4">
                 {income.month
                   ? income.month

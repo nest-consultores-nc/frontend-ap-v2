@@ -7,16 +7,16 @@ export function TableUploadSalaries({ salaries }: { salaries: ISalaries[] }) {
         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
           <tr>
             <th scope="col" className="px-6 py-3 w-[25%]">
-              user_id
+              ID Usuario
             </th>
             <th scope="col" className="px-6 py-3 w-[25%]">
-              detail
+              Detalle
             </th>
             <th scope="col" className="px-6 py-3 w-[25%]">
-              salarie
+              Salario
             </th>
             <th scope="col" className="px-6 py-3 w-[25%]">
-              date
+              Fecha
             </th>
           </tr>
         </thead>

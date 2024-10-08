@@ -64,51 +64,33 @@ export function TableResultIngresos({ data }: { data: IDataIngresos[] }) {
           <tr>
             <th
               className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('project_id')}
-            >
-              Project ID <SortIcon columnKey="project_id" />
-            </th>
-            <th
-              className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('amount')}
-            >
-              Amount <SortIcon columnKey="amount" />
-            </th>
-            <th
-              className="px-6 py-3 cursor-pointer"
               onClick={() => handleSort('date')}
             >
-              Date <SortIcon columnKey="date" />
+              Fecha <SortIcon columnKey="date" />
             </th>
             <th
               className="px-6 py-3 cursor-pointer"
               onClick={() => handleSort('detail')}
             >
-              Detail <SortIcon columnKey="detail" />
+              Detalle <SortIcon columnKey="detail" />
             </th>
             <th
               className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('UF')}
+              onClick={() => handleSort('temporalities_name')}
             >
-              UF <SortIcon columnKey="UF" />
-            </th>
-            <th
-              className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('temporalities_id')}
-            >
-              Temporalities ID <SortIcon columnKey="temporalities_id" />
+              Temporalidades <SortIcon columnKey="temporalities_name" />
             </th>
             <th
               className="px-6 py-3 cursor-pointer"
               onClick={() => handleSort('project_client')}
             >
-              Project Client <SortIcon columnKey="project_client" />
+              Cliente Proyecto <SortIcon columnKey="project_client" />
             </th>
             <th
               className="px-6 py-3 cursor-pointer"
               onClick={() => handleSort('amount_p')}
             >
-              Amount P <SortIcon columnKey="amount_p" />
+              Ingresos (MM$) <SortIcon columnKey="amount_p" />
             </th>
           </tr>
         </thead>
@@ -116,12 +98,9 @@ export function TableResultIngresos({ data }: { data: IDataIngresos[] }) {
           {currentData.map(
             (
               {
-                project_id,
-                amount,
                 date,
                 detail,
-                UF,
-                temporalities_id,
+                temporalities_name,
                 project_client,
                 amount_p,
               },
@@ -129,28 +108,19 @@ export function TableResultIngresos({ data }: { data: IDataIngresos[] }) {
             ) => (
               <tr key={index} className="bg-white border-b">
                 <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                  {project_id}
-                </td>
-                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                  {amount}
-                </td>
-                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                   {date && formatDateToISO(date)}
                 </td>
                 <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                   {detail}
                 </td>
                 <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                  {UF}
-                </td>
-                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                  {temporalities_id}
+                  {temporalities_name}
                 </td>
                 <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                   {project_client}
                 </td>
                 <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                  {amount_p}
+                  {(amount_p / 1_000_000).toFixed(1)} {/* Manteniendo el cálculo original */}
                 </td>
               </tr>
             )

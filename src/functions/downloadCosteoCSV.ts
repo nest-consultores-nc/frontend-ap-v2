@@ -1,14 +1,35 @@
-import { ICosteoMensual } from '../interfaces/costeo/costeo-mensual.interface'
-import { Datum } from '../interfaces/costeo/utilidad.interface'
-import { IDataIngresos } from '../interfaces/costeo/ingresos.interface'
-import { formatDateToISO } from './formatDateTime'
+import { ICosteoMensual } from '../interfaces/costeo/costeo-mensual.interface';
+import { Datum } from '../interfaces/costeo/utilidad.interface';
+import { IDataIngresos } from '../interfaces/costeo/ingresos.interface';
+
+// Función para formatear la fecha a "yyyy-MM-dd"
+export const formatDateToISO = (date: Date | string): string => {
+  // Si la fecha es un string en formato "dd/MM/yyyy"
+  if (typeof date === 'string' && date.includes('/')) {
+    const [day, month, year] = date.split('/');
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+
+  // Si la fecha es un objeto Date, conviértelo a "yyyy-MM-dd"
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0'); // Asegura dos dígitos para el mes
+  const day = String(d.getDate()).padStart(2, '0'); // Asegura dos dígitos para el día
+
+  return `${year}-${month}-${day}`; // Retorna solo la parte de la fecha
+};
+
+// Función para formatear la fecha para el CSV sin agregar apóstrofe
+const formatDateForCSV = (date: Date | string): string => {
+  return formatDateToISO(date); // Solo formatea la fecha a yyyy-MM-dd sin apóstrofe
+};
 
 interface Props {
-  nameFile: string
-  costeoMensual?: ICosteoMensual[]
-  datumData?: Datum[]
-  ingresosData?: IDataIngresos[]
-  selectedDate: string
+  nameFile: string;
+  costeoMensual?: ICosteoMensual[];
+  datumData?: Datum[];
+  ingresosData?: IDataIngresos[];
+  selectedDate: string;
 }
 
 /**
@@ -17,44 +38,12 @@ interface Props {
  *
  * @param {string} nameFile - El nombre del archivo CSV a descargar (sin la extensión).
  * Se concatenará con `selectedDate` para generar el nombre final.
- * @param {ICosteoMensual[]} [costeoMensual] - Arreglo de objetos con datos de costeo mensual, como costos de salario, costos directos, costos indirectos, etc.
- * @param {Datum[]} [datumData] - Arreglo de objetos con datos de utilidad, que incluyen campos como `amount`, `project_cost`, `utilidad`, etc.
- * @param {IngresosData[]} [ingresosData] - Arreglo de objetos con datos de ingresos, que incluyen campos como `amount`, `detail`, `UF`, `temporalities_id`, etc.
+ * @param {ICosteoMensual[]} [costeoMensual] - Arreglo de objetos con datos de costeo mensual.
+ * @param {Datum[]} [datumData] - Arreglo de objetos con datos de utilidad.
+ * @param {IDataIngresos[]} [ingresosData] - Arreglo de objetos con datos de ingresos.
  * @param {string} selectedDate - La fecha seleccionada en formato "DD-MM-AAAA", que se utilizará en el nombre del archivo descargado.
  *
  * @returns {void} - No devuelve ningún valor, pero crea un archivo CSV y lo descarga en el navegador del usuario.
- *
- * @description
- * Esta función toma un conjunto de datos (costeoMensual, datumData o ingresosData) y los convierte en formato CSV. Dependiendo del tipo de datos proporcionado, genera las cabeceras y las filas correspondientes.
- * Si no se proporcionan datos válidos, la función no generará el archivo CSV y mostrará un error en la consola.
- *
- * - Primero, la función valida qué tipo de datos se ha proporcionado: `costeoMensual`, `datumData` o `ingresosData`.
- * - A continuación, genera las cabeceras específicas para el tipo de datos.
- * - Luego, recorre el arreglo de datos y genera las filas correspondientes.
- * - Usa un Blob para crear el archivo CSV y genera un enlace temporal que dispara la descarga del archivo en el navegador del usuario.
- * - Finalmente, revoca el objeto URL creado para liberar memoria.
- * @example
- * const ingresosData = [
- *   {
- *     project_id: 2,
- *     amount: 5000,
- *     date: new Date('2024-10-01'),
- *     detail: 'Venta de producto',
- *     UF: 50,
- *     temporalities_id: 1,
- *     project_client: 'Cliente B',
- *     amount_p: 4500,
- *   }
- * ];
- *
- * const selectedDate = '01-10-2024';
- *
- * downloadCosteoCSV({
- *   nameFile: 'ingresos',
- *   ingresosData,
- *   selectedDate,
- * });
- *
  */
 export const downloadCosteoCSV = ({
   nameFile = 'archivo',
@@ -63,96 +52,88 @@ export const downloadCosteoCSV = ({
   ingresosData,
   selectedDate,
 }: Props): void => {
-  const csvRows: string[] = []
+  const csvRows: string[] = [];
 
   if (costeoMensual && costeoMensual.length > 0) {
     // Cabeceras para costeoMensual
     const headers = [
-      'project_id',
-      'salarie_cost',
-      'direct_cost',
-      'date',
-      'indirect_cost',
-      'project_cost',
-      'project_client',
-    ]
-    csvRows.push(headers.join(','))
+      'Fecha',
+      'Cliente Proyecto',
+      'Costo Salario (MM$)',
+      'Costo Directo (MM$)',
+      'Costo Indirecto (MM$)',
+      'Costo Proyecto (MM$)',
+    ];
+    csvRows.push(headers.join(','));
 
     costeoMensual.forEach((row) => {
       const values = [
-        row.project_id,
-        row.salarie_cost,
-        row.direct_cost,
-        row.date,
-        row.indirect_cost,
-        row.project_cost,
+        formatDateForCSV(row.date),
         row.project_client,
-      ]
-      csvRows.push(values.join(','))
-    })
+        (row.salarie_cost/ 100).toFixed(2),
+        (row.direct_cost/ 100).toFixed(2),
+        (row.indirect_cost/ 100).toFixed(2),
+        (row.project_cost/ 100).toFixed(2),
+      ];
+      csvRows.push(values.join(','));
+    });
   } else if (datumData && datumData.length > 0) {
     // Cabeceras para datumData (utilidad)
     const headers = [
-      'project_id',
-      'amount',
-      'date',
-      'project_cost',
-      '_merge',
-      'utilidad',
-    ]
-    csvRows.push(headers.join(','))
+      'Fecha',
+      'Cliente Proyecto',
+      'Ingresos (MM$)',
+      'Costo Proyecto (MM$)',
+      'Utilidad (MM$)',
+    ];
+    csvRows.push(headers.join(','));
 
     datumData.forEach((row) => {
       const values = [
-        row.project_id,
-        row.amount,
-        row.date,
-        row.project_cost,
-        row.utilidad,
-      ]
-      csvRows.push(values.join(','))
-    })
+        formatDateForCSV(row.date), // Formatea la fecha sin apóstrofe
+        row.project_client, // Cliente y Proyecto (con UTF-8)
+        (row.amount/ 100).toFixed(2), // Formateo de ingresos a dos decimales
+        (row.project_cost/ 100).toFixed(2), // Formateo del costo del proyecto a dos decimales
+        (row.utilidad/ 100).toFixed(2), // Formateo de utilidad a dos decimales
+      ];
+      csvRows.push(values.join(','));
+    });
   } else if (ingresosData && ingresosData.length > 0) {
     // Cabeceras para ingresosData
     const headers = [
-      'project_id',
-      'amount',
-      'date',
-      'detail',
-      'UF',
-      'temporalities_id',
-      'project_client',
-      'amount_p',
-    ]
-    csvRows.push(headers.join(','))
+      'Fecha',
+      'Detalle',
+      'Temporalidades',
+      'Cliente Proyecto',
+      'Ingresos (MM$)',
+    ];
+    csvRows.push(headers.join(','));
 
     ingresosData.forEach((row) => {
       const values = [
-        row.project_id,
-        row.amount,
-        formatDateToISO(row.date),
+        formatDateForCSV(row.date), // Formatea la fecha sin apóstrofe
         row.detail,
-        row.UF,
-        row.temporalities_id,
+        row.temporalities_name,
         row.project_client,
-        row.amount_p,
-      ]
-      csvRows.push(values.join(','))
-    })
+        (row.amount_p / 1_000_000).toFixed(2), // Ajuste de la cantidad a millones
+      ];
+      csvRows.push(values.join(','));
+    });
   } else {
-    console.error('No se proporcionaron datos válidos para generar el CSV.')
-    return
+    console.error('No se proporcionaron datos válidos para generar el CSV.');
+    return;
   }
 
-  const csvString = csvRows.join('\n')
+  // Agregar BOM para UTF-8 al inicio del CSV
+  const csvString = '\uFEFF' + csvRows.join('\n');
 
-  const blob = new Blob([csvString], { type: 'text/csv' })
-  const url = window.URL.createObjectURL(blob)
+  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+  const url = window.URL.createObjectURL(blob);
 
-  const a = document.createElement('a')
-  a.setAttribute('href', url)
-  a.setAttribute('download', `${nameFile}_${selectedDate}.csv`)
-  a.click()
+  const a = document.createElement('a');
+  a.setAttribute('href', url);
+  a.setAttribute('download', `${nameFile}_${selectedDate}.csv`);
+  a.click();
 
-  window.URL.revokeObjectURL(url)
-}
+  window.URL.revokeObjectURL(url);
+};

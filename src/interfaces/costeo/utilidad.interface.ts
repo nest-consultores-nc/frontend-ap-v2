@@ -6,7 +6,7 @@ export interface IUtilidad {
 
 export interface Datum {
   date: string
-  project_id: number
+  project_client: string
   amount: number
   project_cost: number
   _merge: Merge

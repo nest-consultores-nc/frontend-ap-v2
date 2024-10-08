@@ -232,7 +232,7 @@ export default function CreateProject() {
           Guardar
         </button>
       </div>
-      <pre>{JSON.stringify(projectData, null, 2)}</pre>
+      
     </form>
   )
 }

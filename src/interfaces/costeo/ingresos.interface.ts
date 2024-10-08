@@ -10,7 +10,7 @@ export interface IDataIngresos {
   date: Date
   detail: string
   UF: number
-  temporalities_id: number
+  temporalities_name: string
   project_client: string
   amount_p: number
 }

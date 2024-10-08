@@ -40,10 +40,10 @@ export function UtilidadSection() {
     <section className="bg-white">
       <div className="mx-auto max-w-2xl text-center">
         <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-          Utilidad
+          Utilidades
         </h2>
         <p className="mt-4 text-lg text-gray-600">
-          En esta sección puedes generar las utilidad de los distintos proyectos
+          En esta sección puedes actualizar las utilidades de los distintos proyectos
           mes a mes.
         </p>
         <div className="max-w-sm mx-auto flex flex-col">
@@ -58,14 +58,14 @@ export function UtilidadSection() {
                 : 'bg-gray-400 text-gray-200 cursor-not-allowed'
             }`}
           >
-            Generar
+            Actualizar
           </button>
         </div>
       </div>
       {loading && (
         <LoadingCosteo
-          title="Generando utilidad..."
-          subtitle="Este proceso puede tardar unos momentos. Por favor, espere."
+          title="Actualizando utilidades..."
+          subtitle="Espera un momento, por favor."
         />
       )}
 

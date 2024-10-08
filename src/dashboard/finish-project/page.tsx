@@ -1,74 +1,108 @@
-import { useEffect, useState } from 'react'
-import { IProject } from '../../interfaces/projects/projects.interface'
-import { getAllProjects } from '../../api/projects/get-projects'
-import { deleteProjectQuery } from '../../api/projects/delete-projects'
-import { Alerts, LoadingSpinner } from '../../components'
-import { useNavigate } from 'react-router-dom'
-import { HeaderPages } from '../../components'
-import { checkTokenAndRedirect } from '../../functions/checkTokenAndRedirect'
+import { useEffect, useState } from 'react';
+import { IProject } from '../../interfaces/projects/projects.interface';
+import { getAllProjects } from '../../api/projects/get-projects';
+import { deleteProjectQuery } from '../../api/projects/delete-projects';
+import { Alerts, LoadingSpinner } from '../../components';
+import { useNavigate } from 'react-router-dom';
+import { HeaderPages } from '../../components';
+import { checkTokenAndRedirect } from '../../functions/checkTokenAndRedirect';
+import Swal from 'sweetalert2';
 
 export default function FinishProject() {
-  const navigate = useNavigate()
-  const [loading, setLoading] = useState(true)
-  const [projects, setProjects] = useState<IProject[]>([])
-  const [alert, setAlert] = useState(false)
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState<IProject[]>([]);
+  const [alert, setAlert] = useState(false);
   const [error, setError] = useState({
     success: false,
     msg: '',
-  })
+  });
 
-  const [selectedDeleteProject, setSelectedDeleteProject] = useState<number>()
+  const [selectedDeleteProject, setSelectedDeleteProject] = useState<number>();
 
   useEffect(() => {
-    checkTokenAndRedirect(navigate)
-  }, [navigate])
+    checkTokenAndRedirect(navigate);
+  }, [navigate]);
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true)
+      setLoading(true);
       try {
-        const data = await getAllProjects(localStorage.getItem('token')!, true)
-        setProjects(data.projects)
+        const data = await getAllProjects(localStorage.getItem('token')!, true);
+        setProjects(data.projects);
       } catch (error) {
-        setError({ success: false, msg: 'Error al cargar los datos' })
-        console.error('Error fetching projects:', error)
+        setError({ success: false, msg: 'Error al cargar los datos' });
+        console.error('Error fetching projects:', error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
+
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedDeleteProject(Number(event.target.value))
-  }
+    setSelectedDeleteProject(Number(event.target.value));
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    try {
-      setAlert(false)
+    event.preventDefault();
 
-      const response = await deleteProjectQuery(
-        selectedDeleteProject!,
-        localStorage.getItem('token')!
-      )
+    // Buscar el nombre del proyecto seleccionado
+    const selectedProject = projects.find(
+      (project) => project.id === selectedDeleteProject
+    );
+    const projectName = selectedProject
+      ? `${selectedProject.client.clientName} - ${selectedProject.project_name}`
+      : '';
 
-      setError({ success: response.success, msg: response.msg })
-      setProjects((prevProjects) =>
-        prevProjects.filter((project) => project.id !== selectedDeleteProject)
-      )
+    // Mostrar advertencia de SweetAlert antes de proceder
+    Swal.fire({
+      title: '¿Estás de acuerdo?',
+      text: `Se va eliminar el proyecto "${projectName}" No podrás revertir esta acción`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, terminar proyecto',
+      cancelButtonText: 'Cancelar',
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          setAlert(false);
 
-      setAlert(true)
-    } catch (error) {
-      console.log(error)
-      setError({ success: false, msg: 'Error al enviar el formulario.' })
-      setAlert(true)
-    }
-  }
+          const response = await deleteProjectQuery(
+            selectedDeleteProject!,
+            localStorage.getItem('token')!
+          );
+
+          setError({ success: response.success, msg: response.msg });
+          setProjects((prevProjects) =>
+            prevProjects.filter(
+              (project) => project.id !== selectedDeleteProject
+            )
+          );
+
+          setAlert(true);
+
+          // Mostrar confirmación de eliminación
+          Swal.fire({
+            title: '¡Terminado!',
+            text: `El proyecto "${projectName}" ha sido terminado.`,
+            icon: 'success',
+          });
+        } catch (error) {
+          console.log(error);
+          setError({ success: false, msg: 'Error al enviar el formulario.' });
+          setAlert(true);
+        }
+      }
+    });
+  };
 
   const handleCloseAlert = () => {
-    setAlert(false)
-  }
+    setAlert(false);
+  };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -101,7 +135,7 @@ export default function FinishProject() {
               <select
                 value={selectedDeleteProject ?? ''}
                 onChange={handleChange}
-                className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm   placeholder:text-gray-400 focus:border-gray-40  sm:text-sm sm:leading-6"
+                className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-gray-40 sm:text-sm sm:leading-6"
               >
                 <option value="" disabled>
                   Seleccione un proyecto
@@ -132,5 +166,5 @@ export default function FinishProject() {
         </button>
       </div>
     </form>
-  )
+  );
 }

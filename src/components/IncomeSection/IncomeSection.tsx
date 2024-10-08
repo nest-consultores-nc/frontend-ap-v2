@@ -42,7 +42,7 @@ export function IncomeSection() {
           Ingresos
         </h2>
         <p className="mt-4 text-lg leading-6 text-gray-600">
-          En esta sección podrás generar los ingresos por proyectos.
+          En esta sección podrás actualizar los ingresos por proyectos.
         </p>
       </div>
 
@@ -78,14 +78,14 @@ export function IncomeSection() {
                 : 'bg-gray-400 text-gray-200 cursor-not-allowed'
             }`}
         >
-          Generar
+          Actualizar
         </button>
       </div>
 
       {loading && (
         <LoadingCosteo
-          title="Generando ingresos por proyectos..."
-          subtitle="Este proceso puede tardar unos momentos. Por favor, espere."
+          title="Actualizando ingresos por proyectos..."
+          subtitle="Espera un momento, por favor."
         />
       )}
 

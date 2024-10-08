@@ -107,7 +107,7 @@ export default function IncomesPage() {
         uf: '0.00',
         date: formattedDate,
         project_id: project.id,
-        temporalities_id: '',
+        temporalities_name: '',
         month: formattedMonthYear,
       })
     )
@@ -133,7 +133,7 @@ export default function IncomesPage() {
               if (
                 row.project_id &&
                 row.date &&
-                row.temporalities_id &&
+                row.temporalities_name &&
                 row.amount
               ) {
                 return {
@@ -142,7 +142,7 @@ export default function IncomesPage() {
                   uf: row.uf,
                   project_id: Number(row.project_id),
                   date: row.date,
-                  temporalities_id: row.temporalities_id,
+                  temporalities_name: row.temporalities_name,
                   month: row.month,
                   created_at: currentDate,
                 }
@@ -157,7 +157,7 @@ export default function IncomesPage() {
           } else {
             setError({
               success: false,
-              msg: 'Revisa nuevamente el archivo CSV y recuerda que "project_id", "date", "temporalities_id" y "amount" son obligatorios.',
+              msg: 'Revisa nuevamente el archivo CSV y recuerda que "project_id", "date", "temporalities_name" y "amount" son obligatorios.',
             })
             console.log(error)
             setAlert(true)
@@ -166,7 +166,7 @@ export default function IncomesPage() {
         error: (error) => {
           setError({
             success: false,
-            msg: 'Revisa nuevamente el archivo CSV y recuerda que "project_id", "date" y "temporalities_id" son obligatorios.',
+            msg: 'Revisa nuevamente el archivo CSV y recuerda que "project_id", "date" y "temporalities_name" son obligatorios.',
           })
           console.log(error)
           setAlert(true)
