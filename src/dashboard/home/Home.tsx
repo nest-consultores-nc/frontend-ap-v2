@@ -11,7 +11,7 @@ export default function Home() {
   useEffect(() => {
     checkTokenAndRedirect(navigate)
 
-    // Validamos que solo el admin y la directora ejecutiva puedan entrar aquí
+     
     const role = localStorage.getItem('role')
     if (role !== 'admin' && role !== 'directoraejecutiva')
       navigate('/dashboard/proyectos')
@@ -40,17 +40,19 @@ export default function Home() {
   }, [])
 
   return (
-    <div className="flex w-full justify-center flex-col">
-      {loading ? (
-        <div className="text-center">Cargando...</div>
-      ) : (
-        <iframe
-          src={dashboardUrl}
-          height="600px"
-          title="Reporte Agencia Polux"
-          allowFullScreen={true}
-        ></iframe>
-      )}
+    <div className="flex w-full justify-center flex-col mt-12 md:mt-0">
+        {loading ? (
+          <div className="text-center">Cargando...</div>
+        ) : (
+          <iframe
+            src={dashboardUrl}
+            className="w-full h-[400px] md:h-[600px] lg:h-[800px]"
+            title="Reporte Agencia Polux"
+            allowFullScreen={true}
+          ></iframe>
+        )}
+
+
     </div>
   )
 }

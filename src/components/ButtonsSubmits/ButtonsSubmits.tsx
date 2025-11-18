@@ -22,8 +22,8 @@ export function ButtonsSubmits({
         disabled={!disabledAdd}
         className={`rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
           disabledAdd
-            ? 'bg-indigo-600 hover:bg-indigo-500 focus-visible:outline-indigo-600'
-            : 'bg-indigo-400 cursor-not-allowed'
+            ? 'bg-[#3E3378] hover:bg-[#89CCDC] hover:text-black focus-visible:outline-indigo-600'
+            : 'bg-[#89CCDC] cursor-not-allowed'
         }`}
       >
         Agregar
@@ -35,8 +35,8 @@ export function ButtonsSubmits({
         disabled={canFinishDedicated(data) ? false : true}
         className={`rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
           canFinishDedicated(data)
-            ? 'bg-indigo-600 hover:bg-indigo-500 focus-visible:outline-indigo-600'
-            : 'bg-indigo-400 cursor-not-allowed'
+            ? 'bg-[#3E3378] hover:bg-[#89CCDC] hover:text-black focus-visible:outline-indigo-600'
+            : 'bg-[#89CCDC] cursor-not-allowed'
         }`}
       >
         Terminar Registro

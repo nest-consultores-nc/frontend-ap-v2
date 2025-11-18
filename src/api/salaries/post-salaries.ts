@@ -1,4 +1,4 @@
-import { fetchFromApi } from '.'
+import { fetchFromApi } from './helpers'
 import { ISalaries } from '../../interfaces/salaries/salaries.interface'
 
 export const createSalarieQuery = async (data: ISalaries[], token: string) => {

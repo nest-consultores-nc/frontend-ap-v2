@@ -1,5 +1,3 @@
-'use client'
-
 import Papa from 'papaparse'
 import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'

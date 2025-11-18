@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createClientQuery } from '../../api/clients'
-import { Alerts } from '../../components'
+import Swal from 'sweetalert2' //
 import { useNavigate } from 'react-router-dom'
 import { checkTokenAndRedirect } from '../../functions/checkTokenAndRedirect'
 import { HeaderPages } from '../../components/index'
@@ -10,11 +10,7 @@ interface ClientData {
 }
 
 export default function CreateClient() {
-  const [alert, setAlert] = useState(false)
-  const [error, setError] = useState({
-    success: false,
-    msg: '',
-  })
+
   const [data, setData] = useState<ClientData>({
     client_name: '',
     client_description: '',
@@ -34,59 +30,75 @@ export default function CreateClient() {
     })
   }
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+
+  
+    if (!data.client_name.trim()) {
+      await Swal.fire({
+        title: 'Falta ingresar datos',
+        text: 'Por favor, ingresa el nombre del cliente.',
+        icon: 'warning',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#4f46e5',
+      })
+      return
+    }
+
+    const { isConfirmed } = await Swal.fire({
+      title: '¿Deseas guardar este cliente?',
+      html: `
+        <div style="text-align:left">
+          <b>Nombre:</b> ${data.client_name || '(sin nombre)'}<br/>
+          <b>Descripción:</b> ${data.client_description || '(sin descripción)'}
+        </div>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, guardar',
+      cancelButtonText: 'No, volver',
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+    })
+    if (!isConfirmed) return
+
     try {
       const token = localStorage.getItem('token')!
       const response = await createClientQuery(data, token)
 
       if (response?.success) {
-        setError({
-          success: true,
-          msg: response.msg,
+        await Swal.fire({
+          title: '¡Registro exitoso!',
+          text: response.msg || 'El cliente fue registrado correctamente.',
+          icon: 'success',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#3085d6',
         })
 
-        setData({
-          client_name: '',
-          client_description: '',
-        })
+        setData({ client_name: '', client_description: '' })
+         
       } else {
-        setError({
-          success: false,
-          msg:
-            response.msg ||
-            'Ha ocurrido un error al intentar registrar al cliente',
+        await Swal.fire({
+          title: 'Error',
+          text: response?.msg || 'Ha ocurrido un error al intentar registrar al cliente',
+          icon: 'error',
         })
       }
     } catch (error) {
       console.log(error)
-      setError({
-        success: false,
-        msg: 'Ha ocurrido un error al intentar registrar al cliente',
+      await Swal.fire({
+        title: 'Error',
+        text: 'Ha ocurrido un error al intentar registrar al cliente',
+        icon: 'error',
       })
-    } finally {
-      setAlert(true)
     }
   }
 
-  const handleCloseAlert = () => {
-    setAlert(false)
-  }
+
 
   return (
     <form onSubmit={handleSubmit}>
-      {alert && (
-        <Alerts
-          message={
-            error.success === false
-              ? 'Ha ocurrido un error: '
-              : 'Registro Exitoso:'
-          }
-          success={error.success}
-          subtitle={error.msg}
-          close={handleCloseAlert}
-        />
-      )}
+
       <HeaderPages
         titlePage="Registrar Nuevo Cliente"
         subTitlePage="Por favor, ingresa los datos en los campos correspondientes."
@@ -103,7 +115,7 @@ export default function CreateClient() {
                 type="text"
                 name="client_name"
                 className="outline-none flex-1 rounded border bg-transparent p-1 text-gray-900 placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:border-gray-400"
-                placeholder="Ingresa el nombre del cliente"
+                placeholder="Cliente Pólux"
                 value={data.client_name}
                 onChange={handleChange}
               />
@@ -118,7 +130,7 @@ export default function CreateClient() {
           <div className="mt-2">
             <textarea
               className="block outline-none w-full rounded-md border p-1 text-gray-900 shadow-sm placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:border-gray-400"
-              placeholder="Describe brevemente al cliente"
+              placeholder="Describe general y brevemente al cliente"
               name="client_description"
               value={data.client_description}
               onChange={handleChange}
@@ -127,20 +139,15 @@ export default function CreateClient() {
         </div>
       </div>
 
-      <div className="mt-6 flex items-center justify-end gap-x-6">
-        <button
-          type="button"
-          className="text-sm font-semibold leading-6 text-gray-900"
-        >
-          Cancelar
-        </button>
+      <div className="mt-6 flex items-center justify-end">
         <button
           type="submit"
-          className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+          className="rounded-md bg-[#3E3378] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#89CCDC] hover:text-black"
         >
           Guardar
         </button>
       </div>
+
     </form>
   )
 }

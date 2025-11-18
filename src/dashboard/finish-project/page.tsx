@@ -48,7 +48,7 @@ export default function FinishProject() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // Buscar el nombre del proyecto seleccionado
+ 
     const selectedProject = projects.find(
       (project) => project.id === selectedDeleteProject
     );
@@ -56,7 +56,7 @@ export default function FinishProject() {
       ? `${selectedProject.client.clientName} - ${selectedProject.project_name}`
       : '';
 
-    // Mostrar advertencia de SweetAlert antes de proceder
+ 
     Swal.fire({
       title: '¿Estás de acuerdo?',
       text: `Se va eliminar el proyecto "${projectName}" No podrás revertir esta acción`,
@@ -85,9 +85,9 @@ export default function FinishProject() {
 
           setAlert(true);
 
-          // Mostrar confirmación de eliminación
+           
           Swal.fire({
-            title: '¡Terminado!',
+            title: 'Terminado',
             text: `El proyecto "${projectName}" ha sido terminado.`,
             icon: 'success',
           });
@@ -157,7 +157,7 @@ export default function FinishProject() {
           className={`rounded-md px-3 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 
             ${
               selectedDeleteProject
-                ? 'bg-indigo-600 text-white hover:bg-indigo-500 focus-visible:outline-indigo-600'
+                ? 'bg-[#3E3378] text-white hover:bg-[#89CCDC] hover:text-black focus-visible:outline-indigo-600'
                 : 'bg-gray-400 text-gray-200 cursor-not-allowed'
             }`}
           disabled={!selectedDeleteProject || selectedDeleteProject === 0}

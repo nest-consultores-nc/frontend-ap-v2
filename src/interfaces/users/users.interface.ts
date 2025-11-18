@@ -15,3 +15,13 @@ export interface IUserCSV {
   detail: string
   date: string | null
 }
+
+export interface IUserForm {
+  name: string
+  email: string
+  rut: string
+  password: string
+  role_id: number | ''
+  workday_id: number | ''
+  active?: number 
+}

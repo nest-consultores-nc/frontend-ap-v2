@@ -1,8 +1,13 @@
-import { UserIcon } from '@heroicons/react/24/outline'
+import { UserIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Logo from '../../assets/logo-polux-sin-fondo.png'
-import { ADMIN_LINKS, DIRECTORA_EJECUTIVA, USUARIOS } from '../../utils/routes'
+import {
+  ADMIN_LINKS_GROUPED,
+  DIRECTORA_EJECUTIVA_GROUPED,
+  USUARIOS_GROUPED,
+} from '../../utils/routes'
+import { useEffect, useMemo, useState } from 'react'
 
 type LinkItem = {
   name: string
@@ -10,51 +15,88 @@ type LinkItem = {
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
 }
 
+type GroupedLinks = {
+  title: string
+  links: LinkItem[]
+}
+
 export default function NavLinks() {
   const role = localStorage.getItem('role')
   const navigate = useNavigate()
   const { pathname } = useLocation()
 
-  const getLinksByRole = (role: string | null): LinkItem[] => {
+  const getGroupsByRole = (role: string | null): GroupedLinks[] => {
     switch (role) {
       case 'admin':
-        return ADMIN_LINKS
+        return ADMIN_LINKS_GROUPED
       case 'directoraejecutiva':
-        return DIRECTORA_EJECUTIVA
+        return DIRECTORA_EJECUTIVA_GROUPED
       case 'ejecutivo(a)decuentassenior':
       case 'ejecutivo(a)decuentas':
-        return USUARIOS
+      case 'director(a)decuentas':
+        return USUARIOS_GROUPED
       default:
-        localStorage.clear()
         navigate('/unauthorized')
         return []
     }
   }
 
-  const links = getLinksByRole(role)
+  const groups = useMemo(() => getGroupsByRole(role), [role])
+  const [openGroups, setOpenGroups] = useState<string[]>(groups.map(g => g.title))
+
+
+  useEffect(() => {
+    setOpenGroups(groups.map(g => g.title))
+  }, [groups])
+
+  const toggleGroup = (groupTitle: string) => {
+    setOpenGroups(prev =>
+      prev.includes(groupTitle) ? prev.filter(t => t !== groupTitle) : [...prev, groupTitle]
+    )
+  }
 
   return (
     <>
-      <img src={Logo} alt="logo" className="w-36 my-0 mx-auto" />
-      <div className="bg-gray-200 p-5 flex justify-center">
-        <UserIcon className="w-5 mr-2" />
-        {localStorage.getItem('name')}
-      </div>
-      {links.map(({ name, href, icon: Icon }) => (
-        <Link
-          key={name}
-          to={href}
-          className={clsx(
-            'flex h-[48px] grow items-center justify-center gap-2 rounded-md p-3 text-sm font-medium bg-gray-50 hover:bg-ap-secondary-light-color hover:text-ap-secondary-color md:flex-none md:justify-start md:p-2 md:px-3 md:overflow-auto',
-            {
-              'bg-ap-secondary-color text-red': pathname === href,
-              'text-blue-700': pathname === href,
-            }
-          )}
-        >
-          <Icon className="w-6" />
-          <p className="hidden md:block">{name}</p>
-        </Link>
+      <img src={Logo} alt="logo" className="w-40 my-0 mx-auto" />
+        <div className="bg-gradient-to-r from-[#3E3378] to-[#89CCDC] p-5 flex justify-center text-white">
+          <UserIcon className="w-5 mr-2" />
+          {localStorage.getItem('name')}
+        </div>
+
+
+      {groups.map(({ title, links }) => (
+        <div key={title} className="mb-4">
+          <button
+            onClick={() => toggleGroup(title)}
+            className="flex items-center justify-between w-full px-3 py-2 text-xs font-semibold text-gray-600 uppercase tracking-wider"
+          >
+            {title}
+            {openGroups.includes(title) ? (
+              <ChevronUpIcon className="w-4 h-4" />
+            ) : (
+              <ChevronDownIcon className="w-4 h-4" />
+            )}
+          </button>
+
+          <div className={`${openGroups.includes(title) ? 'block' : 'hidden'} transition-all`}>
+            {links.map(({ name, href, icon: Icon }) => (
+              <Link
+                key={name}
+                to={href}
+                className={clsx(
+                  'flex items-center gap-2 px-5 py-2 text-sm rounded-md transition hover:bg-[#3E3378] hover:text-[#EEEBE6]',
+                  {
+                    'bg-[#89CCDC] text-[#303031]': pathname === href,
+                    'text-[#303031]': pathname !== href,
+                  }
+                )}
+              >
+                <Icon className="w-5 h-5" />
+                <span>{name}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
       ))}
     </>
   )

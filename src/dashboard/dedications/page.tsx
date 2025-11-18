@@ -16,7 +16,7 @@ import {
   getDedicationsNotConsolidated,
   getHistoryDedicationsByUserId,
 } from '../../api/dedications/get-dedications'
-import { getMondaysOfCurrentAndPreviousMonth } from '../../functions/getMondaysOfCurrentAndPreviousMonth'
+import { getWeeksAround } from '../../functions/getWeeksAround'
 import {
   Alerts,
   ButtonsSubmits,
@@ -26,11 +26,9 @@ import {
   HeaderPages,
 } from '../../components'
 import { useNavigate } from 'react-router-dom'
-import { checkNotNullInputs } from '../../functions/checkNotNullInputs'
 import { checkTokenAndRedirect } from '../../functions/checkTokenAndRedirect'
 
-const token = localStorage.getItem('token')!
-const userId = Number(localStorage.getItem('id'))
+
 
 export interface IDedication {
   user_id: number
@@ -41,6 +39,8 @@ export interface IDedication {
 }
 export default function Dedications() {
   const navigate = useNavigate()
+  const token = localStorage.getItem('token')!
+  const userId = Number(localStorage.getItem('id'))
   const [loading, setLoading] = useState(true)
   const [projects, setProjects] = useState<IProject[]>([])
   const [activeTab, setActiveTab] = useState('registrar-horas')
@@ -68,6 +68,10 @@ export default function Dedications() {
     consolidation: 0,
   })
 
+
+  const [dedicatedInput, setDedicatedInput] = useState<string>('') 
+
+
   useEffect(() => {
     checkTokenAndRedirect(navigate)
   }, [navigate])
@@ -76,18 +80,54 @@ export default function Dedications() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target
-    setDedicationData((prev) => ({
-      ...prev,
-      [name]: name === 'dedicated' ? parseFloat(value) : value,
-    }))
+
+    if (name === 'dedicated') {
+      
+      const onlyDigits = value.replace(/[^\d]/g, '')
+
+      
+      if (onlyDigits === '') {
+        setDedicatedInput('')
+   
+        return
+      }
+
+      let num = parseInt(onlyDigits, 10)
+      if (!Number.isFinite(num)) num = 0
+      if (num < 0) num = 0
+      if (num > 100) num = 100
+
+      setDedicatedInput(String(num))
+ 
+      setDedicationData((prev) => ({ ...prev, dedicated: num }))
+      return
+    }
+
+    setDedicationData((prev) => ({ ...prev, [name]: value }))
   }
 
+
+
   const handleAddDedication = async () => {
+
+    if (dedicatedInput === '' || !Number.isFinite(Number(dedicatedInput))) {
+      setAlert(true)
+      setError({ success: false, msg: 'Debe ingresar un valor entre 0 y 100' })
+      return
+    }
+    const dedicatedNumber = Math.min(100, Math.max(0, parseInt(dedicatedInput, 10)))
+
     try {
-      dedicationData.week = convertDateFormat(dedicationData.week)
-      dedicationData.dedicated = dedicationData.dedicated / 100
-      dedicationData.user_id = userId
-      const response = await insertDedication(dedicationData, token)
+      const formattedWeek = convertDateFormat(dedicationData.week)
+
+      const updatedDedication = {
+        ...dedicationData,
+        week: formattedWeek,
+        dedicated: dedicatedNumber / 100, 
+        user_id: userId,
+      }
+
+      const response = await insertDedication(updatedDedication, token)
 
       if (response.success) {
         setAlert(true)
@@ -95,13 +135,16 @@ export default function Dedications() {
           success: true,
           msg: 'Dedicación registrada correctamente',
         })
-        setDedicationData({
-          user_id: userId,
+
+        
+        setDedicatedInput('')
+        setDedicationData((prev) => ({
+          ...prev,
           project_id: '',
           week: '',
           dedicated: 0,
           consolidation: 0,
-        })
+        }))
       } else {
         setAlert(true)
         setError({
@@ -123,7 +166,10 @@ export default function Dedications() {
         msg: 'Ha ocurrido un error inesperado',
       })
     }
-  }
+}
+
+
+  
   const handleChangeActiveTab = (tab: string) => {
     setActiveTab(tab)
   }
@@ -255,10 +301,11 @@ export default function Dedications() {
   }, [alert])
 
   useEffect(() => {
-    const weeksData = getMondaysOfCurrentAndPreviousMonth()
-    setWeeks(weeksData)
-  }, [])
+    setWeeks(getWeeksAround()); // semana actual ±2
+  }, []); // se calcula una sola vez
 
+  
+  
   useEffect(() => {
     fetchHistoryDedications()
   }, [])
@@ -357,7 +404,7 @@ export default function Dedications() {
               name="project_id"
               className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm   placeholder:text-gray-400 focus:border-gray-40  sm:text-sm sm:leading-6"
             >
-              <option value="" disabled>
+              <option value="">
                 Seleccione un proyecto
               </option>
               {projects.map((project) => (
@@ -391,17 +438,29 @@ export default function Dedications() {
           </div>
           <div className="col-span-full">
             <label className="block text-sm font-medium leading-6 text-gray-900">
-              Porcentaje de Dedicación
+              Porcentaje de Dedicación (%)
             </label>
             <div className="mt-2">
               <input
                 type="number"
                 name="dedicated"
-                value={dedicationData.dedicated}
+                value={dedicatedInput} 
                 onChange={handleChange}
+                onKeyDown={(e) => {
+               
+                  if (['.', ',', 'e', 'E', '-', '+'].includes(e.key)) {
+                    e.preventDefault()
+                  }
+                }}
+                inputMode="numeric"
+                step={1}
+                min={0}
+                max={100}
+                pattern="\d*"
                 className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm  placeholder:text-gray-400  focus:border-gray-400 sm:text-sm sm:leading-6"
-                placeholder="Ingrese el porcentaje de dedicación"
+                placeholder="Ej: 50"
               />
+
             </div>
           </div>
         </div>
@@ -426,17 +485,23 @@ export default function Dedications() {
                 onSaveEditDedication={handleSaveEditDedication}
                 onCancelEdit={handleCancelEdit}
               />
-              <ButtonsSubmits
-                disabledAdd={checkNotNullInputs({
-                  user_id: dedicationData.user_id,
-                  project_id: dedicationData.project_id,
-                  week: dedicationData.week,
-                  dedicated: dedicationData.dedicated,
-                })}
-                onAdd={handleAddDedication}
-                onFinish={handleFinish}
-                data={dedicationsNotConsolidated}
-              />
+
+                {(() => {
+                  const validProject = dedicationData.project_id !== ''
+                  const validWeek = dedicationData.week !== ''
+                  const validDedicated = dedicatedInput !== '' && Number.isFinite(Number(dedicatedInput)) && Number(dedicatedInput) >= 0 && Number(dedicatedInput) <= 100
+                  const canSubmit = validProject && validWeek && validDedicated
+
+                  return (
+                    <ButtonsSubmits
+                      disabledAdd={canSubmit} 
+                      onAdd={handleAddDedication}
+                      onFinish={handleFinish}
+                      data={dedicationsNotConsolidated}
+                    />
+                  )
+                })()}
+
             </>
           ) : (
             <TableHistoryDedications historyDedications={historyDedications} />

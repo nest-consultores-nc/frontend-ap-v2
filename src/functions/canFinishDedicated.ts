@@ -31,11 +31,20 @@ import { IDedicationsByUserId } from '../interfaces/dedications/dedications.inte
  * // invalidResult sería false porque las semanas no son iguales
  */
 export const canFinishDedicated = (data: IDedicationsByUserId[]) => {
-  return (
-    data.length > 0 &&
-    // Validar que todas las semanas sean las mismas
-    data.every((dedication) => dedication.week === data[0].week) &&
-    // Validar que el total de dedicación sea 100%
-    data.reduce((total, { dedicated }) => total + dedicated, 0) === 100
-  )
+  if (data.length === 0) return false
+
+  // 1) Todas las semanas deben ser iguales
+  const sameWeek = data.every((d) => d.week === data[0].week)
+  if (!sameWeek) return false
+
+  // 2) Normalizar: si algún 'dedicated' es <= 1, asumimos decimales (0–1);
+  //    de lo contrario, asumimos porcentajes (0–100).
+  const hasDecimals = data.some((d) => d.dedicated <= 1)
+
+  const total = data.reduce((acc, d) => acc + d.dedicated, 0)
+
+  // 3) Comparación con tolerancia para evitar errores de coma flotante
+  const EPS = 1e-6
+  return hasDecimals ? Math.abs(total - 1) < EPS : Math.abs(total - 100) < EPS
 }
+

@@ -1,18 +1,8 @@
-'use client';
-
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ICosteoMensual } from '../../interfaces/costeo/costeo-mensual.interface';
 import { PaginationProjectsTable } from '../PaginationProjectsTable/PaginationProjectsTable';
 import { ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/24/outline';
 
-// Función para formatear la fecha a "yyyy-MM-dd"
-const formatDateToISO = (date: Date | string): string => {
-  const d = new Date(date);
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0'); // Asegura dos dígitos para el mes
-  const day = String(d.getDate()).padStart(2, '0'); // Asegura dos dígitos para el día
-  return `${year}-${month}-${day}`; // Retorna solo la parte de la fecha
-};
 
 type SortKeys = keyof ICosteoMensual;
 type SortOrder = 'asc' | 'desc';
@@ -27,11 +17,84 @@ function getSortValue(item: ICosteoMensual, key: SortKeys): string | number {
   return (item[key] as string).toLowerCase();
 }
 
+
+  const formatMM = (n: number | null) =>
+    n === null
+      ? '...'
+      : n.toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    function DateBadge({
+      date,
+      variant = 'pill',
+    }: {
+      date: string | Date;
+      variant?: 'pill' | 'vertical';
+    }) {
+      const d = new Date(date);
+      const day = d.toLocaleString('es-CL', { day: '2-digit' });
+      const mon = d.toLocaleString('es-CL', { month: 'short' }).replace('.', '').toUpperCase();
+      const year = d.toLocaleString('es-CL', { year: 'numeric' });
+
+      if (variant === 'vertical') {
+        return (
+          <div className="shrink-0 rounded-xl bg-gray-100 text-gray-700 px-2 py-1 leading-none text-center">
+            <div className="text-[10px] tracking-wide">{mon}</div>
+            <div className="text-sm font-bold tabular-nums -mt-[1px]">{day}</div>
+            <div className="text-[10px] opacity-70">{year.slice(-2)}</div>
+          </div>
+        );
+      }
+
+      return (
+        <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
+          <span className="tabular-nums">{day}</span>&nbsp;
+          <span>{mon}</span>&nbsp;
+          <span className="opacity-70">{year}</span>
+        </span>
+      );
+    }
+    
+
 export function TableResultCosteoMensual({ data }: { data: ICosteoMensual[] }) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortKey, setSortKey] = useState<SortKeys>('project_id');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [sortKey, setSortKey] = useState<SortKeys>('date');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+
   const projectsPerPage = 10;
+
+  const [ufValue, setUfValue] = useState<number | null>(null);
+  const [totalSalarieCost, setTotalSalarieCost] = useState<number | null>(null);
+  const [totalDirectCost, setTotalDirectCost] = useState<number | null>(null);
+  const [totalIndirectCost, setTotalIndirectCost] = useState<number | null>(null);
+  const [totalProjectCost, setTotalProjectCost] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchUFValue = async () => {
+      try {
+        const response = await fetch('https://mindicador.cl/api/uf');
+        const data = await response.json();
+        const ufToday = data.serie[0].valor; 
+        setUfValue(ufToday); 
+      } catch (error) {
+        console.error('Error fetching UF:', error);
+      }
+    };
+    fetchUFValue();
+  }, []);
+  
+  useEffect(() => {
+    if (ufValue && data.length > 0) {
+      const totalSalarieCost = data.reduce((acc, item) => acc + item.salarie_cost, 0);
+      const totalDirectCost = data.reduce((acc, item) => acc + item.direct_cost, 0);
+      const totalIndirectCost = data.reduce((acc, item) => acc + item.indirect_cost, 0);
+      const totalProjectCost = data.reduce((acc, item) => acc + item.project_cost, 0);
+
+      setTotalSalarieCost(totalSalarieCost * ufValue / 1_000_000);
+      setTotalDirectCost(totalDirectCost * ufValue / 1_000_000);
+      setTotalIndirectCost(totalIndirectCost * ufValue / 1_000_000); 
+      setTotalProjectCost(totalProjectCost * ufValue / 1_000_000); 
+    }
+  }, [data, ufValue]);
 
   const sortedData = useMemo(() => {
     return [...data].sort((a, b) => {
@@ -68,83 +131,153 @@ export function TableResultCosteoMensual({ data }: { data: ICosteoMensual[] }) {
   };
 
   return (
+    
     <div className="overflow-x-auto mt-4">
-      <table className="text-sm text-left text-gray-500 w-full">
+
+      <div className="mb-4 text-lg font-bold text-blue-900">
+        {ufValue !== null
+          ? `Valor actual de la UF: ${ufValue.toFixed(2)}`
+          : 'Cargando valor de la UF...'}
+      </div>
+  
+      <table className="text-sm text-left text-gray-500 w-full hidden sm:table">
         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
           <tr>
-            <th
-              className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('date')}
-            >
+            <th className="px-6 py-3 cursor-pointer w-1/12" onClick={() => handleSort('date')}>
               Fecha <SortIcon columnKey="date" />
             </th>
-            <th
-              className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('project_client')}
-            >
+            <th className="px-6 py-3 cursor-pointer w-1/12" onClick={() => handleSort('project_client')}>
               Cliente Proyecto <SortIcon columnKey="project_client" />
             </th>
-            <th
-              className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('salarie_cost')}
-            >
+            <th className="px-6 py-3 cursor-pointer w-1/5" onClick={() => handleSort('salarie_cost')}>
               Costo Salario (MM$) <SortIcon columnKey="salarie_cost" />
+              <p className="text-indigo-500">
+              {totalSalarieCost !== null
+            ? `Total Costo Salario: ${totalSalarieCost.toFixed(2)} MM$`
+            : 'Calculando total del costo salario...'}
+           </p>
             </th>
-            <th
-              className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('direct_cost')}
-            >
+            <th className="px-6 py-3 cursor-pointer w-1/5" onClick={() => handleSort('direct_cost')}>
               Costo Directo (MM$) <SortIcon columnKey="direct_cost" />
+              <p className="text-indigo-500">
+              {totalDirectCost !== null
+            ? `Total Costo Directo: ${totalDirectCost.toFixed(2)} MM$`
+            : 'Calculando total de costo directo...'}
+           </p>
             </th>
-            <th
-              className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('indirect_cost')}
-            >
+            <th className="px-6 py-3 cursor-pointer w-1/5" onClick={() => handleSort('indirect_cost')}>
               Costo Indirecto (MM$) <SortIcon columnKey="indirect_cost" />
+              <p className="text-indigo-500">
+              {totalIndirectCost !== null
+            ? `Total Costo Indirecto: ${totalIndirectCost.toFixed(2)} MM$`
+            : 'Calculando total de costo indirecto...'}
+           </p>
             </th>
-            <th
-              className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('project_cost')}
-            >
+            <th className="px-6 py-3 cursor-pointer w-1/5" onClick={() => handleSort('project_cost')}>
               Costo Proyecto (MM$) <SortIcon columnKey="project_cost" />
+              <p className="text-indigo-500">
+              {totalProjectCost !== null
+            ? `Total Costo Proyecto: ${totalProjectCost.toFixed(2)} MM$`
+            : 'Calculando total de costo proyecto...'}
+           </p>
             </th>
           </tr>
         </thead>
         <tbody>
           {currentData.map(
-            ({
-              project_id,
-              salarie_cost,
-              direct_cost,
-              date,
-              indirect_cost,
-              project_cost,
-              project_client,
-            }) => (
+            ({ project_id, salarie_cost, direct_cost, date, indirect_cost, project_cost, project_client }) => (
               <tr key={project_id} className="bg-white border-b">
                 <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                  {date && formatDateToISO(date)} {/* Ajuste para mostrar solo la fecha */}
+                  <DateBadge date={date} variant="pill" />
                 </td>
+
                 <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                   {project_client}
                 </td>
                 <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                  {(salarie_cost / 100).toFixed(2)}
+                  {ufValue !== null ? ((salarie_cost * ufValue) / 1000000).toFixed(2) : 'Cargando...'} 
                 </td>
                 <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                  {(direct_cost / 100).toFixed(2)}
+                  {ufValue !== null ? ((direct_cost * ufValue) / 1000000).toFixed(2) : 'Cargando...'}
                 </td>
                 <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                  {(indirect_cost / 100).toFixed(2)}
+                  {ufValue !== null ? ((indirect_cost * ufValue) / 1000000).toFixed(2) : 'Cargando...'}
                 </td>
                 <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                  {(project_cost / 100).toFixed(2)}
+                  {ufValue !== null ? ((project_cost * ufValue) / 1000000).toFixed(2) : 'Cargando...'}
                 </td>
               </tr>
             )
           )}
         </tbody>
       </table>
+
+      <div className="sm:hidden space-y-4 mt-2 text-left">
+
+        <div className="rounded-2xl bg-white ring-1 ring-gray-200 shadow-sm p-4">
+          <div className="text-xs font-semibold text-gray-500 mb-1">Totales (MM$)</div>
+          <div className="space-y-1 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Costo Salario:</span>
+              <span className="font-semibold tabular-nums">{formatMM(totalSalarieCost)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Costo Directo:</span>
+              <span className="font-semibold tabular-nums">{formatMM(totalDirectCost)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Costo Indirecto:</span>
+              <span className="font-semibold tabular-nums">{formatMM(totalIndirectCost)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Costo Proyecto:</span>
+              <span className="font-semibold tabular-nums">{formatMM(totalProjectCost)}</span>
+            </div>
+          </div>
+        </div>
+
+        {currentData.map(({ project_id, salarie_cost, direct_cost, date, indirect_cost, project_cost, project_client }) => {
+          return (
+            <div key={project_id} className="bg-white border rounded-xl shadow p-4">
+              <div className="flex items-start justify-between mb-2">
+                <h3 className="font-semibold text-gray-900 leading-5 line-clamp-2">
+                  {project_client || 'N/A'}
+                </h3>
+                <DateBadge date={date} variant="vertical" />
+              </div>
+
+              <div className="mt-3 space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Costo Salario (MM$)</span>
+                  <span className="font-medium">
+                    {ufValue !== null ? ((salarie_cost * ufValue) / 1_000_000).toFixed(2) : 'Cargando valor'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Costo Directo (MM$)</span>
+                  <span className="font-medium">
+                    {ufValue !== null ? ((direct_cost * ufValue) / 1_000_000).toFixed(2) : 'Cargando valor'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Costo Indirecto (MM$)</span>
+                  <span className="font-medium">
+                    {ufValue !== null ? ((indirect_cost * ufValue) / 1_000_000).toFixed(2) : 'Cargando valor'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Costo Proyecto (MM$)</span>
+                  <span className="font-medium">
+                    {ufValue !== null ? ((project_cost * ufValue) / 1_000_000).toFixed(2) : 'Cargando valor'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+
 
       <PaginationProjectsTable
         currentPage={currentPage}

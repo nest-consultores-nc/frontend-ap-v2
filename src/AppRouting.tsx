@@ -14,10 +14,14 @@ import IncomesPage from './dashboard/incomes/page'
 import SalariesPage from './dashboard/salaries/page'
 import Holidays from './dashboard/holidays/page'
 import Login from './dashboard/login/Login'
+import ForgotPassword from './dashboard/login/ForgotPassword'   
+import ResetPassword from './dashboard/login/ResetPassword'    
 import { useContext } from 'react'
 import { SideNav } from './components'
 import { UnauthorizedPage } from './dashboard/unauthorized/page'
 import CosteoPage from './dashboard/costeo/page'
+import EditPage from './dashboard/edit/page'
+import SoportePage from './dashboard/soporte/SoportePage'
 
 const AppLayout = () => {
   const context = useContext(HomeContext)
@@ -29,9 +33,9 @@ const AppLayout = () => {
   const [auth, setAuth] = context
   return (
     <HomeContext.Provider value={[auth, setAuth]}>
-      <div className="flex">
+      <div className="flex flex-col md:flex-row min-h-screen overflow-x-hidden">
         <SideNav />
-        <div className="flex-grow m-10">
+        <div className="flex-1 min-w-0 p-4 md:p-1">
           <Routes>
             <Route path="/dashboard" element={<Home />} />
             <Route path="/dashboard/proyectos" element={<Projects />} />
@@ -64,8 +68,11 @@ const AppLayout = () => {
               path="/dashboard/registrar-sueldos"
               element={<SalariesPage />}
             />
+            
             <Route path="/dashboard/costeo" element={<CosteoPage />} />
             <Route path="/dashboard/dia-libre" element={<Holidays />} />
+            <Route path="/dashboard/editar" element={<EditPage />} />
+            <Route path="/dashboard/soporte" element={<SoportePage />} />
             <Route path="*" element={<Navigate to="/dashboard" />} />
           </Routes>
         </div>
@@ -74,11 +81,15 @@ const AppLayout = () => {
   )
 }
 
+
+
 const AppRouting = () => {
   return (
     <HomeProvider>
       <Routes>
         <Route path="/iniciar-sesion" element={<Login />} />
+        <Route path="/recuperar-contrasena" element={<ForgotPassword />} />   
+        <Route path="/restaurar-contrasena" element={<ResetPassword />} />  
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
         <Route path="/*" element={<AppLayout />} />

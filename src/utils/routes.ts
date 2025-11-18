@@ -6,142 +6,122 @@ import {
   EyeIcon,
   UserIcon,
   TrashIcon,
-  // CalendarDaysIcon,
+  CalendarDaysIcon,
   CurrencyDollarIcon,
   ArrowDownOnSquareIcon,
   ArrowUpOnSquareIcon,
   DocumentPlusIcon,
+  ChatBubbleLeftRightIcon,
+  //PencilSquareIcon,
 } from '@heroicons/react/24/outline'
-type LinkItem = {
-  name: string
-  href: string
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
-}
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
+import { Edit} from 'lucide-react'
 
-export const ADMIN_LINKS: LinkItem[] = [
-  { name: 'Inicio', href: '/dashboard', icon: HomeIcon },
+
+export const ADMIN_LINKS_GROUPED = [
   {
-    name: 'Crear Cliente',
-    href: '/dashboard/crear-cliente',
-    icon: UserPlusIcon,
+    title: 'Inicio',
+    links: [
+      { name: 'Inicio', href: '/dashboard', icon: HomeIcon },
+    ],
   },
   {
-    name: 'Crear Proyecto',
-    href: '/dashboard/crear-proyecto',
-    icon: SquaresPlusIcon,
+    title: 'Gestión de Proyectos',
+    links: [
+      { name: 'Crear Proyecto', href: '/dashboard/crear-proyecto', icon: SquaresPlusIcon },
+      { name: 'Proyectos', href: '/dashboard/proyectos', icon: DocumentDuplicateIcon },
+      { name: 'Terminar Proyecto', href: '/dashboard/terminar-proyecto', icon: TrashIcon },
+      { name: 'Agregar Dedicación', href: '/dashboard/agregar-horas', icon: DocumentPlusIcon },
+      { name: 'Monitoreo', href: '/dashboard/monitoreo', icon: EyeIcon },
+    ],
   },
   {
-    name: 'Proyectos',
-    href: '/dashboard/proyectos',
-    icon: DocumentDuplicateIcon,
+    title: 'Usuarios y Clientes',
+    links: [
+      { name: 'Crear Cliente', href: '/dashboard/crear-cliente', icon: UserPlusIcon },
+      { name: 'Crear Usuario', href: '/dashboard/crear-usuario', icon: UserPlusIcon },
+    ],
   },
   {
-    name: 'Terminar Proyecto',
-    href: '/dashboard/terminar-proyecto',
-    icon: TrashIcon,
+    title: 'Finanzas',
+    links: [
+      { name: 'Registrar Desembolsos', href: '/dashboard/registrar-desembolsos', icon: ArrowUpOnSquareIcon },
+      { name: 'Registrar Ingresos', href: '/dashboard/registrar-ingresos', icon: ArrowDownOnSquareIcon },
+      { name: 'Registrar Sueldos', href: '/dashboard/registrar-sueldos', icon: CurrencyDollarIcon },
+      { name: 'Costeo', href: '/dashboard/costeo', icon: CurrencyDollarIcon },
+    ],
   },
   {
-    name: 'Agregar Dedicación',
-    href: '/dashboard/agregar-horas',
-    icon: DocumentPlusIcon,
-  },
-  { name: 'Monitoreo', href: '/dashboard/monitoreo', icon: EyeIcon },
-  {
-    name: 'Crear Usuario',
-    href: '/dashboard/crear-usuario',
-    icon: UserPlusIcon,
-  },
-  {
-    name: 'Registrar Desembolsos',
-    href: '/dashboard/registrar-desembolsos',
-    icon: ArrowUpOnSquareIcon,
-  },
-  {
-    name: 'Registrar Ingresos',
-    href: '/dashboard/registrar-ingresos',
-    icon: ArrowDownOnSquareIcon,
-  },
-  {
-    name: 'Registrar Sueldos',
-    href: '/dashboard/registrar-sueldos',
-    icon: CurrencyDollarIcon,
-  },
-  {
-    name: 'Costeo',
-    href: '/dashboard/costeo',
-    icon: CurrencyDollarIcon,
-  },
-  // {
-  //   name: 'Añadir Día Libre',
-  //   href: '/dashboard/dia-libre',
-  //   icon: CalendarDaysIcon,
-  // },
-  {
-    name: 'Editar mi Perfil',
-    href: '/dashboard/editar-perfil',
-    icon: UserIcon,
+    title: 'Extras',
+    links: [
+      { name: 'Añadir Día Libre', href: '/dashboard/dia-libre', icon: CalendarDaysIcon },
+      { name: 'Editar mi Perfil', href: '/dashboard/editar-perfil', icon: UserIcon },
+      { name: 'Editar Registros', href: '/dashboard/editar', icon: Edit },
+      { name: 'Mesa de ayuda', href: '/dashboard/soporte', icon: ChatBubbleLeftRightIcon},
+    ],
   },
 ]
 
-export const DIRECTORA_EJECUTIVA: LinkItem[] = [
-  { name: 'Inicio', href: '/dashboard', icon: HomeIcon },
+
+export const DIRECTORA_EJECUTIVA_GROUPED = [
   {
-    name: 'Crear Cliente',
-    href: '/dashboard/crear-cliente',
-    icon: UserPlusIcon,
+    title: 'Inicio',
+    links: [
+      { name: 'Indicadores', href: '/dashboard', icon: HomeIcon },
+    ],
   },
   {
-    name: 'Crear Proyecto',
-    href: '/dashboard/crear-proyecto',
-    icon: SquaresPlusIcon,
+    title: 'Gestión de Proyectos',
+    links: [
+      { name: 'Crear Proyecto', href: '/dashboard/crear-proyecto', icon: SquaresPlusIcon },
+      { name: 'Proyectos', href: '/dashboard/proyectos', icon: DocumentDuplicateIcon },
+      { name: 'Terminar Proyecto', href: '/dashboard/terminar-proyecto', icon: TrashIcon },
+      { name: 'Agregar Dedicación', href: '/dashboard/agregar-horas', icon: DocumentPlusIcon },
+      { name: 'Monitoreo', href: '/dashboard/monitoreo', icon: EyeIcon },
+    ],
   },
   {
-    name: 'Proyectos',
-    href: '/dashboard/proyectos',
-    icon: DocumentDuplicateIcon,
+    title: 'Usuarios y Clientes',
+    links: [
+      { name: 'Crear Cliente', href: '/dashboard/crear-cliente', icon: UserPlusIcon },
+      { name: 'Crear Usuario', href: '/dashboard/crear-usuario', icon: UserPlusIcon },
+    ],
   },
   {
-    name: 'Terminar Proyecto',
-    href: '/dashboard/terminar-proyecto',
-    icon: TrashIcon,
+    title: 'Finanzas',
+    links: [
+      { name: 'Registrar Desembolsos', href: '/dashboard/registrar-desembolsos', icon: ArrowUpOnSquareIcon },
+      { name: 'Registrar Ingresos', href: '/dashboard/registrar-ingresos', icon: ArrowDownOnSquareIcon },
+      { name: 'Registrar Sueldos', href: '/dashboard/registrar-sueldos', icon: CurrencyDollarIcon },
+      { name: 'Costeo', href: '/dashboard/costeo', icon: CurrencyDollarIcon },
+    ],
   },
   {
-    name: 'Agregar Dedicación',
-    href: '/dashboard/agregar-horas',
-    icon: DocumentPlusIcon,
-  },
-  { name: 'Monitoreo', href: '/dashboard/monitoreo', icon: EyeIcon },
-  {
-    name: 'Crear Usuario',
-    href: '/dashboard/crear-usuario',
-    icon: UserPlusIcon,
-  },
-  // {
-  //   name: 'Añadir Día Libre',
-  //   href: '/dashboard/dia-libre',
-  //   icon: CalendarDaysIcon,
-  // },
-  {
-    name: 'Editar mi Perfil',
-    href: '/dashboard/editar-perfil',
-    icon: UserIcon,
+    title: 'Extras',
+    links: [
+      { name: 'Añadir Día Libre', href: '/dashboard/dia-libre', icon: CalendarDaysIcon },
+      { name: 'Editar mi Perfil', href: '/dashboard/editar-perfil', icon: UserIcon },
+      { name: 'Editar Registros', href: '/dashboard/editar', icon: Edit },
+      { name: 'Mesa de ayuda', href: '/dashboard/soporte', icon: ChatBubbleLeftRightIcon},
+    ],
   },
 ]
 
-export const USUARIOS: LinkItem[] = [
+
+export const USUARIOS_GROUPED = [
   {
-    name: 'Proyectos',
-    href: '/dashboard/proyectos',
-    icon: DocumentDuplicateIcon,
+    title: 'Gestión de Proyectos',
+    links: [
+      { name: 'Proyectos', href: '/dashboard/proyectos', icon: DocumentDuplicateIcon },
+      { name: 'Agregar Dedicación', href: '/dashboard/agregar-horas', icon: DocumentPlusIcon },
+    ],
   },
   {
-    name: 'Agregar Dedicación',
-    href: '/dashboard/agregar-horas',
-    icon: DocumentPlusIcon,
-  },
-  {
-    name: 'Editar mi Perfil',
-    href: '/dashboard/editar-perfil',
-    icon: UserIcon,
+    title: 'Extras',
+    links: [
+      { name: 'Editar mi Perfil', href: '/dashboard/editar-perfil', icon: UserIcon },
+      { name: 'Mesa de ayuda', href: '/dashboard/soporte', icon: ChatBubbleLeftRightIcon},
+    ],
   },
 ]
+

@@ -1,4 +1,3 @@
-import { IUserProfile } from '../../dashboard/edit-profile/page'
 import { IUsers } from '../../interfaces/users/users.interface'
 
 export const getAllUsers = async (path: string, token: string) => {
@@ -29,10 +28,13 @@ export const getAllUsers = async (path: string, token: string) => {
 export const fetchFromApi = async <T>(
   path: string,
   token: string,
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
-  data?: IUserProfile // Hacer que 'data' sea opcional, para solicitudes GET donde no se necesita cuerpo.
-): Promise<T | null> => {
-  const url = `http://localhost:3002/agencia-polux/api/v1/${path}`
+  method: 'GET' | 'PUT' | 'POST' | 'PATCH' = 'GET',
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  body?: any
+): Promise<T> => {
+  const url = `https://agenciapolux-backend-production.up.railway.app/agencia-polux/api/v1/${path}`
+
+  console.log(url)
 
   try {
     const response = await fetch(url, {
@@ -41,17 +43,22 @@ export const fetchFromApi = async <T>(
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: method !== 'GET' ? JSON.stringify(data) : undefined, // No enviar 'body' en métodos GET
+      body:
+        method === 'POST'
+          ? JSON.stringify(body)
+          : method === 'PATCH'
+          ? body
+          : null,
     })
 
-    const resp: T = await response.json()
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status} ${response.statusText}`)
+    }
 
-    console.log(resp)
-
-    return resp
+    return response.json()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error(`Error fetching from ${path}:`, error.message)
-    return null
+    throw error
   }
 }

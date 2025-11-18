@@ -10,9 +10,17 @@ export default function Page() {
     const getDashboardByName = async () => {
       try {
         setLoading(true)
+        const token = localStorage.getItem('token')
+
+        if (!token) {
+          console.error('No se encontró el token en el localStorage')
+          setLoading(false)
+          return
+        }
+
         const data = await getDedicationByNameQuery(
           'dashboards-api/get-dashboard/principal',
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzbHVnIjoiYWRtaW4iLCJuYW1lIjoiTmVzdCBBZG1pbiIsImVtYWlsIjoibmVzdEBhZ2VuY2lhcG9sdXguY2wiLCJpYXQiOjE3MjMzOTY0MTAsImV4cCI6MTcyNTk4ODQxMH0.MHTE95G-OdsjKwzyJmqLPGJJrjwzZ41R0SpUYmAcsz0'
+          token 
         )
 
         if (data && data.url) {

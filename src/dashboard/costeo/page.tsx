@@ -8,21 +8,24 @@ import {
 } from '../../components'
 import { useNavigate } from 'react-router-dom'
 import { checkTokenAndRedirect } from '../../functions/checkTokenAndRedirect'
+import type { TabKey } from '../../components/TabsCosteo/TabsCosteo'
 
 export default function CosteoPage() {
-  const [activeTab, setActiveTab] = useState('utilidad')
+  const [activeTab, setActiveTab] = useState<TabKey>('utilidad')
   const [alert, setAlert] = useState(false)
   const [error] = useState({
     success: false,
     msg: '',
   })
 
+
+
   const navigate = useNavigate()
   useEffect(() => {
     checkTokenAndRedirect(navigate)
   }, [navigate])
 
-  const handleChangeActiveTab = (tab: string) => {
+  const handleChangeActiveTab = (tab: TabKey) => {
     setActiveTab(tab)
   }
 

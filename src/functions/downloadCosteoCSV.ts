@@ -4,24 +4,21 @@ import { IDataIngresos } from '../interfaces/costeo/ingresos.interface';
 
 // Función para formatear la fecha a "yyyy-MM-dd"
 export const formatDateToISO = (date: Date | string): string => {
-  // Si la fecha es un string en formato "dd/MM/yyyy"
   if (typeof date === 'string' && date.includes('/')) {
     const [day, month, year] = date.split('/');
     return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   }
 
-  // Si la fecha es un objeto Date, conviértelo a "yyyy-MM-dd"
   const d = new Date(date);
   const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0'); // Asegura dos dígitos para el mes
-  const day = String(d.getDate()).padStart(2, '0'); // Asegura dos dígitos para el día
-
-  return `${year}-${month}-${day}`; // Retorna solo la parte de la fecha
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 // Función para formatear la fecha para el CSV sin agregar apóstrofe
 const formatDateForCSV = (date: Date | string): string => {
-  return formatDateToISO(date); // Solo formatea la fecha a yyyy-MM-dd sin apóstrofe
+  return formatDateToISO(date);
 };
 
 interface Props {
@@ -37,21 +34,38 @@ interface Props {
  * La función soporta tres tipos de entradas: costeoMensual, datumData e ingresosData.
  *
  * @param {string} nameFile - El nombre del archivo CSV a descargar (sin la extensión).
- * Se concatenará con `selectedDate` para generar el nombre final.
  * @param {ICosteoMensual[]} [costeoMensual] - Arreglo de objetos con datos de costeo mensual.
  * @param {Datum[]} [datumData] - Arreglo de objetos con datos de utilidad.
  * @param {IDataIngresos[]} [ingresosData] - Arreglo de objetos con datos de ingresos.
- * @param {string} selectedDate - La fecha seleccionada en formato "DD-MM-AAAA", que se utilizará en el nombre del archivo descargado.
+ * @param {string} selectedDate - La fecha seleccionada en formato "DD-MM-AAAA".
  *
  * @returns {void} - No devuelve ningún valor, pero crea un archivo CSV y lo descarga en el navegador del usuario.
  */
-export const downloadCosteoCSV = ({
+export const downloadCosteoCSV = async ({
   nameFile = 'archivo',
   costeoMensual,
   datumData,
   ingresosData,
   selectedDate,
-}: Props): void => {
+}: Props): Promise<void> => {
+  // Primero, obtenemos el valor de la UF de la API
+  let ufValue: number | null = null;
+
+  try {
+    const response = await fetch('https://mindicador.cl/api/uf');
+    const data = await response.json();
+    ufValue = data.serie[0].valor; // Asumimos que el valor más reciente es el primero
+  } catch (error) {
+    console.error('Error fetching UF:', error);
+    return; // Si hay un error al obtener la UF, terminamos la ejecución aquí
+  }
+
+  // Asegurarnos de que se haya obtenido el valor de la UF antes de continuar
+  if (!ufValue) {
+    console.error('No se pudo obtener el valor de la UF.');
+    return;
+  }
+
   const csvRows: string[] = [];
 
   if (costeoMensual && costeoMensual.length > 0) {
@@ -68,12 +82,12 @@ export const downloadCosteoCSV = ({
 
     costeoMensual.forEach((row) => {
       const values = [
-        formatDateForCSV(row.date),
+        formatDateForCSV(row.date), // Formatear la fecha a YYYY-MM-DD
         row.project_client,
-        (row.salarie_cost/ 100).toFixed(2),
-        (row.direct_cost/ 100).toFixed(2),
-        (row.indirect_cost/ 100).toFixed(2),
-        (row.project_cost/ 100).toFixed(2),
+        ((row.salarie_cost * ufValue) / 1_000_000).toFixed(2), // Aplica la UF
+        ((row.direct_cost * ufValue) / 1_000_000).toFixed(2),
+        ((row.indirect_cost * ufValue) / 1_000_000).toFixed(2),
+        ((row.project_cost * ufValue) / 1_000_000).toFixed(2),
       ];
       csvRows.push(values.join(','));
     });
@@ -90,11 +104,11 @@ export const downloadCosteoCSV = ({
 
     datumData.forEach((row) => {
       const values = [
-        formatDateForCSV(row.date), // Formatea la fecha sin apóstrofe
-        row.project_client, // Cliente y Proyecto (con UTF-8)
-        (row.amount/ 100).toFixed(2), // Formateo de ingresos a dos decimales
-        (row.project_cost/ 100).toFixed(2), // Formateo del costo del proyecto a dos decimales
-        (row.utilidad/ 100).toFixed(2), // Formateo de utilidad a dos decimales
+        formatDateForCSV(row.date), // Formatear la fecha a YYYY-MM-DD
+        row.project_client,
+        ((row.amount * ufValue) / 1_000_000).toFixed(2), // Aplica la UF
+        ((row.project_cost * ufValue) / 1_000_000).toFixed(2),
+        ((row.utilidad * ufValue) / 1_000_000).toFixed(2),
       ];
       csvRows.push(values.join(','));
     });
@@ -111,11 +125,11 @@ export const downloadCosteoCSV = ({
 
     ingresosData.forEach((row) => {
       const values = [
-        formatDateForCSV(row.date), // Formatea la fecha sin apóstrofe
+        formatDateForCSV(row.date), // Formatear la fecha a YYYY-MM-DD
         row.detail,
         row.temporalities_name,
         row.project_client,
-        (row.amount_p / 1_000_000).toFixed(2), // Ajuste de la cantidad a millones
+        ((row.amount * ufValue) / 1_000_000).toFixed(2), // Aplica la UF
       ];
       csvRows.push(values.join(','));
     });

@@ -1,4 +1,7 @@
 import { IDedicationsByMonth } from '../../interfaces/dedications/dedications.interfaces'
+// src/api/dedications/index.ts
+export * from './read'
+export * from './mutate'
 
 export const getAllUsersDedicationByMonth = async (
   path: string,
@@ -29,34 +32,29 @@ export const getAllUsersDedicationByMonth = async (
   }
 }
 
+// (tu) src/api/dedications/index.ts  — fragmento
 export const fetchFromApi = async <T>(
   path: string,
   token: string,
-  method: 'GET' | 'POST' | 'PATCH' | 'DELETE' = 'GET',
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' = 'GET',
   body?: any
 ): Promise<T | null> => {
   const url = `https://agenciapolux-backend-production.up.railway.app/agencia-polux/api/v1/${path}`
 
   try {
+    const hasBody = method === 'POST' || method === 'PATCH' || method === 'PUT'
     const response = await fetch(url, {
       method,
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body:
-        method === 'POST'
-          ? JSON.stringify(body)
-          : method === 'PATCH'
-          ? JSON.stringify(body)
-          : null,
+      body: hasBody ? JSON.stringify(body ?? {}) : undefined,
     })
 
-    const resp = response.json()
-
-    return resp
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // Algunos DELETE pueden responder 204 sin body
+    const text = await response.text()
+    return text ? (JSON.parse(text) as T) : ({} as T)
   } catch (error: any) {
     console.error(`Error fetching from ${path}:`, error.message)
     return null

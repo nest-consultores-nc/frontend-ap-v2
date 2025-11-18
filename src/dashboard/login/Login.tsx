@@ -9,6 +9,7 @@ import { isLoginFormIsValid } from '../../functions/isLoginFormIsValid'
 import clsx from 'clsx'
 import { useAuthStore } from '../../store'
 import { Loading } from '../../assets/Loading'
+import { Link } from 'react-router-dom'
 
 interface UserState {
   email: string
@@ -144,6 +145,15 @@ export default function Login() {
                 className="block w-full rounded-md border-2 px-1 py-1.5 text-gray-900 shadow-sm placeholder:text-gray-400 sm:text-sm sm:leading-6"
               />
             </div>
+            <div className="mt-2 text-right">
+              <Link
+                to="/recuperar-contrasena"
+                className="text-sm text-indigo-600 hover:text-indigo-500 hover:underline focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded"
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
+
           </div>
 
           <div>

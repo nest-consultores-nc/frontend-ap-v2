@@ -53,6 +53,11 @@ export default function ProjectsPage() {
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
 
+
+  const handleAddDedication = () => {
+    navigate('/dashboard/agregar-horas') 
+  }
+
   return (
     <>
       <HeaderPages
@@ -64,17 +69,19 @@ export default function ProjectsPage() {
           type="button"
           className="text-sm font-semibold leading-6 text-gray-900"
           onClick={() => setShowCurrentProjects(!showCurrentProjects)}
-        >
-          Ver todos
-        </button>
+          >
+          {showCurrentProjects ? "Ver todos" : "Ver vigentes"}
+          </button>
+
         <button
-          type="submit"
-          className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        >
+          type="button" 
+          className="rounded-md bg-[#3E3378] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#89CCDC] hover:text-[#303031] focus-visible:outline-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-900"
+          onClick={handleAddDedication} 
+        > 
           Agregar dedicación
         </button>
       </div>
-      <div className="overflow-x-auto mt-4 ">
+      <div className="mt-4">
         {loading ? (
           <LoadingSpinner />
         ) : (

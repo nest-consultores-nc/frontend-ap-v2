@@ -4,6 +4,19 @@ type ApiResponse<T> = {
   data?: T
 }
 
+
+const getBaseUrl = () => {
+ 
+  const isDev = import.meta.env.DEV || import.meta.env.MODE === 'development'
+  
+  if (isDev) {
+
+    return import.meta.env.VITE_LOCAL_URL_BACKEND || 'http://localhost:3002/agencia-polux/api/v1'
+  }
+  
+  
+}
+
 export const queryLogin = async <T>(
   path: string,
   token: string = '',
@@ -11,7 +24,9 @@ export const queryLogin = async <T>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   body?: any
 ): Promise<ApiResponse<T>> => {
-  const url = `https://agenciapolux-backend-production.up.railway.app/agencia-polux/api/v1/${path}`
+  const baseUrl = getBaseUrl()
+  const url = `${baseUrl}/${path}`
+  
   try {
     const response = await fetch(url, {
       method,
@@ -46,17 +61,21 @@ export const checkToken = async <T>(
   token: string = '',
   method: 'GET'
 ): Promise<ApiResponse<T>> => {
-  const url = `https://agenciapolux-backend-production.up.railway.app/agencia-polux/api/v1/${path}`
+  const BASE = getBaseUrl()
+  const url = `${BASE}/${path.replace(/^\//,'')}`
 
   const response = await fetch(url, {
     method,
     headers: {
-      'Content-Type': 'authorization',
-      Authorization: token ? `Bearer ${token}` : '',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   })
 
-  const jsonResponse = await response.json()
+  if (response.status === 401) {
+    return { success: false, msg: '401' } as any
+  }
 
-  return jsonResponse
+  const jsonResponse: any = await response.json().catch(() => ({}))
+  const msg = jsonResponse.msg ?? jsonResponse.message ?? ''
+  return { success: !!jsonResponse.success, msg, data: jsonResponse as T }
 }

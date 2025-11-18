@@ -1,24 +1,15 @@
-import { ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/24/outline'
 import { useState, useMemo } from 'react'
-
-interface IIncomes {
-  detail: string
-  amount: string
-  uf: string
-  date: string
-  project_id: number
-  temporalities_name: string
-  month: string
-}
+import { ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/24/outline'
+import { IIncome } from '../../interfaces/income/income.interface'
 
 interface Props {
-  projectsIncome: IIncomes[]
+  projectsIncome: IIncome[]
 }
 
-type SortKeys = keyof IIncomes
+type SortKeys = keyof IIncome
 type SortOrder = 'asc' | 'desc'
 
-function getSortValue(income: IIncomes, key: SortKeys): string | number {
+function getSortValue(income: IIncome, key: SortKeys): string | number {
   if (key === 'date') {
     return new Date(income[key]).getTime()
   }
@@ -80,7 +71,7 @@ export function TableUploadIncomes({ projectsIncome }: Props) {
               className="px-6 py-3 w-1/6 cursor-pointer"
               onClick={() => handleSort('amount')}
             >
-              Ingresos <SortIcon columnKey="amount" />
+              Monto <SortIcon columnKey="amount" />
             </th>
             <th
               scope="col"
@@ -106,9 +97,9 @@ export function TableUploadIncomes({ projectsIncome }: Props) {
             <th
               scope="col"
               className="px-6 py-3 w-1/6 cursor-pointer"
-              onClick={() => handleSort('temporalities_name')}
+              onClick={() => handleSort('temporalities_id')}
             >
-              Temporalidades  <SortIcon columnKey="temporalities_name" />
+              ID Temporalidad <SortIcon columnKey="temporalities_id" />
             </th>
             <th
               scope="col"
@@ -132,7 +123,7 @@ export function TableUploadIncomes({ projectsIncome }: Props) {
               <td className="px-6 py-4">{income.uf || '0.00'}</td>
               <td className="px-6 py-4">{income.date.toString()}</td>
               <td className="px-6 py-4">{income.project_id}</td>
-              <td className="px-6 py-4">{income.temporalities_name || '2'}</td>
+              <td className="px-6 py-4">{income.temporalities_id || '2'}</td>
               <td className="px-6 py-4">
                 {income.month
                   ? income.month

@@ -4,6 +4,6 @@ export interface IIncome {
   uf: string
   date: string
   project_id: number
-  temporalities_name: string
+  temporalities_id: number
   month: string
 }

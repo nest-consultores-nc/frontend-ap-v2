@@ -155,7 +155,7 @@ export default function CreateProject() {
             value={projectData.project_name}
             onChange={handleChange}
             className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm  placeholder:text-gray-400  focus:border-gray-400 sm:text-sm sm:leading-6"
-            placeholder="Ingresa el nombre del proyecto"
+            placeholder="Proyecto Pólux"
           />
         </div>
 
@@ -165,7 +165,7 @@ export default function CreateProject() {
           </label>
           <textarea
             className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm   placeholder:text-gray-400 focus:border-gray-400  sm:text-sm sm:leading-6"
-            placeholder="Describe brevemente el proyecto"
+            placeholder="Describe general y brevemente el proyecto"
             name="description"
             value={projectData.description}
             onChange={handleChange}
@@ -225,7 +225,7 @@ export default function CreateProject() {
           className={`rounded-md px-3 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 
     ${
       isFormValid(projectData)
-        ? 'bg-indigo-600 text-white hover:bg-indigo-500 focus-visible:outline-indigo-600'
+        ? 'bg-[#3E3378] text-white hover:bg-[#89CCDC] focus-visible:outline-indigo-600'
         : 'bg-gray-400 text-gray-200 cursor-not-allowed'
     }`}
         >

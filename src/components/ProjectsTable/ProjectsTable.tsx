@@ -62,47 +62,33 @@ export function ProjectsTable({ projects }: { projects: IProject[] }) {
 
   return (
     <div className="overflow-x-auto mt-4">
-      <table className="text-sm text-left text-gray-500 w-full">
+      <table className="w-full hidden sm:table table-auto text-sm text-left text-gray-700">
         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
           <tr>
-            <th
-              className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('project_name')}
-            >
+            <th className="px-3 py-2 cursor-pointer" onClick={() => handleSort('project_name')}>
               Nombre del Proyecto <SortIcon columnKey="project_name" />
             </th>
-            <th
-              className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('clientName')}
-            >
-              Nombre del Cliente <SortIcon columnKey="clientName" />
+            <th className="px-3 py-2 cursor-pointer" onClick={() => handleSort('clientName')}>
+              Cliente <SortIcon columnKey="clientName" />
             </th>
-            <th
-              className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('categoryName')}
-            >
-              Categoría del Proyecto <SortIcon columnKey="categoryName" />
+            {/* Oculta en md (notebook) para ganar espacio; aparece desde lg */}
+            <th className="px-3 py-2 cursor-pointer hidden lg:table-cell" onClick={() => handleSort('categoryName')}>
+              Categoría <SortIcon columnKey="categoryName" />
             </th>
-            <th
-              className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('typeName')}
-            >
-              Tipo de Proyecto <SortIcon columnKey="typeName" />
+            {/* Sólo en xl, aún más grande */}
+            <th className="px-3 py-2 cursor-pointer hidden xl:table-cell" onClick={() => handleSort('typeName')}>
+              Tipo <SortIcon columnKey="typeName" />
             </th>
-            <th
-              className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('project_status')}
-            >
-              Estado del Proyecto <SortIcon columnKey="project_status" />
+            <th className="px-3 py-2 cursor-pointer" onClick={() => handleSort('project_status')}>
+              Estado <SortIcon columnKey="project_status" />
             </th>
-            <th
-              className="px-6 py-3 cursor-pointer"
-              onClick={() => handleSort('createdAt')}
-            >
-              Fecha de Creación <SortIcon columnKey="createdAt" />
+            {/* Fecha visible desde md; en sm ya tienes cards */}
+            <th className="px-3 py-2 cursor-pointer hidden md:table-cell" onClick={() => handleSort('createdAt')}>
+              Creación <SortIcon columnKey="createdAt" />
             </th>
           </tr>
         </thead>
+
         <tbody>
           {sortedProjects.map(
             ({
@@ -115,33 +101,70 @@ export function ProjectsTable({ projects }: { projects: IProject[] }) {
               createdAt,
             }) => (
               <tr key={id} className="bg-white border-b">
-                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                <td className="px-3 py-2 align-top whitespace-normal break-words">
                   {project_name}
                 </td>
-                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+
+                <td className="px-3 py-2 align-top whitespace-normal break-words">
                   {client?.clientName || 'N/A'}
                 </td>
-                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+
+                <td className="px-3 py-2 align-top whitespace-normal break-words hidden lg:table-cell">
                   {category?.categoryName || 'N/A'}
                 </td>
-                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+
+                <td className="px-3 py-2 align-top whitespace-normal break-words hidden xl:table-cell">
                   {type?.typeName || 'N/A'}
                 </td>
-                <td
-                  className={`${getStatusClass(
-                    project_status
-                  )} px-6 py-4 font-medium whitespace-nowrap`}
-                >
-                  {project_status || 'N/A'}
+
+                <td className={`px-3 py-2 align-top ${getStatusClass(project_status)}`}>
+                  <span className="whitespace-nowrap">{project_status || 'N/A'}</span>
                 </td>
-                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                  {formatDateTime(createdAt)}
+
+                <td className="px-3 py-2 align-top hidden md:table-cell">
+                  <span className="whitespace-nowrap">{formatDateTime(createdAt)}</span>
                 </td>
+
               </tr>
             )
           )}
         </tbody>
       </table>
-    </div>
+
+
+      <div className="sm:hidden space-y-4 mt-2">
+              {sortedProjects.map((project) => (
+                <div key={project.id} className="bg-white border rounded-xl shadow p-4">
+                  <div className="mb-1">
+                    <span className="font-semibold">Nombre del Proyecto: </span>
+                    <span>{project.project_name}</span>
+                  </div>
+                  <div className="mb-1">
+                    <span className="font-semibold">Cliente: </span>
+                    <span>{project.client?.clientName || 'N/A'}</span>
+                  </div>
+                  <div className="mb-1">
+                    <span className="font-semibold">Categoría: </span>
+                    <span>{project.category?.categoryName || 'N/A'}</span>
+                  </div>
+                  <div className="mb-1">
+                    <span className="font-semibold">Tipo: </span>
+                    <span>{project.type?.typeName || 'N/A'}</span>
+                  </div>
+                  <div className="mb-1">
+                    <span className="font-semibold">Estado: </span>
+                    <span className={getStatusClass(project.project_status)}>
+                      {project.project_status || 'N/A'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-semibold">Creación: </span>
+                    <span>{formatDateTime(project.createdAt)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
   )
 }
