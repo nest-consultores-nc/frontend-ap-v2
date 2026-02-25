@@ -15,7 +15,6 @@ import { SubmitButtonsCsv } from '../../components/SubmitButtonsCsv/SubmitButton
 import { checkTokenAndRedirect } from '../../functions/checkTokenAndRedirect'
 import { IOutlayTemporality } from '../../interfaces/outlay/outlay.interface'
 import { getAllOutlayData } from '../../api/outlay/get-outlay'
-import { isFormValid } from '../../functions/isFormValid'
 import { TabsViewMode} from '../../components/TabsViewMode/TabsViewMode'
 
 const MONTHS_ES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
@@ -37,7 +36,7 @@ function makeMonthList(start: Dayjs = dayjs(), count = 15) {
     (p.client?.clientName ? `${p.client.clientName} - ` : '') + p.project_name;
   
 export default function IncomesPage() {
-  const [loading, setLoading] = useState<boolean>(true)
+  const [, setLoading] = useState<boolean>(true)
   const [projectsAndActivities, setProjectsAndActivities] = useState<
     IProject[]
   >([])
@@ -50,6 +49,7 @@ export default function IncomesPage() {
   const [viewMode, setViewMode] = useState<'form' | 'upload'>('form')
   const [csvMonth, setCsvMonth] = useState<string>('')
   const [projectsIncome, setProjectsIncome] = useState<IIncome[]>([])
+  const [fileSelected, setFileSelected] = useState<boolean>(false) 
   const [temporalities, setTemporalities] = useState<IOutlayTemporality[]>([])
   const [monthAnchor, setMonthAnchor] = useState(dayjs().startOf('month'))
 
@@ -67,7 +67,6 @@ export default function IncomesPage() {
     temporalities_id: 0,
     detail: '',
     amount: '',
-    uf: '',
     date: '',
     month: '',
   })
@@ -90,14 +89,38 @@ export default function IncomesPage() {
 
   useEffect(() => {
     if (!formData.month && monthFormatted.length > 0) {
-      setFormData(prev => ({ ...prev, month: monthFormatted[0].name }))
+      const firstMonth = monthFormatted[0].name
+      const isoDate = firstDayFromMonthString(firstMonth, 'YYYY-MM-DD')
+      setFormData(prev => ({ 
+        ...prev, 
+        month: firstMonth,
+        date: isoDate || ''
+      }))
     }
   }, [monthFormatted]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    if (formData.month) {
+      const isoDate = firstDayFromMonthString(formData.month, 'YYYY-MM-DD')
+      if (isoDate && formData.date !== isoDate) {
+        setFormData(prev => ({ ...prev, date: isoDate }))
+      }
+    }
+  }, [formData.month]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  console.log(projectsAndActivities, loading)
+
+   
   const navigate = useNavigate()
-  const canSave = isFormValid(formData);
+  const canSave = useMemo(() => {
+    return (
+      formData.project_id > 0 &&
+      formData.temporalities_id > 0 &&
+      formData.detail.trim() !== '' &&
+      formData.amount.trim() !== '' &&
+      formData.date.trim() !== '' &&
+      formData.month.trim() !== ''
+    )
+  }, [formData])
 
   useEffect(() => {
     checkTokenAndRedirect(navigate)
@@ -132,7 +155,7 @@ export default function IncomesPage() {
           text: 'Ha ocurrido un error al traer datos desde la base de datos.',
           icon: 'error',
           confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#4f46e5',
+          confirmButtonColor: '#CDEA80',
         })
       } finally {
 
@@ -144,17 +167,17 @@ export default function IncomesPage() {
   }, [])
 
     const handleSubmit = async (incomeData: IIncome[]) => {
-    // Antes de nada validamos temporalidades explícitamente:
+
     const invalidTemporalitiesRows = incomeData
       .map((r, idx) => ({ r, idx }))
       .filter(({ r }) => {
-        // Convertimos a número por si viene string
+  
         const t = Number(r.temporalities_id)
-        return !(t >= 1 && t <= 5) // válido sólo 1..5
+        return !(t >= 1 && t <= 5) 
       })
 
     if (invalidTemporalitiesRows.length > 0) {
-      // Si hay una sola fila damos detalle simple, si hay varias listamos índices (1-based)
+
       if (incomeData.length === 1) {
         await Swal.fire({
           title: 'Temporalidad inválida',
@@ -168,7 +191,7 @@ export default function IncomesPage() {
           `,
           icon: 'warning',
           confirmButtonText: 'Entendido',
-          confirmButtonColor: '#4f46e5',
+          confirmButtonColor: '#CDEA80',
         })
       } else {
         const rows = invalidTemporalitiesRows.map(({ idx }) => idx + 1).join(', ')
@@ -182,13 +205,12 @@ export default function IncomesPage() {
           `,
           icon: 'warning',
           confirmButtonText: 'Corregir CSV',
-          confirmButtonColor: '#4f46e5',
+          confirmButtonColor: '#CDEA80',
         })
       }
-      return // bloqueamos envío hasta que corrijan
+      return 
     }
 
-    // Validación de campos requeridos (tu lógica original para single-row)
     if (incomeData.length === 1) {
       const d = incomeData[0]
       const missing: string[] = []
@@ -211,7 +233,7 @@ export default function IncomesPage() {
           `,
           icon: 'warning',
           confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#4f46e5',
+          confirmButtonColor: '#CDEA80',
         })
         return
       }
@@ -234,7 +256,6 @@ export default function IncomesPage() {
             <b>Temporalidad:</b> ${temporalityName}<br/>
             <b>Detalle:</b> ${d.detail || '(sin detalle)'}<br/>
             <b>Ingresos:</b> ${d.amount || '0'}<br/>
-            <b>UF:</b> ${d.uf || '0'}<br/>
             <b>Fecha:</b> ${dayjs(d.date).format('YYYY-MM-DD')}<br/>
             <b>Mes:</b> ${d.month}
           </div>
@@ -243,8 +264,8 @@ export default function IncomesPage() {
         showCancelButton: true,
         confirmButtonText: 'Sí, guardar',
         cancelButtonText: 'No, volver',
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
+        confirmButtonColor: '#CDEA80',
+        cancelButtonColor: '#FF735C',
       })
       if (!isConfirmed) return
     } else {
@@ -259,75 +280,78 @@ export default function IncomesPage() {
         showCancelButton: true,
         confirmButtonText: 'Sí, guardar',
         cancelButtonText: 'No, volver',
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
+        confirmButtonColor: '#CDEA80',
+        cancelButtonColor: '#FF735C',
       })
       if (!isConfirmed) return
     }
 
+  
     try {
+      const transformedData = incomeData.map(income => ({
+        projectId: Number(income.project_id),           
+        temporalityId: Number(income.temporalities_id), 
+        detail: income.detail,
+        amount: Number(income.amount),                  
+        date: income.date,
+        month: income.month,
+      }))
+
       const response = await createIncomeQuery(
-        incomeData,
+        transformedData as any,  
         localStorage.getItem('token')!
       )
 
-      // Manejo robusto de respuesta: soporta { success: true }, { status:200 }, o { inserted: n }
-      const respAny = response as any
-      const msgLower = (respAny?.msg || respAny?.message || '').toLowerCase()
-      const ok =
-        (respAny?.success === true ||
-        respAny?.status === 200 ||
-        respAny?.statusCode === 200 ||
-        Number(respAny?.inserted) > 0) &&
-        !msgLower.includes('error')
-
-
-      if (ok) {
-        // Si backend trae un mensaje claro, mostrarlo; si no, mensaje estandar
-        const successMsg = respAny?.msg || respAny?.message || 'Los ingresos fueron registrados correctamente.'
-        await Swal.fire({
-          title: '¡Registro exitoso!',
-          text: successMsg,
-          icon: 'success',
-          confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#3085d6',
-        })
-
-        if (incomeData.length === 1) {
-          setFormData({
-            project_id: 0,
-            temporalities_id: 0,
-            detail: '',
-            amount: '',
-            uf: '',
-            date: '',
-            month: '',
+        const respAny = response as any
+        
+        if (respAny?.success === true || respAny?.status === 200) {
+          const successMsg = respAny?.msg || respAny?.message || 'Los ingresos fueron registrados correctamente.'
+          
+          await Swal.fire({
+            title: '¡Registro exitoso!',
+            text: successMsg,
+            icon: 'success',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#CDEA80',
           })
+
+          if (incomeData.length === 1) {
+            setFormData({
+              project_id: 0,
+              temporalities_id: 0,
+              detail: '',
+              amount: '',
+              date: '',
+              month: '',
+            })
+          } else {
+            setProjectsIncome([])
+            const fileInput = document.getElementById('file_input') as HTMLInputElement
+            if (fileInput) fileInput.value = ''
+            setFileSelected(false)
+          }
         } else {
-          setProjectsIncome([])
+   
+          throw new Error(respAny?.msg || respAny?.error || 'Error desconocido')
         }
-      } else {
-        // Mostrar mensaje de error devuelto por el backend (si existe) o genérico
-        const errMsg = respAny?.msg || respAny?.message || 'Ha ocurrido un error al registrar los ingresos.'
+
+      } catch (error: any) {
+        console.error('Error al registrar:', error)
+        
+        const errorMsg = error?.response?.data?.error || 
+                        error?.response?.data?.msg || 
+                        error?.message || 
+                        'Ha ocurrido un error inesperado al registrar los ingresos.'
+        
         await Swal.fire({
           title: 'Error',
-          text: errMsg,
+          text: errorMsg,
           icon: 'error',
           confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#CDEA80',
         })
       }
-    } catch (error) {
-      console.error(error)
-      await Swal.fire({
-        title: 'Error',
-        text: 'Ha ocurrido un error inesperado al registrar los ingresos.',
-        icon: 'error',
-        confirmButtonText: 'Aceptar',
-      })
-    }
   }
-
-
 
   const handleDownloadCSV = () => {
     if (!Array.isArray(projectsAndActivities)) {
@@ -335,18 +359,15 @@ export default function IncomesPage() {
       return
     }
 
-    // Mes seleccionado (ej: "may-26")
+
     const selectedMonth = csvMonth || `${MONTHS_ES[dayjs().month()]}-${dayjs().format('YY')}`
 
-    // Convertir selectedMonth -> primer día formato DD/MM/YYYY (ej: "01/05/2026")
     const firstDayForCsv = firstDayFromMonthString(selectedMonth, 'DD/MM/YYYY') || dayjs().startOf('month').format('DD/MM/YYYY')
 
     const csvData = projectsAndActivities.map(
       (project): IIncome => ({
         detail: project.project_name + ' - ' + project.client.clientName,
         amount: '',
-        uf: '0.00',
-        // acá ponemos 01/05/2026 si selectedMonth === 'may-26'
         date: firstDayForCsv,
         project_id: project.id,
         temporalities_id: 0,
@@ -362,33 +383,144 @@ export default function IncomesPage() {
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
+    setFileSelected(!!file)
     if (file && file.type === 'text/csv') {
       Papa.parse(file, {
         header: true,
         skipEmptyLines: true,
         complete: async (result) => {
-          console.log('Raw parsed data:', result.data)
+
+          const requiredColumns = ['project_id', 'temporalities_id', 'amount', 'date', 'month', 'detail']
+          const csvColumns = result.meta.fields || []
+          const missingColumns = requiredColumns.filter(col => !csvColumns.includes(col))
+
+          if (missingColumns.length > 0) {
+            await Swal.fire({
+              title: 'CSV inválido',
+              html: `
+                <div style="text-align:left">
+                  Faltan columnas obligatorias en el archivo:<br/>
+                  <ul style="margin-top:8px; padding-left:18px;">
+                    ${missingColumns.map(col => `<li><b>${col}</b></li>`).join('')}
+                  </ul>
+                  <small style="display:block; margin-top:12px;">
+                    El CSV debe tener exactamente estas columnas:<br/>
+                    <b>detail, amount, date, project_id, temporalities_id, month</b>
+                  </small>
+                </div>
+              `,
+              icon: 'error',
+              confirmButtonText: 'Entendido',
+              confirmButtonColor: '#CDEA80',
+            })
+            return
+          }
+
+
+          const allowedColumns = ['detail', 'amount', 'date', 'project_id', 'temporalities_id', 'month']
+          const extraColumns = csvColumns.filter(col => !allowedColumns.includes(col))
+
+          if (extraColumns.length > 0) {
+            await Swal.fire({
+              title: 'CSV con columnas no permitidas',
+              html: `
+                <div style="text-align:left">
+                  El archivo contiene columnas no permitidas:<br/>
+                  <ul style="margin-top:8px; padding-left:18px;">
+                    ${extraColumns.map(col => `<li><b>${col}</b></li>`).join('')}
+                  </ul>
+                  <small style="display:block; margin-top:12px;">
+                    Solo se permiten estas columnas:<br/>
+                    <b>detail, amount, date, project_id, temporalities_id, month</b>
+                  </small>
+                </div>
+              `,
+              icon: 'error',
+              confirmButtonText: 'Corregir CSV',
+              confirmButtonColor: '#CDEA80',
+            })
+            return
+          }
 
           const currentDate = dayjs().format('YYYY-MM-DD HH:mm:ss')
           const updatedData = result.data
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map((row: any) => {
-              // si el CSV no incluye month, usar el csvMonth seleccionado
-              const resolvedMonth = row.month && String(row.month).trim() ? String(row.month).trim() : csvMonth
+          .map((row: any, rowIndex: number) => {
+          
+            const errors: string[] = []
+            const projectId = Number(row.project_id)
+            if (!row.project_id || !Number.isInteger(projectId) || projectId <= 0) {
+              errors.push('project_id debe ser un número entero positivo')
+            }
 
-              // Resolve date:
-              // - si row.date está en formato "may-26" -> lo convertimos a ISO 'YYYY-MM-DD' (para backend)
-              // - si row.date vacío -> usamos resolvedMonth y lo convertimos a ISO
-              let resolvedDate = row.date && String(row.date).trim() ? String(row.date).trim() : ''
+    
+            const temporalityId = Number(row.temporalities_id)
+            if (!row.temporalities_id || !Number.isInteger(temporalityId) || temporalityId < 1 || temporalityId > 5) {
+              errors.push('temporalities_id debe ser un número entre 1 y 5')
+            }
+
+        
+            const amount = Number(row.amount)
+            if (!row.amount || !Number.isFinite(amount) || amount <= 0) {
+              errors.push('amount debe ser un número positivo')
+            }
+
+    
+            if (!row.detail || !String(row.detail).trim()) {
+              errors.push('detail no puede estar vacío')
+            }
+
+          
+            if (errors.length > 0) {
+              return { 
+                error: true, 
+                rowIndex: rowIndex + 1,
+                errors,
+                row 
+              }
+            }
+
+      
+            const resolvedMonth = row.month && String(row.month).trim() ? String(row.month).trim() : csvMonth
+
+            let resolvedDate = row.date && String(row.date).trim() ? String(row.date).trim() : ''
 
               const mmmPattern = /^[a-z]{3}-\d{2}$/i
+              const ddmmyyyyPattern = /^\d{2}\/\d{2}\/\d{4}$/
+
               if (mmmPattern.test(resolvedDate)) {
+               
                 const iso = firstDayFromMonthString(resolvedDate, 'YYYY-MM-DD')
                 if (iso) resolvedDate = iso
+              } else if (ddmmyyyyPattern.test(resolvedDate)) {
+          
+                const [day, month, year] = resolvedDate.split('/')
+                resolvedDate = `${year}-${month}-${day}`
               } else if (!resolvedDate) {
-                // Si no trae date, usar csvMonth como fallback en ISO
+             
                 const iso = firstDayFromMonthString(resolvedMonth, 'YYYY-MM-DD')
                 if (iso) resolvedDate = iso
+              }
+
+          
+              if (!resolvedDate || !dayjs(resolvedDate).isValid()) {
+                errors.push('date tiene formato inválido (use DD/MM/YYYY o mmm-yy)')
+              }
+
+          
+              const monthPattern = /^[a-z]{3}-\d{2}$/i
+              if (!monthPattern.test(resolvedMonth)) {
+                errors.push('month debe tener formato mmm-yy (ej: may-26)')
+              }
+
+          
+              if (errors.length > 0) {
+                return { 
+                  error: true, 
+                  rowIndex: rowIndex + 1,
+                  errors,
+                  row 
+                }
               }
 
               if (
@@ -400,9 +532,7 @@ export default function IncomesPage() {
                 return {
                   detail: row.detail,
                   amount: row.amount,
-                  uf: row.uf,
                   project_id: Number(row.project_id),
-                  // enviamos date en ISO (YYYY-MM-DD) para consumir por la API
                   date: resolvedDate,
                   temporalities_id: row.temporalities_id,
                   month: resolvedMonth,
@@ -412,17 +542,79 @@ export default function IncomesPage() {
                 return null
               }
             })
-            .filter(Boolean)
+            .filter((item): item is any => item !== null)
 
-          if (updatedData.length > 0) {
-            setProjectsIncome(updatedData as IIncome[])
-          } else {
+  
+            const validRows = updatedData.filter((item: any) => !item?.error)
+            const errorRows = updatedData.filter((item: any) => item?.error)
+
+           
+            if (errorRows.length > 0) {
+     
+              const errorsByType: Record<string, number[]> = {}
+              
+              errorRows.forEach((err: any) => {
+                err.errors.forEach((errorMsg: string) => {
+                  if (!errorsByType[errorMsg]) {
+                    errorsByType[errorMsg] = []
+                  }
+                  errorsByType[errorMsg].push(err.rowIndex)
+                })
+              })
+
+              const errorSummary = Object.entries(errorsByType).map(([errorMsg, rows]) => {
+                const rowList = rows.length > 10 
+                  ? `${rows.slice(0, 10).join(', ')}... (y ${rows.length - 10} más)`
+                  : rows.join(', ')
+                
+                return `
+                  <li style="margin-bottom:12px;">
+                    <b>${errorMsg}</b><br/>
+                    <span style="color:#666; font-size:0.9em;">Filas afectadas: ${rowList}</span>
+                  </li>
+                `
+              }).join('')
+
+              await Swal.fire({
+                title: `Se encontraron ${errorRows.length} fila${errorRows.length > 1 ? 's' : ''} con errores`,
+                html: `
+                  <div style="text-align:left; max-height:400px; overflow-y:auto;">
+                    <p style="margin-bottom:12px; font-weight:500;">Errores detectados:</p>
+                    <ul style="padding-left:20px; margin-bottom:16px;">
+                      ${errorSummary}
+                    </ul>
+                    <hr style="margin:16px 0; border-color:#e5e7eb;"/>
+                    <div style="background:#f9fafb; padding:12px; border-radius:6px;">
+                      <p style="font-weight:600; margin-bottom:8px;">Formato correcto del CSV:</p>
+                      <small style="line-height:1.8;">
+                        <b>Nombres de columnas (en inglés):</b><br/>
+                        • <b>project_id:</b> número entero positivo<br/>
+                        • <b>temporalities_id:</b> 1-5 (1:Mensual, 2:Trimestral, 3:Cuatrimestral, 4:Semestral, 5:Anual)<br/>
+                        • <b>amount:</b> número positivo (sin puntos ni comas)<br/>
+                        • <b>date:</b> formato DD/MM/YYYY<br/>
+                        • <b>month:</b> formato mmm-yy (ej: dic-25)<br/>
+                        • <b>detail:</b> texto no vacío
+                      </small>
+                    </div>
+                  </div>
+                `,
+                icon: 'error',
+                confirmButtonText: 'Corregir CSV',
+                confirmButtonColor: '#CDEA80',
+                width: '650px',
+              })
+              return
+            }
+
+            if (validRows.length > 0) {
+              setProjectsIncome(validRows as IIncome[])
+            } else {
             await Swal.fire({
               title: 'Archivo inválido',
               text: 'Revisa el CSV. "project_id", "date", "temporalities_id" y "amount" son obligatorios.',
               icon: 'warning',
               confirmButtonText: 'Aceptar',
-              confirmButtonColor: '#4f46e5',
+              confirmButtonColor: '#CDEA80',
             })
           }
         },
@@ -433,7 +625,7 @@ export default function IncomesPage() {
             text: 'Revisa que el CSV tenga cabeceras y el formato esperado.',
             icon: 'error',
             confirmButtonText: 'Aceptar',
-            confirmButtonColor: '#4f46e5',
+            confirmButtonColor: '#CDEA80',
           })
         },
       })
@@ -504,11 +696,11 @@ export default function IncomesPage() {
     const [abbr, yy] = parts
     const monthIndex = MONTHS_ES.findIndex(m => m === abbr)
     if (monthIndex === -1) return null
-    // Convertimos '26' => 2026 (asumimos siglo 2000)
+ 
     const yearNum = Number(yy)
     if (Number.isNaN(yearNum)) return null
     const year = 2000 + yearNum
-    return { year, monthIndex } // monthIndex 0..11
+    return { year, monthIndex }
   }
 
   const firstDayFromMonthString = (
@@ -547,29 +739,41 @@ export default function IncomesPage() {
           labels={{ form: 'Completar Formulario', upload: 'Subir Archivo' }}
         />
       </div>
-      {/* --- Selector de mes para el CSV (visible en la vista upload) */}
+     
       {viewMode === 'upload' && (
-        <div className="mb-4 flex items-center gap-3">
-          <label className="text-sm font-medium text-gray-900">Mes para CSV</label>
-          <select
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-900 mb-2">
+            Selecciona el Mes para configurar el formato de tu archivo CSV.
+          </label>
+          <input
+            type="month"
             name="csv_month"
-            value={csvMonth}
-            onChange={(e) => setCsvMonth(e.target.value)}
-            className="outline-none mt-0 rounded-md border px-2 py-1 text-gray-900 shadow-sm"
-          >
-            {monthFormatted.map((m) => (
-              <option key={m.name} value={m.name}>
-                {m.name}
-              </option>
-            ))}
-          </select>
-          <div className="flex flex-col">
-            <span className="text-sm text-gray-500">Se usará este mes para generar el formato de archivo CSV</span>
-            <small className="text-xs text-gray-500 mt-1">
-              Temporalidades: <b>1</b> Mensual, <b>2</b> Trimestral, <b>3</b> Cuatrimestral, <b>4</b> Semestral, <b>5</b> Anual.
+            value={csvMonth ? (() => {
+              const parsed = parseMonthString(csvMonth)
+              if (!parsed) return ''
+              const { year, monthIndex } = parsed
+              return `${year}-${String(monthIndex + 1).padStart(2, '0')}`
+            })() : ''}
+            onChange={(e) => {
+              if (e.target.value) {
+                const [year, month] = e.target.value.split('-')
+                const monthIndex = parseInt(month) - 1
+                const monthAbbr = MONTHS_ES[monthIndex]
+                const yy = year.slice(-2)
+                const monthStr = `${monthAbbr}-${yy}`
+                setCsvMonth(monthStr)
+              }
+            }}
+            className="outline-none block w-full md:w-auto rounded-md border px-3 py-2.5 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-gray-400"
+          />
+          <div className="mt-3">
+             
+            <small className="block text-xs text-gray-500 mt-1">
+              <b>Columnas requeridas:</b> Los nombres de las columnas están predefinidos en el formato CSV. Por favor, no editarlos.<br/>
+              <b>Formato fecha:</b> El formato correspondiente para el campo fecha es DD/MM/YYYY.<br/>                
+              <b>Temporalidades:</b> 1-Mensual, 2-Trimestral, 3-Cuatrimestral, 4-Semestral, 5-Anual.
             </small>
           </div>
-
         </div>
       )}
     {viewMode === 'form' ? (
@@ -647,45 +851,38 @@ export default function IncomesPage() {
             />
 
           </div>
-          <div className="col-span-full">
-            <label className="block text-sm font-medium leading-6 text-gray-900">
-              Ingrese la Fecha
-            </label>
-            <input
-              type="date"
-              name="date"
-              value={formData.date}
-              onChange={handleInputChange}
-              className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-gray-400"
-            />
-          </div>
-
-          <div className="col-span-full">
-            <label className="block text-sm font-medium leading-6 text-gray-900">
-              Seleccione el Mes
-            </label>
-            <select
-              name="month"
-              value={formData.month}
-              onChange={handleInputChange}
-              className="outline-none mt-2 block w-full rounded-md border px-1 py-2.5 text-gray-900 shadow-sm placeholder:text-gray-400"
-            >
-              <option value="">Seleccione un mes</option>
-              {monthFormatted.map((month) => (
-                <option key={month.name} value={month.name}>
-                  {month.name}
-                </option>
-              ))}
-            </select>
-          </div>
+            <div className="col-span-full">
+              <label className="block text-sm font-medium leading-6 text-gray-900">
+                Seleccione el Mes
+              </label>
+              <input
+                type="month"
+                name="date"
+                value={formData.date ? dayjs(formData.date).format('YYYY-MM') : ''}
+                onChange={(e) => {
+                  const selectedYearMonth = e.target.value; 
+                  if (selectedYearMonth) {
+                    const isoDate = `${selectedYearMonth}-01`;
+                    setFormData({
+                      ...formData,
+                      date: isoDate,
+                    });
+                  }
+                }}
+                onClick={(e) => {
+                  e.currentTarget.showPicker();
+                }}
+                className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-gray-400 sm:text-sm sm:leading-6 cursor-pointer"
+              />
+            </div>
         </div>
 
         <div className="mt-6 flex items-center justify-end">
           <button
             type="submit"
-            className={`rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm
+            className={`rounded-md px-3 py-2 text-sm font-semibold text-[#303031] shadow-sm
               ${canSave
-                ? 'bg-[#3E3378] hover:bg-[#89CCDC] hover:text-black'
+                ? 'bg-[#CDEA80] hover:bg-[#BDDEFF] hover:text-black'
                 : 'bg-gray-400 cursor-not-allowed'}`}
             disabled={!canSave}
           >
@@ -698,15 +895,30 @@ export default function IncomesPage() {
             <label className="block text-sm font-medium text-gray-900">
               Subir Archivo
             </label>
-            <div className="flex justify-between">
-              <input
-                id="file_input"
-                type="file"
-                accept=".csv,text/csv"
-                onChange={handleFileUpload}
-                className="block w-full text-sm p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
-              />
-            </div>
+              <div className="flex gap-2 items-center">
+                <input
+                  id="file_input"
+                  type="file"
+                  accept=".csv,text/csv"
+                  onChange={handleFileUpload}
+                  className="block w-full text-sm p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
+                />
+                {fileSelected && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProjectsIncome([])
+                      setFileSelected(false)
+                      const fileInput = document.getElementById('file_input') as HTMLInputElement
+                      if (fileInput) fileInput.value = ''
+                    }}
+                    className="[#303031]space-nowrap rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-[#303031] shadow-sm hover:bg-red-500"
+                    title="Limpiar archivo cargado"
+                  >
+                    ✕ Limpiar
+                  </button>
+                )}
+              </div>
             <div className="overflow-x-auto mt-4">
               <TableUploadIncomes projectsIncome={projectsIncome} />
             </div>

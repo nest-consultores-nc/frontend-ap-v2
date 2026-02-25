@@ -16,11 +16,11 @@ export function useOutlayCatalogs(token: string) {
     ;(async () => {
       setLoading(true)
       try {
-        // Tipos + Temporalidades
+   
         const tts = await OutlayRead.getAllOutlayData(token, '1', 'admin@demo.com')
-        // Categorías
+    
         const cats = await OutlayRead.getOutlayCategoriesQuery(token)
-        // Proyectos (showAll=true para no filtrar)
+ 
         const projs = await getAllProjects(token, true)
 
         if (!mounted) return
@@ -37,7 +37,6 @@ export function useOutlayCatalogs(token: string) {
     }
   }, [token])
 
-  // Mapeos y options que espera tu UI
   const categoriesById = useMemo(() => {
     const m = new Map<number, string>()
     categories.forEach((c: any) => m.set(c.id, c.name))

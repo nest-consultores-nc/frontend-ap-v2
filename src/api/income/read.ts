@@ -1,7 +1,5 @@
-// src/api/income/read.ts
 import { fetchFromApi } from '.'
 
-// 🔹 Lista paginada
 export const getIncomes = (token: string, params?: { limit?: number; offset?: number; q?: string }) => {
   const qs = new URLSearchParams()
   if (params?.limit != null) qs.set('limit', String(params.limit))
@@ -14,11 +12,11 @@ export const getIncomes = (token: string, params?: { limit?: number; offset?: nu
   )
 }
 
-// 🔹 Uno por id
+
 export const getIncomeById = (token: string, id: number) =>
   fetchFromApi<any>(`income-api/get-income/${id}`, token)
 
-// 🔹 Catálogo temporalidades (ajusta al que tengas disponible)
+
 export const getIncomeTemporalitiesQuery = (token: string) =>
   fetchFromApi<{ temporalities: Array<{ id: number; name: string; period: string }> }>(
     'income-api/get-all-income-temporalities',

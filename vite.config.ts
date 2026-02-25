@@ -9,7 +9,7 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    exclude: [], // Asegúrate de que esté vacío o sin tus módulos locales
-    force: true  // Fuerza la re-optimización en cada inicio
+    exclude: [], 
+    force: true 
   }
 })

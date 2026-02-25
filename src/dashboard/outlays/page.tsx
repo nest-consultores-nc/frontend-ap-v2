@@ -114,7 +114,7 @@ export default function OutlaysPage() {
           className="block w-full text-sm p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
           id="file_input"
           type="file"
-          onChange={handleFileUpload} // Vinculamos la función
+          onChange={handleFileUpload}
         />
       </div>
 
@@ -148,10 +148,10 @@ export default function OutlaysPage() {
           <tbody>
             {projectsOutlays &&
               projectsOutlays.map((project, index) => (
-                <tr key={index} className="bg-white border-b">
+                <tr key={index} className="white border-b">
                   <th
                     scope="row"
-                    className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
+                    className="px-6 py-4 font-medium text-gray-900 [#303031]space-nowrap"
                   >
                     {project.detail}
                   </th>
@@ -180,7 +180,7 @@ export default function OutlaysPage() {
         </button>
         <button
           type="submit"
-          className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-[#303031] shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
           Guardar
         </button>

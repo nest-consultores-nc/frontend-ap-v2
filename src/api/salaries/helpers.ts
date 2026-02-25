@@ -1,4 +1,3 @@
-// src/api/salaries/helpers.ts
 export const fetchFromApi = async <T>(
   path: string,
   token: string,

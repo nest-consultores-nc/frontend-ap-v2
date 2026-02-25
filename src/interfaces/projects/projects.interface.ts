@@ -11,7 +11,7 @@ export interface IProject {
   description: null | string
   project_status: string
   project_or_activity: IProjectOrActivity
-  active: boolean
+  active: boolean | number | string;
   project_category_id: number
   project_client_id: number
   project_type_id: number

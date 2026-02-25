@@ -12,7 +12,7 @@ export function TableRowHistoryDedication({
   week,
 }: TableRowProps): JSX.Element {
   return (
-    <tr className="bg-white border-b">
+    <tr className="white border-b">
       <td className="px-6 py-4 font-medium text-gray-900">{projectName}</td>
       <td className="px-6 py-4">{client}</td>
       <td className="px-6 py-4">{dedication}</td>

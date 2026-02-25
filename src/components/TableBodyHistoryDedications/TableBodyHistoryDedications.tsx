@@ -43,7 +43,7 @@ export const TableBodyHistoryDedications: React.FC<TableProps> = ({
         ref={contentRef}
         className="max-h-0 overflow-hidden duration-500 ease-in-out"
       >
-        {/* MOBILE: Cards (sm:hidden) */}
+      
         <div className="sm:hidden px-4 pb-4 space-y-3 mt-4">
           {data.map((row, index) => (
             <div
@@ -77,7 +77,7 @@ export const TableBodyHistoryDedications: React.FC<TableProps> = ({
           ))}
         </div>
 
-        {/* DESKTOP: Tabla (hidden sm:block) */}
+     
         <div className="hidden sm:block overflow-x-auto mt-4">
           <table className="w-full min-w-[720px] text-sm text-left rtl:text-right text-gray-500">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50">

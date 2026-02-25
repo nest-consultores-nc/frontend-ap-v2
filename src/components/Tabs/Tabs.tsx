@@ -4,7 +4,7 @@ export function Tabs() {
       <li className="me-2">
         <a
           href="#"
-          className="inline-block px-4 py-3 text-white bg-blue-600 rounded-lg active"
+          className="inline-block px-4 py-3 text-[#303031] bg-[#CDEA80] rounded-lg active"
           aria-current="page"
         >
           Registrar Horas
@@ -13,7 +13,7 @@ export function Tabs() {
       <li className="me-2">
         <a
           href="#"
-          className="inline-block px-4 py-3 rounded-lg hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-white"
+          className="inline-block px-4 py-3 rounded-lg hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-[#303031]"
         >
           Historial de Registros
         </a>

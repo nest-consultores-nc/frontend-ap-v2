@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
-import LogoAgenciaPolux from '../../assets/logo-polux-sin-fondo.png'
+import Logo from '../../assets/LOGO-09.png'
 import { isFormValid } from '../../functions/isFormValid'
 import { HomeContext } from '../../context/HomeContext'
 import { queryLogin } from '../../api/auth'
@@ -101,9 +101,9 @@ export default function Login() {
     <div className="flex min-h-full flex-col h-screen justify-center align-middle px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         <img
-          className="mx-auto h-16 w-auto"
-          src={LogoAgenciaPolux}
-          alt="Logo Agencia Polux"
+          className="mx-auto h-32 w-auto"
+          src={Logo}
+          alt="Logo PolarisBI"
         />
       </div>
 
@@ -148,7 +148,7 @@ export default function Login() {
             <div className="mt-2 text-right">
               <Link
                 to="/recuperar-contrasena"
-                className="text-sm text-indigo-600 hover:text-indigo-500 hover:underline focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded"
+                className="text-sm text-[#303030] hover:text-[#303030] hover:underline focus:outline-none rounded"
               >
                 ¿Olvidaste tu contraseña?
               </Link>
@@ -163,7 +163,7 @@ export default function Login() {
               className={clsx(
                 'flex w-full justify-center items-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
                 {
-                  'bg-indigo-600 text-white hover:bg-indigo-500 focus-visible:outline-indigo-600':
+                  'bg-[#CDEA80] text-[#303031] hover:bg-[#BDDEFF] focus-visible:outline-indigo-600':
                     isLoginFormIsValid(user) && !loading,
                   'bg-gray-400 text-gray-300 cursor-not-allowed':
                     !isLoginFormIsValid(user) || loading,
@@ -181,7 +181,7 @@ export default function Login() {
             </button>
           </div>
           {errors && (
-            <div className="bg-red-400 text-white p-1 text-sm rounded">
+            <div className="bg-red-400 text-[#303031] p-1 text-sm rounded">
               Ha ocurrido un error al intentar iniciar sesión. Por favor,
               verifica tus credenciales e intenta nuevamente.
             </div>

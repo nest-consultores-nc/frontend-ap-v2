@@ -19,7 +19,7 @@ export const fetchFromApiCosteo = async <T>(
     return response.json()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
-    console.error(`Error fetching from ${path}:`, error) // Log the full error
+    console.error(`Error fetching from ${path}:`, error)  
     throw error
   }
 }

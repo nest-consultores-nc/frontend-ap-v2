@@ -1,4 +1,4 @@
-// src/utils/outlays/projectBuckets.ts
+
 import { IProject } from '../../interfaces/projects/projects.interface'
 
 export const TYPE = {
@@ -49,9 +49,9 @@ const cmp = (a: string, b: string) =>
 
 export const getProjectLabel = (p: IProject) => {
   const client =
-    // preferido: anidado
+ 
     (p as any).client?.clientName ??
-    // fallback: plano
+
     (p as any).client_name ??
     null
 

@@ -1,7 +1,7 @@
 import { UserIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import Logo from '../../assets/logo-polux-sin-fondo.png'
+import Logo from '../../assets/LOGO-09.png'
 import {
   ADMIN_LINKS_GROUPED,
   DIRECTORA_EJECUTIVA_GROUPED,
@@ -57,8 +57,8 @@ export default function NavLinks() {
 
   return (
     <>
-      <img src={Logo} alt="logo" className="w-40 my-0 mx-auto" />
-        <div className="bg-gradient-to-r from-[#3E3378] to-[#89CCDC] p-5 flex justify-center text-white">
+      <img src={Logo} alt="logo" className="w-64 my-0 mx-auto" />
+        <div className="bg-gradient-to-r from-[#CDEA80] to-[#BDDEFF] p-5 flex justify-center text-[#303031]">
           <UserIcon className="w-5 mr-2" />
           {localStorage.getItem('name')}
         </div>
@@ -84,10 +84,10 @@ export default function NavLinks() {
                 key={name}
                 to={href}
                 className={clsx(
-                  'flex items-center gap-2 px-5 py-2 text-sm rounded-md transition hover:bg-[#3E3378] hover:text-[#EEEBE6]',
+                  'flex items-center gap-2 px-5 py-2 text-sm rounded-md transition hover:bg-[#BDDEFF] hover:text-black',
                   {
-                    'bg-[#89CCDC] text-[#303031]': pathname === href,
-                    'text-[#303031]': pathname !== href,
+                    'bg-[#CDEA80] text-[#303031]': pathname === href,
+                    'text-gray-600': pathname !== href,
                   }
                 )}
               >

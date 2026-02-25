@@ -1,4 +1,3 @@
-// src/api/index.ts
 export const fetchFromApi = async <T>(
   path: string,
   token: string,
@@ -20,7 +19,7 @@ export const fetchFromApi = async <T>(
     })
 
     if (!response.ok) {
-      // Intenta leer JSON o texto para exponer detalle
+     
       let errorDetail = ''
       try {
         const errJson = await response.clone().json()

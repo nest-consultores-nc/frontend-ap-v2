@@ -8,6 +8,8 @@ export function HeaderPages({
 }) {
   return (
     <header>
+
+      
         <h2 className="mt-14 md:mt-4 text-base font-semibold leading-7 text-gray-900">
           {titlePage}
         </h2>

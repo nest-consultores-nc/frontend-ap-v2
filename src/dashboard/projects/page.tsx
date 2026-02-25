@@ -75,7 +75,7 @@ export default function ProjectsPage() {
 
         <button
           type="button" 
-          className="rounded-md bg-[#3E3378] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#89CCDC] hover:text-[#303031] focus-visible:outline-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-900"
+          className="rounded-md bg-[#CDEA80] px-3 py-2 text-sm font-semibold text-[#303031] shadow-sm hover:bg-[#BDDEFF] hover:text-[#303031] focus-visible:outline-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-900"
           onClick={handleAddDedication} 
         > 
           Agregar dedicación

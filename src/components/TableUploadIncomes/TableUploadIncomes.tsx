@@ -76,13 +76,6 @@ export function TableUploadIncomes({ projectsIncome }: Props) {
             <th
               scope="col"
               className="px-6 py-3 w-1/6 cursor-pointer"
-              onClick={() => handleSort('uf')}
-            >
-              UF <SortIcon columnKey="uf" />
-            </th>
-            <th
-              scope="col"
-              className="px-6 py-3 w-1/6 cursor-pointer"
               onClick={() => handleSort('date')}
             >
               Fecha <SortIcon columnKey="date" />
@@ -92,14 +85,14 @@ export function TableUploadIncomes({ projectsIncome }: Props) {
               className="px-6 py-3 w-1/6 cursor-pointer"
               onClick={() => handleSort('project_id')}
             >
-              ID Proyecto <SortIcon columnKey="project_id" />
+              Código Proyecto <SortIcon columnKey="project_id" />
             </th>
             <th
               scope="col"
               className="px-6 py-3 w-1/6 cursor-pointer"
               onClick={() => handleSort('temporalities_id')}
             >
-              ID Temporalidad <SortIcon columnKey="temporalities_id" />
+              Código Temporalidad <SortIcon columnKey="temporalities_id" />
             </th>
             <th
               scope="col"
@@ -110,32 +103,31 @@ export function TableUploadIncomes({ projectsIncome }: Props) {
             </th>
           </tr>
         </thead>
-        <tbody>
-          {sortedIncomes.map((income, index) => (
-            <tr key={index} className="bg-white border-b">
-              <th
-                scope="row"
-                className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
-              >
-                {income.detail}
-              </th>
-              <td className="px-6 py-4">{income.amount || '1328571'}</td>
-              <td className="px-6 py-4">{income.uf || '0.00'}</td>
-              <td className="px-6 py-4">{income.date.toString()}</td>
-              <td className="px-6 py-4">{income.project_id}</td>
-              <td className="px-6 py-4">{income.temporalities_id || '2'}</td>
-              <td className="px-6 py-4">
-                {income.month
-                  ? income.month
-                  : new Date(income.date).toLocaleString('default', {
-                      month: 'short',
-                    }) +
-                    '-' +
-                    new Date(income.date).getFullYear().toString().slice(-2)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
+          <tbody>
+            {sortedIncomes.map((income, index) => (
+              <tr key={index} className="white border-b">
+                <th
+                  scope="row"
+                  className="px-6 py-4 font-medium text-gray-900 [#303031]space-nowrap"
+                >
+                  {income.detail}
+                </th>
+                <td className="px-6 py-4">{income.amount || '1328571'}</td>
+                <td className="px-6 py-4">{income.date.toString()}</td>
+                <td className="px-6 py-4">{income.project_id}</td>
+                <td className="px-6 py-4">{income.temporalities_id || '2'}</td>
+                <td className="px-6 py-4">
+                  {income.month
+                    ? income.month
+                    : new Date(income.date).toLocaleString('default', {
+                        month: 'short',
+                      }) +
+                      '-' +
+                      new Date(income.date).getFullYear().toString().slice(-2)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
       </table>
     </div>
   )

@@ -1,10 +1,9 @@
-// src/hooks/useIncomesRemoteDataset.ts
 import { useEffect, useState } from 'react'
 import * as IncomeRead from '../api/income/read'
 import * as IncomeMutate from '../api/income/mutate'
-import type { IIncome } from '../interfaces/income/income.interface' // <-- usa tu interfaz
+import type { IIncome } from '../interfaces/income/income.interface'
 
-// Extendemos IIncome con 'id' para el registro local
+
 export type Income = IIncome & { id: number }
 
 type Options = { token: string }
@@ -34,7 +33,7 @@ export function useIncomesRemoteDataset({ token }: Options) {
       try {
         const { data } = await IncomeRead.getIncomes(token, { limit: 500, offset: 0 })
         if (!cancelled) {
-          // asume que la API ya devuelve snake_case; mapea agregando id
+  
           setRecords((data as any[]).map((r) => r as Income))
         }
       } catch {
@@ -56,8 +55,8 @@ export function useIncomesRemoteDataset({ token }: Options) {
     detail: '',
     temporalities_id: 1,
     project_id: 1,
-    month: curYM,       // 👈 nunca vacío
-    uf: '0',
+    month: curYM,     
+    
     }
 
     setRecords(prev => [temp, ...prev])
@@ -69,7 +68,7 @@ export function useIncomesRemoteDataset({ token }: Options) {
     if (missing.length) throw new Error(`Faltan: ${missing.join(', ')}`)
 
     if (data.id < 0) {
-      const res = await IncomeMutate.addIncome(token, data)   // 👈 ahora pasa IIncome
+      const res = await IncomeMutate.addIncome(token, data)  
       const newId = res.id
       setRecords(prev => {
         const next = prev.filter(r => r.id !== data.id)
@@ -78,7 +77,7 @@ export function useIncomesRemoteDataset({ token }: Options) {
       return newId
     }
 
-    await IncomeMutate.updateIncome(token, data.id, data)     // 👈 IIncome
+    await IncomeMutate.updateIncome(token, data.id, data)   
     setRecords(prev => prev.map(r => r.id === data.id ? { ...data } : r))
     return data.id
   }
@@ -97,7 +96,7 @@ export function useIncomesRemoteDataset({ token }: Options) {
     if (!src) return
     const clone: Income = { ...src, id: -Date.now(), detail: src.detail ? `${src.detail} (copia)` : 'copia' }
     setRecords(prev => [clone, ...prev])
-    const res = await IncomeMutate.addIncome(token, clone)    // 👈 IIncome
+    const res = await IncomeMutate.addIncome(token, clone)  
     setRecords(prev => prev.map(r => r.id === clone.id ? { ...clone, id: res.id } : r))
     return res.id
   }

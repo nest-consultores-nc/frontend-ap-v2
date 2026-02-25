@@ -4,49 +4,48 @@ interface Props {
 }
 
 export function TabsEditar({ active, handleChangeActiveTab }: Props) {
-  const base = 'inline-block px-4 py-3 rounded-lg transition-colors'
-  const getClasses = (tab: string) =>
-    active === tab
-      ? `${base} bg-[#3E3378] text-white cursor-default`
-      : `${base} bg-[#89CCDC] text-black hover:bg-[#89CCDC] hover:text-white`
+  const tabs = [
+    { key: 'desembolsos', label: 'Desembolsos' },
+    { key: 'ingresos', label: 'Ingresos' },
+    { key: 'sueldos', label: 'Sueldos' },
+    { key: 'dedicaciones', label: 'Dedicaciones' },
+  ]
 
   return (
-    <div className="flex flex-wrap gap-2 text-sm font-medium text-center text-gray-500 mt-16">
-      <button
-        type="button"
-        aria-selected={active === 'desembolsos'}
-        onClick={() => handleChangeActiveTab('desembolsos')}
-        className={getClasses('desembolsos')}
-      >
-        Desembolsos
-      </button>
-
-      <button
-        type="button"
-        aria-selected={active === 'ingresos'}
-        onClick={() => handleChangeActiveTab('ingresos')}
-        className={getClasses('ingresos')}
-      >
-        Ingresos
-      </button>
-
-      <button
-        type="button"
-        aria-selected={active === 'salarios'}
-        onClick={() => handleChangeActiveTab('salarios')}
-        className={getClasses('salarios')}
-      >
-        Salarios
-      </button>
-
-      <button
-        type="button"
-        aria-selected={active === 'dedicaciones'}
-        onClick={() => handleChangeActiveTab('dedicaciones')}
-        className={getClasses('dedicaciones')}
-      >
-        Dedicaciones
-      </button>
+    <div className="mb-8 mt-2">
+    
+      <div className="border-b border-gray-200">
+        <nav
+          role="tablist"
+          aria-label="Tabs de Edición"
+          className="flex flex-wrap -mb-px gap-x-1"
+        >
+          {tabs.map(({ key, label }) => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={active === key}
+              onClick={() => handleChangeActiveTab(key)}
+              className={`
+                relative px-6 py-3 text-sm font-semibold transition-all duration-200
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#CDEA80] focus-visible:ring-offset-2
+                ${
+                  active === key
+                    ? 'text-[#303031] border-b-2 border-[#CDEA80]'
+                    : 'text-gray-600 hover:text-[#303031] hover:border-b-2 hover:border-gray-300'
+                }
+              `}
+            >
+              {label}
+           
+              {active === key && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#CDEA80] animate-[slideIn_0.2s_ease-out]" />
+              )}
+            </button>
+          ))}
+        </nav>
+      </div>
     </div>
   )
 }

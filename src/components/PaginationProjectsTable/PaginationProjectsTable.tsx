@@ -1,4 +1,3 @@
-// PaginationProjectsTable.tsx (DESPUÉS)
 import { useMemo } from 'react'
 
 interface Props {
@@ -16,43 +15,41 @@ function getPaginationRange(
   siblingCount = 1,
   boundaryCount = 1
 ): PageItem[] {
-  const range = (start: number, end: number) =>
+  const range = (start: number, end: number): number[] =>
     Array.from({ length: end - start + 1 }, (_, i) => start + i)
 
-  const firstPages = range(1, Math.min(boundaryCount, totalPages))
-  const lastPages = range(
-    Math.max(totalPages - boundaryCount + 1, boundaryCount + 1),
-    totalPages
-  )
+  
+  const totalSlots = boundaryCount * 2 + siblingCount * 2 + 3
+  if (totalPages <= totalSlots) {
+    return range(1, totalPages)
+  }
 
-  const start = Math.max(
-    Math.min(
-      current - siblingCount,
-      totalPages - boundaryCount - siblingCount * 2 - 1
-    ),
-    boundaryCount + 2
-  )
-  const end = Math.min(
-    Math.max(
-      current + siblingCount,
-      boundaryCount + siblingCount * 2 + 2
-    ),
-    lastPages[0] - 2
-  )
+  const leftSiblingStart = Math.max(current - siblingCount, boundaryCount + 1)
+  const rightSiblingEnd = Math.min(current + siblingCount, totalPages - boundaryCount)
 
-  const middle =
-    start <= end ? (range(start, end) as PageItem[]) : []
+  const showLeftEllipsis = leftSiblingStart > boundaryCount + 2
+  const showRightEllipsis = rightSiblingEnd < totalPages - boundaryCount - 1
 
-  const showLeftEllipsis = start > firstPages[firstPages.length - 1] + 1
-  const showRightEllipsis = end < lastPages[0] - 1
+  const firstPages = range(1, boundaryCount)
+  const lastPages = range(totalPages - boundaryCount + 1, totalPages)
+
+  if (!showLeftEllipsis && showRightEllipsis) {
+    const leftRange = range(1, Math.max(2 + siblingCount * 2 + boundaryCount, rightSiblingEnd))
+    return [...new Set([...leftRange, ...lastPages])]
+  }
+
+  if (showLeftEllipsis && !showRightEllipsis) {
+    const rightRange = range(Math.min(totalPages - 1 - siblingCount * 2 - boundaryCount, leftSiblingStart), totalPages)
+    return [...new Set([...firstPages, '…' as PageItem, ...rightRange])]
+  }
 
   return [
     ...firstPages,
-    ...(showLeftEllipsis ? (['…'] as PageItem[]) : []),
-    ...middle,
-    ...(showRightEllipsis ? (['…'] as PageItem[]) : []),
+    '…' as PageItem,
+    ...range(leftSiblingStart, rightSiblingEnd),
+    '…' as PageItem,
     ...lastPages,
-  ].filter((x, idx, arr) => arr.indexOf(x) === idx)
+  ]
 }
 
 export function PaginationProjectsTable({
@@ -77,9 +74,9 @@ export function PaginationProjectsTable({
   }
 
   const baseBtn =
-    'flex items-center justify-center h-9 px-3 text-sm border border-gray-300 bg-white hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-md'
+    'flex items-center justify-center h-9 px-3 text-sm border border-gray-300 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-#BDDEFF disabled:opacity-50 disabled:cursor-not-allowed rounded-md'
   const numberBtn =
-    'h-9 min-w-9 px-3 text-sm border border-gray-300 bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md'
+    'h-9 min-w-9 px-3 text-sm border border-gray-300 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-#BDDEFF rounded-md'
 
   return (
     <div className="mt-5">
@@ -163,7 +160,7 @@ export function PaginationProjectsTable({
                     aria-current={item === currentPage ? 'page' : undefined}
                     className={
                       item === currentPage
-                        ? `${numberBtn} bg-[#3E3378] text-white border-[#3E3378]`
+                        ? `${numberBtn} bg-[#CDEA80] text-[#303031] border-[#CDEA80]`
                         : `${numberBtn} text-gray-700`
                     }
                   >

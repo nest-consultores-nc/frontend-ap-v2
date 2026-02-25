@@ -1,7 +1,7 @@
 export function ConsolidationDedicationsTable() {
   return (
     <div className="border relative sm:rounded-lg my-4">
-      <p className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+      <p className="px-6 py-4 font-medium text-gray-900 [#303031]space-nowrap">
         Consolidación de horas
       </p>
       <table className="w-full text-sm text-left rtl:text-right text-gray-500">

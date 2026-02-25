@@ -43,7 +43,7 @@ export default function EditProfile() {
     password: '',
   })
 
-  // --- NUEVO: política de contraseña y estado de validación ---
+
   type PwdChecks = {
     length: boolean
     noSpace: boolean
@@ -78,7 +78,7 @@ export default function EditProfile() {
   const getStrengthScore = (pwd: string) => {
     const c = validatePassword(pwd)
     return ['length','noSpace','lower','upper','digit','symbol']
-      .reduce((acc, k) => acc + (c[k as keyof PwdChecks] ? 1 : 0), 0) // 0–6
+      .reduce((acc, k) => acc + (c[k as keyof PwdChecks] ? 1 : 0), 0) 
   }
 
   const [pwdChecks, setPwdChecks] = useState<PwdChecks>({
@@ -105,9 +105,9 @@ export default function EditProfile() {
       showCancelButton: true,
       confirmButtonText: 'Sí, actualizar',
       cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#3E3378',
-      cancelButtonColor: '#6B7280',
-      reverseButtons: true,
+      confirmButtonColor: '#CDEA80',
+      cancelButtonColor: '#FF735C',
+      
     })
 
     if (!confirm.isConfirmed) return
@@ -127,7 +127,7 @@ export default function EditProfile() {
           title: '¡Contraseña actualizada!',
           text: 'Debes volver a iniciar sesión.',
           icon: 'success',
-          confirmButtonColor: '#3E3378',
+          confirmButtonColor: '#CDEA80',
           confirmButtonText: 'Aceptar',
         })
 
@@ -150,7 +150,7 @@ export default function EditProfile() {
           title: 'No se pudo actualizar',
           text: response.msg || 'Revisa los datos ingresados e inténtalo nuevamente.',
           icon: 'warning',
-          confirmButtonColor: '#3E3378',
+          confirmButtonColor: '#CDEA80',
           confirmButtonText: 'Entendido',
         })
       }
@@ -166,7 +166,7 @@ export default function EditProfile() {
         title: 'Error',
         text: 'Ha ocurrido un error al intentar cambiar su contraseña',
         icon: 'error',
-        confirmButtonColor: '#d33',
+        confirmButtonColor: '#FF735C',
         confirmButtonText: 'Cerrar',
       })
     } finally {
@@ -281,49 +281,123 @@ export default function EditProfile() {
                 </div>
               </div>
 
-              {/* Políticas */}
-              <div className="mt-3 text-sm">
-                <div className="font-medium text-gray-900">La contraseña debe tener:</div>
-                <ul className="mt-2 space-y-1">
-                  <li className="flex items-center gap-2">
-                    <span className={pwdChecks.length ? 'text-green-600' : 'text-red-600'}>
-                      {pwdChecks.length ? '✓' : '✗'}
-                    </span>
-                    Entre 8 y 64 caracteres
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className={pwdChecks.noSpace ? 'text-green-600' : 'text-red-600'}>
-                      {pwdChecks.noSpace ? '✓' : '✗'}
-                    </span>
-                    Sin espacios en blanco
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className={pwdChecks.lower ? 'text-green-600' : 'text-red-600'}>
-                      {pwdChecks.lower ? '✓' : '✗'}
-                    </span>
-                    Al menos una minúscula (a–z)
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className={pwdChecks.upper ? 'text-green-600' : 'text-red-600'}>
-                      {pwdChecks.upper ? '✓' : '✗'}
-                    </span>
-                    Al menos una mayúscula (A–Z)
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className={pwdChecks.digit ? 'text-green-600' : 'text-red-600'}>
-                      {pwdChecks.digit ? '✓' : '✗'}
-                    </span>
-                    Al menos un número (0–9)
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className={pwdChecks.symbol ? 'text-green-600' : 'text-red-600'}>
-                      {pwdChecks.symbol ? '✓' : '✗'}
-                    </span>
-                    Al menos un símbolo (!@#$…)
-                  </li>
-                </ul>
+ 
+            <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <div className="flex items-center gap-2 mb-3">
+                <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span className="font-semibold text-gray-900">Requisitos de seguridad</span>
               </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+           
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all ${
+                  pwdChecks.length 
+                    ? 'bg-green-50 border border-green-200' 
+                    : 'white border border-gray-200'
+                }`}>
+                  <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                    pwdChecks.length 
+                      ? 'bg-green-500 text-[#303031]' 
+                      : 'bg-gray-300 text-gray-600'
+                  }`}>
+                    {pwdChecks.length ? '✓' : '○'}
+                  </span>
+                  <span className={`text-sm ${pwdChecks.length ? 'text-green-800 font-medium' : 'text-gray-600'}`}>
+                    8-64 caracteres
+                  </span>
+                </div>
 
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all ${
+                  pwdChecks.noSpace 
+                    ? 'bg-green-50 border border-green-200' 
+                    : 'white border border-gray-200'
+                }`}>
+                  <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                    pwdChecks.noSpace 
+                      ? 'bg-green-500 text-[#303031]' 
+                      : 'bg-gray-300 text-gray-600'
+                  }`}>
+                    {pwdChecks.noSpace ? '✓' : '○'}
+                  </span>
+                  <span className={`text-sm ${pwdChecks.noSpace ? 'text-green-800 font-medium' : 'text-gray-600'}`}>
+                    Sin espacios
+                  </span>
+                </div>
+
+         
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all ${
+                  pwdChecks.lower 
+                    ? 'bg-green-50 border border-green-200' 
+                    : 'white border border-gray-200'
+                }`}>
+                  <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                    pwdChecks.lower 
+                      ? 'bg-green-500 text-[#303031]' 
+                      : 'bg-gray-300 text-gray-600'
+                  }`}>
+                    {pwdChecks.lower ? '✓' : '○'}
+                  </span>
+                  <span className={`text-sm ${pwdChecks.lower ? 'text-green-800 font-medium' : 'text-gray-600'}`}>
+                    Minúscula (a-z)
+                  </span>
+                </div>
+
+         
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all ${
+                  pwdChecks.upper 
+                    ? 'bg-green-50 border border-green-200' 
+                    : 'white border border-gray-200'
+                }`}>
+                  <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                    pwdChecks.upper 
+                      ? 'bg-green-500 text-[#303031]' 
+                      : 'bg-gray-300 text-gray-600'
+                  }`}>
+                    {pwdChecks.upper ? '✓' : '○'}
+                  </span>
+                  <span className={`text-sm ${pwdChecks.upper ? 'text-green-800 font-medium' : 'text-gray-600'}`}>
+                    Mayúscula (A-Z)
+                  </span>
+                </div>
+
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all ${
+                  pwdChecks.digit 
+                    ? 'bg-green-50 border border-green-200' 
+                    : 'white border border-gray-200'
+                }`}>
+                  <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                    pwdChecks.digit 
+                      ? 'bg-green-500 text-[#303031]' 
+                      : 'bg-gray-300 text-gray-600'
+                  }`}>
+                    {pwdChecks.digit ? '✓' : '○'}
+                  </span>
+                  <span className={`text-sm ${pwdChecks.digit ? 'text-green-800 font-medium' : 'text-gray-600'}`}>
+                    Número (0-9)
+                  </span>
+                </div>
+
+       
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all ${
+                  pwdChecks.symbol 
+                    ? 'bg-green-50 border border-green-200' 
+                    : 'white border border-gray-200'
+                }`}>
+                  <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                    pwdChecks.symbol 
+                      ? 'bg-green-500 text-[#303031]' 
+                      : 'bg-gray-300 text-gray-600'
+                  }`}>
+                    {pwdChecks.symbol ? '✓' : '○'}
+                  </span>
+                  <span className={`text-sm ${pwdChecks.symbol ? 'text-green-800 font-medium' : 'text-gray-600'}`}>
+                    Símbolo (!@#$...)
+                  </span>
+                </div>
+              </div>
+            </div>
             
         </div>
       </div>
@@ -335,7 +409,7 @@ export default function EditProfile() {
           className={`rounded-md px-3 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
             ${submitting || !canSubmit
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-[#3E3378] text-white hover:bg-[#89CCDC] hover:text-black'}
+              : 'bg-[#CDEA80] text-[#303031] hover:bg-[#BDDEFF] hover:text-black'}
           `}
         >
           {submitting ? 'Guardando…' : 'Guardar'}

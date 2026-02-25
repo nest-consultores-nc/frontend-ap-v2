@@ -1,16 +1,14 @@
-// src/utils/date/monthOptions.ts
-export type MonthOption = { label: string; value: string } // value: 'YYYY-MM'
+
+export type MonthOption = { label: string; value: string }
 
 const ES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
 
 export function buildMonthOptions(around = 0, forward = 15): MonthOption[] {
-  // around: incluye meses previos; forward: meses hacia adelante
+ 
   const out: MonthOption[] = []
   const base = new Date()
   base.setDate(1)
   base.setHours(0,0,0,0)
-
-  // arranca some months back si quieres (ej: around = 0 → empieza en este mes)
   base.setMonth(base.getMonth() - around)
 
   for (let i = -around; i <= forward; i++) {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createClientQuery } from '../../api/clients'
-import Swal from 'sweetalert2' //
+import Swal from 'sweetalert2' 
 import { useNavigate } from 'react-router-dom'
 import { checkTokenAndRedirect } from '../../functions/checkTokenAndRedirect'
 import { HeaderPages } from '../../components/index'
@@ -40,7 +40,7 @@ export default function CreateClient() {
         text: 'Por favor, ingresa el nombre del cliente.',
         icon: 'warning',
         confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#4f46e5',
+        confirmButtonColor: '#CDEA80',
       })
       return
     }
@@ -57,8 +57,8 @@ export default function CreateClient() {
       showCancelButton: true,
       confirmButtonText: 'Sí, guardar',
       cancelButtonText: 'No, volver',
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
+      confirmButtonColor: '#CDEA80',
+      cancelButtonColor: '#FF735C',
     })
     if (!isConfirmed) return
 
@@ -72,7 +72,7 @@ export default function CreateClient() {
           text: response.msg || 'El cliente fue registrado correctamente.',
           icon: 'success',
           confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#3085d6',
+          confirmButtonColor: '#CDEA80',
         })
 
         setData({ client_name: '', client_description: '' })
@@ -142,7 +142,12 @@ export default function CreateClient() {
       <div className="mt-6 flex items-center justify-end">
         <button
           type="submit"
-          className="rounded-md bg-[#3E3378] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#89CCDC] hover:text-black"
+          disabled={!data.client_name.trim()}
+          className={`rounded-md px-3 py-2 text-sm font-semibold shadow-sm
+            ${data.client_name.trim()
+              ? 'bg-[#CDEA80] text-[#303031] hover:bg-[#BDDEFF] hover:text-black'
+              : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+            }`}
         >
           Guardar
         </button>

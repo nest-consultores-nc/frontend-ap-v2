@@ -57,9 +57,9 @@ export default function Holidays() {
       showCancelButton: true,
       confirmButtonText: 'Sí, guardar',
       cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#3E3378',
-      cancelButtonColor: '#6B7280',
-      reverseButtons: true,
+      confirmButtonColor: '#CDEA80',
+      cancelButtonColor: '#FF735C',
+       
     })
 
     if (!confirm.isConfirmed) return
@@ -85,7 +85,7 @@ export default function Holidays() {
         title: success ? '¡Guardado!' : 'Atención',
         text: msg,
         icon: success ? 'success' : 'warning',
-        confirmButtonColor: '#3E3378',
+        confirmButtonColor: '#CDEA80',
         confirmButtonText: 'Aceptar',
       })
     } catch (error) {
@@ -99,7 +99,7 @@ export default function Holidays() {
         title: 'Error',
         text: 'Ha ocurrido un error al intentar registrar el feriado',
         icon: 'error',
-        confirmButtonColor: '#d33',
+        confirmButtonColor: '#FF735C',
         confirmButtonText: 'Cerrar',
       })
     } finally {
@@ -171,9 +171,9 @@ export default function Holidays() {
         <button
           type="submit"
           disabled={!isFormValid(holidaysData) || submitting}
-          className={`rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
+          className={`rounded-md px-3 py-2 text-sm font-semibold text-[#303031] shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
             isFormValid(holidaysData) && !submitting
-              ? 'bg-[#3E3378] text-white hover:bg-[#89CCDC] hover:text-black focus-visible:outline-indigo-600'
+              ? 'bg-[#CDEA80] text-[#303031] hover:bg-[#BDDEFF] hover:text-black focus-visible:outline-indigo-600'
               : 'bg-gray-400 cursor-not-allowed'
           }`}
         >

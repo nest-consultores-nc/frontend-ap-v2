@@ -2,8 +2,6 @@ import { useMemo, useState } from 'react'
 import { useHistoryStore } from '../../hooks/useHistoryStore'
 
 type Option = { label: string; value: string | number }
-
-
 type Field =
   | { type: 'text' | 'number' | 'date' | 'money'; name: string; label: string;
       placeholder?: string; required?: boolean; colSpan?: 1 | 2; help?: string;
@@ -23,7 +21,7 @@ type Props<T extends Record<string, any>> = {
   onPersist?: (data: T) => void
   onChange?: (draft: T, name: string, value: unknown) => T | void
  
-  header?: React.ReactNode                           // 👈 NUEVO
+  header?: React.ReactNode                           
 
 }
 
@@ -98,22 +96,22 @@ export function EditableFormSection<T extends Record<string, any>>({
                 )}
                   {f.type === 'date' && (f as any).firstOfMonthOnly ? (
                         <input
-                          type="month"                              // 👈 sólo mes
+                          type="month"                            
                           value={
                             (() => {
                               const raw = String(valueForInput || '')
-                              // admite 'YYYY-MM' o 'YYYY-MM-DD' en estado y muestra 'YYYY-MM'
+                          
                               if (/^\d{4}-\d{2}$/.test(raw)) return raw
                               if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw.slice(0, 7)
-                              return '' // vacío si no coincide
+                              return '' 
                             })()
                           }
                           readOnly={(f as any).readonly}
                           disabled={(f as any).disabled}
                           onBlur={() => setTouched(t => ({ ...t, [f.name]: true }))}
                           onChange={(e) => {
-                            // siempre guardamos YYYY-MM-01
-                            const ym = e.target.value // 'YYYY-MM'
+                       
+                            const ym = e.target.value 
                             const normalized = ym ? `${ym}-01` : ''
                             handleChange(f.name, normalized)
                           }}
@@ -121,12 +119,10 @@ export function EditableFormSection<T extends Record<string, any>>({
                         />
                       ) : (
                 <input
-                  // money -> text + teclado numérico
+                
                   type={f.type === 'money' ? 'text' : f.type}
                   inputMode={f.type === 'money' ? 'numeric' : undefined}
                   pattern={f.type === 'money' ? '-?[0-9]*' : undefined}
-
-                  // paso/min/max sólo aplican a number, no a money
                   step={f.type !== 'money' ? (f as any).step : undefined}
                   min={f.type !== 'money' ? (f as any).min : undefined}
                   max={f.type !== 'money' ? (f as any).max : undefined}
@@ -147,7 +143,6 @@ export function EditableFormSection<T extends Record<string, any>>({
                   disabled={(f as any).disabled}
                   onBlur={() => setTouched(t => ({ ...t, [f.name]: true }))}
 
-                  // Sanea en caliente: sólo dígitos -> number (o 0 si vacío)
                   onChange={(e) => {
                     if (f.type === 'money') {
                       const raw = e.target.value || ''
@@ -161,7 +156,6 @@ export function EditableFormSection<T extends Record<string, any>>({
                     handleChange(f.name, v)
                   }}
 
-                  // Bloquea teclas no permitidas (.,,, e, -, +, etc.)
                   onKeyDown={(e) => {
                     if (f.type !== 'money') return
 
@@ -245,7 +239,7 @@ export function EditableFormSection<T extends Record<string, any>>({
                   const isSep = v.startsWith('#sep#')
                   return (
                     <option
-                      key={`${v}-${idx}`}          // <- clave única
+                      key={`${v}-${idx}`}           
                       value={v}
                       disabled={isSep}
                       className={isSep ? 'text-gray-400 font-semibold' : ''}
@@ -275,7 +269,7 @@ export function EditableFormSection<T extends Record<string, any>>({
 
 
       <div className="space-y-4">
-        <div className="bg-white border rounded-2xl shadow-sm p-6">
+        <div className="white border rounded-2xl shadow-sm p-6">
           <h2 className="text-xl font-semibold mb-4">{title}</h2>
             {form}
             <h3 className="text-xl font-semibold mb-4 translate-y-2">{header}</h3>
@@ -286,7 +280,7 @@ export function EditableFormSection<T extends Record<string, any>>({
                 saveVersion('Guardado manual')
                 onPersist?.(current)
               }}
-              className="w-full sm:w-auto px-3 py-3 rounded-xl border bg-[#3E3378] text-white hover:bg-[#89CCDC] hover:text-black transition"
+              className="w-full sm:w-auto px-3 py-3 rounded-xl border bg-[#CDEA80] text-[#303031] hover:bg-[#BDDEFF] hover:text-black transition"
             >
               Guardar versión
             </button>
@@ -299,7 +293,7 @@ export function EditableFormSection<T extends Record<string, any>>({
 
         <aside className="space-y-2 md:mt-4 2xl:mt-0">
 
-        <div className="bg-white border rounded-2xl shadow-sm p-4">
+        <div className="white border rounded-2xl shadow-sm p-4">
           <h3 className="font-medium">Historial de versiones</h3>
           <ul className="space-y-2 max-h-[65vh] overflow-auto pr-1 mt-2">
             {history.map(h => (
@@ -318,7 +312,7 @@ export function EditableFormSection<T extends Record<string, any>>({
 
             const formatVal = (key: string, v: any) => {
               if (v === null || v === undefined || v === '') return '—';
-              if (key === 'id' && typeof v === 'number' && v < 0) return '—nuevo—'; // 👈 aquí
+              if (key === 'id' && typeof v === 'number' && v < 0) return '—nuevo—'; 
 
               const f = fieldMap[key] as any | undefined;
 
@@ -341,6 +335,9 @@ export function EditableFormSection<T extends Record<string, any>>({
 
             const diffs = keys
               .map(k => {
+             
+                if (k === 'uf') return null;   
+                
                 const fromV = prev?.data?.[k];
                 const toV   = h.data?.[k];
                 const changed = JSON.stringify(fromV) !== JSON.stringify(toV);
@@ -359,10 +356,29 @@ export function EditableFormSection<T extends Record<string, any>>({
                       {diffs.length > 0 && (
                         <ul className="divide-y">
                           {diffs.map(d => (
-                            <li key={d.key} className="px-3 py-2 text-sm">
-                              <div className="text-xs text-gray-500">
-                                {(fieldMap[d.key] as any)?.label ?? d.key}
-                              </div>
+                              <li key={d.key} className="px-3 py-2 text-sm">
+                                <div className="text-xs text-gray-500">
+                                  {(() => {
+                               
+                                    const friendlyNames: Record<string, string> = {
+                                 
+                                      'outlay_category_id': 'Categoría',
+                                      'project_id': 'Proyecto',
+                                      'outlay_types_id': 'Tipo',
+                                      'outlay_temporalities_id': 'Temporalidad',
+                                      
+                                
+                                      'temporalities_id': 'Temporalidad',
+                                      'month': 'Mes',
+                                      
+                          
+                                      'uf': 'UF',   
+                                    }
+                                    
+                                    const label = (fieldMap[d.key] as any)?.label
+                                    return friendlyNames[d.key] ?? label ?? d.key
+                                  })()}
+                                </div>
 
                               {d.type === 'changed' && (
                                 <div className="flex flex-wrap items-baseline gap-2 mt-1">

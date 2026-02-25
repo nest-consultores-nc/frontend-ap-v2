@@ -52,7 +52,7 @@ export default function EditarPage() {
 
       {activeTab === 'desembolsos' && <OutlaysSectionEdit />}
       {activeTab === 'ingresos' && <IncomeSectionEdit />}
-      {activeTab === 'salarios' && <SalariesSectionEdit />}
+      {activeTab === 'sueldos' && <SalariesSectionEdit />}
       {activeTab === 'dedicaciones' && <DedicationsSectionEdit />}
 
     </>

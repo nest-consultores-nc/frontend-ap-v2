@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { queryLogin } from '../../api/auth'
-import LogoAgenciaPolux from '../../assets/logo-polux-sin-fondo.png'
+import Logo from '../../assets/LOGO-09.png'
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
@@ -21,26 +21,25 @@ const onSubmit = async (e: React.FormEvent) => {
   try {
     const response = await queryLogin('recuperar-password', '', 'POST', { email })
     
-    // 👇 AGREGA ESTOS LOGS
-    console.log('📦 Respuesta completa:', response)
-    console.log('📦 response.data:', response.data)
-    console.log('📦 response.success:', response.success)
+    console.log('Respuesta completa:', response)
+    console.log('response.data:', response.data)
+    console.log('response.success:', response.success)
     
     const data = response.data as any
-    console.log('🔗 resetUrl encontrado?:', data?.resetUrl) // 👈 IMPORTANTE
+    console.log('resetUrl encontrado?:', data?.resetUrl)
     
     if (data?.resetUrl) {
       setMsg({ type: 'ok', text: '¡Link generado! Abriendo...' })
-      console.log('✅ Redirigiendo a:', data.resetUrl)
+      console.log('Redirigiendo a:', data.resetUrl)
       setTimeout(() => {
         window.location.href = data.resetUrl
       }, 500)
     } else {
-      console.log('⚠️ No se encontró resetUrl en la respuesta')
+      console.log('No se encontró resetUrl en la respuesta')
       setMsg({ type: 'ok', text: 'Te enviaremos un enlace para restablecer tu contraseña.' })
     }
   } catch (error) {
-    console.error('❌ Error:', error)
+    console.error(' Error:', error)
     setMsg({ type: 'ok', text: 'Te enviaremos un enlace para restablecer tu contraseña.' })
   } finally {
     setLoading(false)
@@ -50,16 +49,14 @@ const onSubmit = async (e: React.FormEvent) => {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        {/* Card */}
-        <div className="bg-white shadow-sm rounded-2xl p-6 sm:p-8">
-          {/* Logo */}
+   
+        <div className="white shadow-sm rounded-2xl p-6 sm:p-8">
           <img
-            src={LogoAgenciaPolux}
-            alt="Agencia Pólux"
-            className="mx-auto h-14 w-auto mb-4"
+            src={Logo}
+            alt="Logo PolarisBI"
+            className="mx-auto h-32 w-auto mb-4"
           />
 
-          {/* Título y descripción */}
           <h1 className="text-xl font-semibold text-gray-900 text-center">
             ¿Olvidaste tu contraseña?
           </h1>
@@ -67,7 +64,6 @@ const onSubmit = async (e: React.FormEvent) => {
             Escribe tu correo y te enviaremos un enlace para crear una nueva contraseña.
           </p>
 
-          {/* Mensajes */}
           {msg && (
             <div
               className={`mt-4 rounded-lg px-3 py-2 text-sm ${
@@ -80,7 +76,6 @@ const onSubmit = async (e: React.FormEvent) => {
             </div>
           )}
 
-          {/* Formulario */}
           <form onSubmit={onSubmit} className="mt-6 space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
@@ -107,7 +102,7 @@ const onSubmit = async (e: React.FormEvent) => {
               className={`flex w-full items-center justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm
                 ${!isValid || loading
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-indigo-600 text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600'}
+                  : 'bg-[#CDEA80] text-[#303031] hover:bg-[#BDDEFF] focus-visible:outline focus-visible:outline-2'}
               `}
             >
               {loading ? (
@@ -134,23 +129,21 @@ const onSubmit = async (e: React.FormEvent) => {
             </button>
           </form>
 
-          {/* Acciones secundarias */}
           <div className="mt-6 text-center space-y-1">
             <p className="text-xs text-gray-500">
               ¿Recordaste tu contraseña?
             </p>
             <Link
               to="/iniciar-sesion"
-              className="text-sm font-medium text-indigo-600 hover:text-indigo-500 hover:underline focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded"
+              className="text-sm font-medium text-[#303031] hover:text-[#BDDEFF] hover:underline focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded"
             >
               Volver a iniciar sesión
             </Link>
           </div>
         </div>
 
-        {/* Pie con marca */}
         <p className="mt-4 text-center text-xs text-gray-400">
-          © {new Date().getFullYear()} Agencia Pólux
+          © {new Date().getFullYear()} Polaris BI
         </p>
       </div>
     </div>

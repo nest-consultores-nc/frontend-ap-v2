@@ -3,12 +3,11 @@ interface UserState {
   password: string
 }
 export function isLoginFormIsValid(user: UserState): boolean {
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/ // Valida que el email tenga un formato válido
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   const isEmailValid = emailPattern.test(user.email)
 
-  // Valida que la contraseña no esté vacía y no contenga caracteres peligrosos
   const isPasswordValid =
-    user.password.trim().length > 0 && !/['"=;(){}<>]/.test(user.password) // Evita caracteres que podrían ser usados en SQL Injection
+    user.password.trim().length > 0 && !/['"=;(){}<>]/.test(user.password) 
 
   return isEmailValid && isPasswordValid
 }

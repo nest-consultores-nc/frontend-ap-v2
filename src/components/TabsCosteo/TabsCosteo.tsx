@@ -7,13 +7,6 @@ interface Props {
 }
 
 export function TabsCosteo({ active, handleChangeActiveTab, className = '' }: Props) {
- 
-  const baseBtn =
-    'inline-block px-4 py-3 rounded-lg text-sm font-medium transition ' +
-    'hover:bg-[#89CCDC] hover:text-[#303031] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#3E3378]'
-  const activeBtn = 'text-white bg-[#3E3378]'
-  const inactiveBtn = 'text-gray-600'
-
   const tabs: { key: TabKey; label: string }[] = [
     { key: 'utilidad',        label: 'Utilidad' },
     { key: 'ingresos',        label: 'Ingresos' },
@@ -21,23 +14,38 @@ export function TabsCosteo({ active, handleChangeActiveTab, className = '' }: Pr
   ]
 
   return (
-    <div
-      role="tablist"
-      aria-label="Tabs de Costeo"
-      className={`flex flex-wrap translate-y-12 items-center gap-2 text-sm font-medium text-center mb-6 ${className}`}
-    >
-      {tabs.map(({ key, label }) => (
-        <button
-          key={key}
-          type="button"
-          role="tab"
-          aria-selected={active === key}
-          onClick={() => handleChangeActiveTab(key)}
-          className={`${baseBtn} ${active === key ? activeBtn : inactiveBtn}`}
+    <div className={`mb-8 ${className}`}>
+      <div className="border-b border-gray-200">
+        <nav
+          role="tablist"
+          aria-label="Tabs de Costeo"
+          className="flex flex-wrap -mb-px gap-x-1"
         >
-          {label}
-        </button>
-      ))}
+          {tabs.map(({ key, label }) => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={active === key}
+              onClick={() => handleChangeActiveTab(key)}
+              className={`
+                relative px-6 py-3 text-sm font-semibold transition-all duration-200
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#CDEA80] focus-visible:ring-offset-2
+                ${
+                  active === key
+                    ? 'text-[#303031] border-b-2 border-[#CDEA80]'
+                    : 'text-gray-600 hover:text-[#303031] hover:border-b-2 hover:border-gray-300'
+                }
+              `}
+            >
+              {label}
+              {active === key && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#CDEA80] animate-[slideIn_0.2s_ease-out]" />
+              )}
+            </button>
+          ))}
+        </nav>
+      </div>
     </div>
   )
 }

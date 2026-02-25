@@ -62,8 +62,8 @@ export default function FinishProject() {
       text: `Se va eliminar el proyecto "${projectName}" No podrás revertir esta acción`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
+      confirmButtonColor: '#CDEA80',
+      cancelButtonColor: '#FF735C',
       confirmButtonText: 'Sí, terminar proyecto',
       cancelButtonText: 'Cancelar',
     }).then(async (result) => {
@@ -157,7 +157,7 @@ export default function FinishProject() {
           className={`rounded-md px-3 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 
             ${
               selectedDeleteProject
-                ? 'bg-[#3E3378] text-white hover:bg-[#89CCDC] hover:text-black focus-visible:outline-indigo-600'
+                ? 'bg-[#CDEA80] text-[#303031] hover:bg-[#BDDEFF] hover:text-black focus-visible:outline-indigo-600'
                 : 'bg-gray-400 text-gray-200 cursor-not-allowed'
             }`}
           disabled={!selectedDeleteProject || selectedDeleteProject === 0}

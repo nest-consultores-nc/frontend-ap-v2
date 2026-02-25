@@ -1,5 +1,4 @@
 import { useState } from 'react'
-
 import NavLinks from './NavLinks'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
@@ -10,7 +9,7 @@ export function SideNav() {
     <>
       
       <button
-        className="block md:hidden p-2 absolute top-4 left-4 z-40 bg-white rounded shadow"
+        className="block md:hidden p-2 absolute top-4 left-4 z-40 white rounded shadow"
         onClick={() => setOpen(!open)}
         aria-label={open ? "Cerrar menú" : "Abrir menú"}
       >

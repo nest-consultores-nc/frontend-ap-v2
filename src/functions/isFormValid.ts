@@ -1,9 +1,10 @@
+import { IProjectData } from "../interfaces/projects/project-form.interface"
+
 /**
- * Checks if all values in the provided data object are not empty strings.
  *
  * @function
- * @param {Object} data - An object representing the data from a form.
- * @returns {boolean} Returns `true` if all values in the `data` object are not empty strings, otherwise returns `false`.
+ * @param {Object} data 
+ * @returns {boolean} 
  *
  * @example
  * const formData = {
@@ -22,6 +23,21 @@
  *
  * console.log(isFormValid(inc ompleteData));  // false
  */
-export const isFormValid = (data = {}) => {
-  return Object.values(data).every((value) => value !== '')
+export const isFormValid = <T extends object>(data: T): boolean => {
+  return Object.values(data).every((value) => {
+    if (typeof value === 'string') return value.trim() !== ''
+    if (typeof value === 'number') return value > 0
+    return value !== null && value !== undefined
+  })
+}
+
+
+export const isProjectFormValid = (data: IProjectData): boolean => {
+  return (
+    data.project_name.trim() !== '' &&
+    data.description.trim() !== '' &&
+    Number(data.project_client_id) > 0 &&
+    Number(data.project_type_id) > 0 &&
+    Number(data.project_category_id) > 0
+  )
 }

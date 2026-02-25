@@ -23,7 +23,6 @@ export const checkTokenAndRedirect = async (
       response.msg === 'Token not found' ||
       response.data === null
     ) {
-      // Si el token no es válido o no se encuentra, limpiar y redirigir
       localStorage.clear()
       navigate('/unauthorized')
     }

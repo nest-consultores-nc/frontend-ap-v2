@@ -5,17 +5,24 @@ type ApiResponse<T> = {
 }
 
 
-const getBaseUrl = () => {
- 
+const getBaseUrl = (): string => {
   const isDev = import.meta.env.DEV || import.meta.env.MODE === 'development'
-  
-  if (isDev) {
 
-    return import.meta.env.VITE_LOCAL_URL_BACKEND || 'http://localhost:3002/agencia-polux/api/v1'
+  if (isDev) {
+    return (
+      import.meta.env.VITE_LOCAL_URL_BACKEND ||
+      'http://localhost:3002/agencia-polux/api/v1'
+    )
   }
-  
-  
+
+   
+  const prod = import.meta.env.VITE_API_URL || import.meta.env.VITE_BASE_URL_BACKEND || import.meta.env.VITE_LOCAL_URL_BACKEND
+  if (!prod || prod === 'undefined') {
+    throw new Error('API base URL no configurada en producción. Define VITE_API_URL en tu entorno de build.')
+  }
+  return prod
 }
+
 
 export const queryLogin = async <T>(
   path: string,

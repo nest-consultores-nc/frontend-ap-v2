@@ -4,7 +4,6 @@ import { getAllUsers } from '../../api/users';
 import Papa from 'papaparse';
 import { saveAs } from 'file-saver';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentDate } from '../../functions/getCurrentDate';
 import { ISalaries } from '../../interfaces/salaries/salaries.interface';
 import {
   SubmitButtonsCsv,
@@ -15,15 +14,39 @@ import { createSalarieQuery } from '../../api/salaries/post-salaries';
 import { checkTokenAndRedirect } from '../../functions/checkTokenAndRedirect';
 import Swal from 'sweetalert2'
 import { TabsViewMode } from '../../components/TabsViewMode/TabsViewMode';
+import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
+
+const MONTHS_ES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+function makeMonthList(start: Dayjs = dayjs(), count = 15) {
+  const anchor = start.startOf('month');
+  return Array.from({ length: count }, (_, i) => {
+    const d = anchor.add(i, 'month');
+    const abbr = MONTHS_ES[d.month()];
+    const yy = d.format('YY');
+    return { name: `${abbr}-${yy}` };
+  });
+}
 
 export default function SalariesPage() {
+
   const [ ,setLoading] = useState<boolean>(true);
   const [salaries, setSalaries] = useState<ISalaries[]>([]);
   const [users, setUsers] = useState<IUsers[]>([]);
   const [selectedUser, setSelectedUser] = useState<string>('');
+  const [fileSelected, setFileSelected] = useState<boolean>(false);  
 
 
   const [viewMode, setViewMode] = useState<'form' | 'upload'>('form');
+  const [csvMonth, setCsvMonth] = useState<string>('');
+  const [monthAnchor] = useState(dayjs().startOf('month'));
+
+  const monthFormatted = useMemo(
+    () => makeMonthList(monthAnchor, 15),
+    [monthAnchor]
+  );
+
   const [formData, setFormData] = useState({
     user_id: '',
     detail: '',
@@ -42,11 +65,17 @@ export default function SalariesPage() {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    checkTokenAndRedirect(navigate);
-  }, [navigate]);
+    useEffect(() => {
+      checkTokenAndRedirect(navigate);
+    }, [navigate]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    useEffect(() => {
+      if (!csvMonth && monthFormatted.length > 0) {
+        setCsvMonth(monthFormatted[0].name);
+      }
+    }, [monthFormatted]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -63,31 +92,52 @@ export default function SalariesPage() {
     });
   };
 
+  const parseMonthString = (monthStr: string | undefined | null) => {
+    if (!monthStr || typeof monthStr !== 'string') return null;
+    const parts = monthStr.trim().toLowerCase().split('-');
+    if (parts.length !== 2) return null;
+    const [abbr, yy] = parts;
+    const monthIndex = MONTHS_ES.findIndex(m => m === abbr);
+    if (monthIndex === -1) return null;
+    const yearNum = Number(yy);
+    if (Number.isNaN(yearNum)) return null;
+    const year = 2000 + yearNum;
+    return { year, monthIndex };
+  };
+
+  const firstDayFromMonthString = (
+    monthStr: string | undefined | null,
+    outputFormat: 'DD/MM/YYYY' | 'YYYY-MM-DD' = 'DD/MM/YYYY'
+  ) => {
+    const parsed = parseMonthString(monthStr);
+    if (!parsed) return null;
+    const { year, monthIndex } = parsed;
+    const d = dayjs(new Date(year, monthIndex, 1));
+    return outputFormat === 'DD/MM/YYYY' ? d.format('DD/MM/YYYY') : d.format('YYYY-MM-DD');
+  };
+
   const handleDownloadCSV = () => {
-    const { currentDate } = getCurrentDate();
+    if (!Array.isArray(users)) {
+      console.error('users is not an array');
+      return;
+    }
+    const selectedMonth = csvMonth || `${MONTHS_ES[dayjs().month()]}-${dayjs().format('YY')}`;
 
-    const monthOptions: Intl.DateTimeFormatOptions = { month: 'short' };
-    const formattedMonth = new Intl.DateTimeFormat('es-ES', monthOptions)
-      .format(currentDate)
-      .toLowerCase()
-      .replace('.', '');
-
-    const formattedYear = currentDate.getFullYear().toString().slice(-2);
-    const formattedMonthYear = `${formattedMonth}-${formattedYear}`;
+    
+    const firstDayForCsv = firstDayFromMonthString(selectedMonth, 'YYYY-MM-DD') || dayjs().startOf('month').format('YYYY-MM-DD');
 
     const csvData = users.map(
       (user): IUserCSV => ({
         detail: user.name,
         salarie: null,
         user_id: user.id,
-        date: user.date!,
+        date: firstDayForCsv,
       })
     );
 
     const csv = Papa.unparse(csvData);
-
     const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
-    saveAs(blob, `sueldos-${formattedMonthYear}.csv`);
+    saveAs(blob, `sueldos-${selectedMonth}.csv`);
   };
 
  
@@ -97,7 +147,7 @@ export default function SalariesPage() {
       if (salaries.length === 0) return;
 
       const { isConfirmed } = await Swal.fire({
-        title: '¿Registrar salarios desde CSV?',
+        title: '¿Registrar sueldo desde CSV?',
         html: `
           <div style="text-align:left">
             Se guardarán <b>${salaries.length}</b> registros.
@@ -107,8 +157,8 @@ export default function SalariesPage() {
         showCancelButton: true,
         confirmButtonText: 'Sí, guardar',
         cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#3E3378',
-        cancelButtonColor: '#d33',
+        confirmButtonColor: '#CDEA80',
+        cancelButtonColor: '#FF735C',
       });
       if (!isConfirmed) return;
 
@@ -121,24 +171,24 @@ export default function SalariesPage() {
         await Swal.fire({
           icon: 'success',
           title: '¡Registro Exitoso!',
-          text: response.msg || 'Los salarios del CSV se guardaron correctamente',
-          confirmButtonColor: '#3E3378',
+          text: response.msg || 'Los sueldos del CSV se guardaron correctamente',
+          confirmButtonColor: '#CDEA80',
         });
         setSalaries([]);
       } else {
         await Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: response.msg || 'Ha ocurrido un error al guardar los salarios del CSV',
-          confirmButtonColor: '#d33',
+          text: response.msg || 'Ha ocurrido un error al guardar los sueldos del CSV',
+          confirmButtonColor: '#FF735C',
         });
       }
     } catch (error) {
       await Swal.fire({
         icon: 'error',
         title: 'Error inesperado',
-        text: 'Ha ocurrido al intentar agregar los salarios.',
-        confirmButtonColor: '#d33',
+        text: 'Ha ocurrido al intentar agregar los sueldos.',
+        confirmButtonColor: '#FF735C',
       });
     }
   };
@@ -152,14 +202,13 @@ export default function SalariesPage() {
         user_id: Number(formData.user_id),
       };
 
-      // Confirmación previa
       const { isConfirmed } = await Swal.fire({
-        title: '¿Confirmar registro del salario?',
+        title: '¿Confirmar registro del sueldo?',
         html: `
           <div style="text-align:left">
             <b>Colaborador:</b> ${selectedUserName || '(sin seleccionar)'}<br/>
             <b>Detalle:</b> ${salaryData.detail || '(sin detalle)'}<br/>
-            <b>Salario:</b> ${salaryData.salarie || '0'}<br/>
+            <b>Sueldo:</b> ${salaryData.salarie || '0'}<br/>
             <b>Fecha:</b> ${salaryData.date || '(sin fecha)'}
           </div>
         `,
@@ -167,8 +216,8 @@ export default function SalariesPage() {
         showCancelButton: true,
         confirmButtonText: 'Sí, guardar',
         cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#3E3378',
-        cancelButtonColor: '#d33',
+        confirmButtonColor: '#CDEA80',
+        cancelButtonColor: '#FF735C',
       });
       if (!isConfirmed) return;
 
@@ -181,8 +230,8 @@ export default function SalariesPage() {
         await Swal.fire({
           icon: 'success',
           title: '¡Registro Exitoso!',
-          text: response.msg || 'El salario se guardó correctamente',
-          confirmButtonColor: '#3E3378',
+          text: response.msg || 'El sueldo se guardó correctamente',
+          confirmButtonColor: '#CDEA80',
         });
         setFormData({ user_id: '', detail: '', salarie: '', date: '' });
         setSelectedUser('');
@@ -190,22 +239,19 @@ export default function SalariesPage() {
         await Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: response.msg || 'Ha ocurrido un error al guardar el salario',
-          confirmButtonColor: '#d33',
+          text: response.msg || 'Ha ocurrido un error al guardar el sueldo',
+          confirmButtonColor: '#FF735C',
         });
       }
     } catch (error) {
       await Swal.fire({
         icon: 'error',
         title: 'Error inesperado',
-        text: 'Ha ocurrido al intentar agregar el salario.',
-        confirmButtonColor: '#d33',
+        text: 'Ha ocurrido al intentar agregar el sueldo.',
+        confirmButtonColor: '#FF735C',
       });
     }
   };
-
-
-  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -221,7 +267,7 @@ export default function SalariesPage() {
           icon: 'error',
           title: 'Error',
           text: 'Ha ocurrido un error al traer a los usuarios',
-          confirmButtonColor: '#d33',
+          confirmButtonColor: '#FF735C',
         });
       } finally {
         setLoading(false);
@@ -234,51 +280,225 @@ export default function SalariesPage() {
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    setFileSelected(!!file);
     if (file && file.type === 'text/csv') {
       Papa.parse(file, {
         header: true,
         skipEmptyLines: true,
-        complete: (result) => {
+        complete: async (result) => {
+          console.log('Raw parsed data:', result.data);
+
+          const requiredColumns = ['user_id', 'salarie', 'detail', 'date'];
+          const csvColumns = result.meta.fields || [];
+          const missingColumns = requiredColumns.filter(col => !csvColumns.includes(col));
+
+          if (missingColumns.length > 0) {
+            await Swal.fire({
+              title: 'CSV inválido',
+              html: `
+                <div style="text-align:left">
+                  Faltan columnas obligatorias en el archivo:<br/>
+                  <ul style="margin-top:8px; padding-left:18px;">
+                    ${missingColumns.map(col => `<li><b>${col}</b></li>`).join('')}
+                  </ul>
+                  <small style="display:block; margin-top:12px;">
+                    El CSV debe tener exactamente estas columnas:<br/>
+                    <b>user_id, detail, salarie, date</b>
+                  </small>
+                </div>
+              `,
+              icon: 'error',
+              confirmButtonText: 'Entendido',
+              confirmButtonColor: '#CDEA80',
+            });
+            return;
+          }
+          const allowedColumns = ['user_id', 'detail', 'salarie', 'date'];
+          const extraColumns = csvColumns.filter(col => !allowedColumns.includes(col));
+
+          if (extraColumns.length > 0) {
+            await Swal.fire({
+              title: 'CSV con columnas no permitidas',
+              html: `
+                <div style="text-align:left">
+                  El archivo contiene columnas no permitidas:<br/>
+                  <ul style="margin-top:8px; padding-left:18px;">
+                    ${extraColumns.map(col => `<li><b>${col}</b></li>`).join('')}
+                  </ul>
+                  <small style="display:block; margin-top:12px;">
+                    Solo se permiten estas columnas:<br/>
+                    <b>user_id, detail, salarie, date</b>
+                  </small>
+                </div>
+              `,
+              icon: 'error',
+              confirmButtonText: 'Corregir CSV',
+              confirmButtonColor: '#CDEA80',
+            });
+            return;
+          }
+
           const updatedData = result.data
-            .map((row: any) => {
-              if (row.user_id && row.salarie) {
-                return {
-                  user_id: row.user_id,
-                  salarie: row.salarie,
-                  detail: row.detail,
-                  date: row.date,
-                };
-              } else {
-                return null;
+            .map((row: any, rowIndex: number) => {
+       
+              const errors: string[] = [];
+
+              const userId = Number(row.user_id);
+              if (!row.user_id || !Number.isInteger(userId) || userId <= 0) {
+                errors.push('user_id debe ser un número entero positivo');
               }
+
+              const salarie = Number(row.salarie);
+              if (!row.salarie || !Number.isFinite(salarie) || salarie <= 0) {
+                errors.push('salarie debe ser un número positivo');
+              }
+
+              if (!row.detail || !String(row.detail).trim()) {
+                errors.push('detail no puede estar vacío');
+              }
+
+              if (errors.length > 0) {
+                return {
+                  error: true,
+                  rowIndex: rowIndex + 1,
+                  errors,
+                  row
+                };
+              }
+
+              let resolvedDate = row.date && String(row.date).trim() ? String(row.date).trim() : '';
+
+              const mmmPattern = /^[a-z]{3}-\d{2}$/i;
+              const ddmmyyyyPattern = /^\d{2}\/\d{2}\/\d{4}$/;
+              const yyyymmddPattern = /^\d{4}-\d{2}-\d{2}$/;
+
+              if (mmmPattern.test(resolvedDate)) {
+        
+                const iso = firstDayFromMonthString(resolvedDate, 'YYYY-MM-DD');
+                if (iso) resolvedDate = iso;
+              } else if (ddmmyyyyPattern.test(resolvedDate)) {
+               
+                const [day, month, year] = resolvedDate.split('/');
+                resolvedDate = `${year}-${month}-${day}`;
+              } else if (!yyyymmddPattern.test(resolvedDate)) {
+           
+                errors.push('date tiene formato inválido (use DD/MM/YYYY)');
+              }
+
+    
+              if (!resolvedDate || !dayjs(resolvedDate).isValid()) {
+                errors.push('date tiene formato inválido');
+              }
+
+   
+              if (errors.length > 0) {
+                return {
+                  error: true,
+                  rowIndex: rowIndex + 1,
+                  errors,
+                  row
+                };
+              }
+
+              return {
+                user_id: Number(row.user_id),
+                salarie: row.salarie,
+                detail: row.detail,
+                date: resolvedDate, 
+              };
             })
-            .filter(Boolean);
+            .filter((item): item is any => item !== null);
 
-            if (updatedData.length > 0) {
-              setSalaries(updatedData as ISalaries[]);
-            } else {
-              Swal.fire({
-                icon: 'warning',
-                title: 'CSV inválido',
-                text: 'Revisa el archivo. "user_id" y "salarie" son obligatorios.',
-                confirmButtonColor: '#3E3378',
-              });
-            }
 
+          const validRows = updatedData.filter((item: any) => !item?.error);
+          const errorRows = updatedData.filter((item: any) => item?.error);
+
+
+          if (errorRows.length > 0) {
+        
+            const errorsByType: Record<string, number[]> = {}
+            
+            errorRows.forEach((err: any) => {
+              err.errors.forEach((errorMsg: string) => {
+                if (!errorsByType[errorMsg]) {
+                  errorsByType[errorMsg] = []
+                }
+                errorsByType[errorMsg].push(err.rowIndex)
+              })
+            })
+
+            const errorSummary = Object.entries(errorsByType).map(([errorMsg, rows]) => {
+              const rowList = rows.length > 10 
+                ? `${rows.slice(0, 10).join(', ')}... (y ${rows.length - 10} más)`
+                : rows.join(', ')
+              
+              return `
+                <li style="margin-bottom:12px;">
+                  <b>${errorMsg}</b><br/>
+                  <span style="color:#666; font-size:0.9em;">Filas afectadas: ${rowList}</span>
+                </li>
+              `
+            }).join('')
+
+            await Swal.fire({
+              title: `Se encontraron ${errorRows.length} fila${errorRows.length > 1 ? 's' : ''} con errores`,
+              html: `
+                <div style="text-align:left; max-height:400px; overflow-y:auto;">
+                  <p style="margin-bottom:12px; font-weight:500;">Errores detectados:</p>
+                  <ul style="padding-left:20px; margin-bottom:16px;">
+                    ${errorSummary}
+                  </ul>
+                  <hr style="margin:16px 0; border-color:#e5e7eb;"/>
+                  <div style="background:#f9fafb; padding:12px; border-radius:6px;">
+                    <p style="font-weight:600; margin-bottom:8px;">Formato correcto del CSV:</p>
+                    <small style="line-height:1.8;">
+                      <b>Nombres de columnas (en inglés):</b><br/>
+                      • <b>user_id:</b> número entero positivo<br/>
+                      • <b>salarie:</b> número positivo (sin puntos ni comas)<br/>
+                      • <b>date:</b> formato DD/MM/YYYY<br/>
+                      • <b>detail:</b> texto no vacío
+                    </small>
+                  </div>
+                </div>
+              `,
+              icon: 'error',
+              confirmButtonText: 'Corregir CSV',
+              confirmButtonColor: '#CDEA80',
+              width: '650px',
+            });
+            return;
+          }
+
+          if (validRows.length > 0) {
+            setSalaries(validRows as ISalaries[]);
+          } else {
+            await Swal.fire({
+              icon: 'warning',
+              title: 'CSV vacío',
+              text: 'El archivo no contiene filas válidas.',
+              confirmButtonColor: '#CDEA80',
+            });
+          }
         },
-        error: (error) => {
-          console.error('Error reading CSV file:', error);
+        error: async (err) => {
+          console.error('Error reading CSV file:', err);
+          await Swal.fire({
+            title: 'Error al leer el archivo',
+            text: 'Revisa que el CSV tenga cabeceras y el formato esperado.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#CDEA80',
+          });
         },
       });
-      } else {
-        Swal.fire({
-          icon: 'info',
-          title: 'Formato no soportado',
-          text: 'Por favor, sube un archivo con extensión .csv',
-          confirmButtonColor: '#3E3378',
-        });
-      }
-
+    } else {
+      Swal.fire({
+        icon: 'info',
+        title: 'Formato no soportado',
+        text: 'Por favor, sube un archivo con extensión .csv',
+        confirmButtonColor: '#CDEA80',
+      });
+    }
   };
 
   return (
@@ -306,6 +526,41 @@ export default function SalariesPage() {
         />
       </div>
 
+
+      {viewMode === 'upload' && (
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-900 mb-2">
+            Selecciona el Mes para configurar el formato de tu archivo CSV.
+          </label>
+          <input
+            type="month"
+            name="csv_month"
+            value={csvMonth ? (() => {
+              const parsed = parseMonthString(csvMonth)
+              if (!parsed) return ''
+              const { year, monthIndex } = parsed
+              return `${year}-${String(monthIndex + 1).padStart(2, '0')}`
+            })() : ''}
+            onChange={(e) => {
+              if (e.target.value) {
+                const [year, month] = e.target.value.split('-')
+                const monthIndex = parseInt(month) - 1
+                const monthAbbr = MONTHS_ES[monthIndex]
+                const yy = year.slice(-2)
+                const monthStr = `${monthAbbr}-${yy}`
+                setCsvMonth(monthStr)
+              }
+            }}
+            className="outline-none block w-full md:w-auto rounded-md border px-3 py-2.5 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-gray-400"
+          />
+          <div className="mt-3">
+            <small className="block text-xs text-gray-500 mt-1">
+              <b>Columnas requeridas:</b> Los nombres de las columnas están predefinidos en el formato CSV. Por favor, no editarlos.<br/>
+              <b>Formato fecha:</b> El formato correspondiente para el campo fecha es DD/MM/YYYY.<br/>
+            </small>
+          </div>
+        </div>
+      )}
 
       {viewMode === 'form' ? (
         <form>
@@ -345,7 +600,7 @@ export default function SalariesPage() {
 
             <div className="col-span-full">
               <label className="block text-sm font-medium leading-6 text-gray-900">
-                Ingrese el Salario
+                Ingrese el Sueldo
               </label>
               <input
                 type="number"
@@ -363,14 +618,26 @@ export default function SalariesPage() {
 
             <div className="col-span-full">
               <label className="block text-sm font-medium leading-6 text-gray-900">
-                Ingrese la Fecha
+                Seleccione el Mes
               </label>
               <input
-                type="date"
+                type="month"
                 name="date"
-                value={formData.date}
-                onChange={handleInputChange}
-                className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-gray-400 sm:text-sm sm:leading-6"
+                value={formData.date ? dayjs(formData.date).format('YYYY-MM') : ''}
+                onChange={(e) => {
+                  const selectedYearMonth = e.target.value; 
+                  if (selectedYearMonth) {
+                    const isoDate = `${selectedYearMonth}-01`;
+                    setFormData({
+                      ...formData,
+                      date: isoDate,
+                    });
+                  }
+                }}
+                onClick={(e) => {
+                  e.currentTarget.showPicker();
+                }}
+                className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-gray-400 sm:text-sm sm:leading-6 cursor-pointer"
               />
             </div>
 
@@ -381,10 +648,10 @@ export default function SalariesPage() {
                 disabled={!isFormValid}
                 className={`mt-2 inline-flex items-center rounded-md px-4 py-2 text-sm font-medium shadow-sm transition
                   ${!isFormValid
-                    ? 'bg-indigo-600/60 text-white cursor-not-allowed'
-                    : 'bg-[#3E3378] text-white hover:bg-[#89CCDC] hover:text-black'}
+                    ? 'bg-gray-400 text-[[#303031]] cursor-not-allowed'
+                    : 'bg-[#CDEA80] text-[[#303031]] hover:bg-[#BDDEFF] hover:text-black'}
                 `}
-              >
+              >      
                 Guardar
               </button>
             </div>
@@ -392,13 +659,11 @@ export default function SalariesPage() {
         </form>
       ) : (
   
- 
-
         <form>
           <label className="block text-sm font-medium text-gray-900">
             Subir Archivo .csv
           </label>
-          <div className="flex justify-between">
+          <div className="flex gap-2 items-center">
             <input
               id="file_input"
               type="file"
@@ -406,7 +671,21 @@ export default function SalariesPage() {
               onChange={handleFileUpload}
               className="block w-full text-sm p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
             />
-
+            {fileSelected && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSalaries([])
+                  setFileSelected(false)
+                  const fileInput = document.getElementById('file_input') as HTMLInputElement
+                  if (fileInput) fileInput.value = ''
+                }}
+                className="[#303031]space-nowrap rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-[#303031] shadow-sm hover:bg-red-500"
+                title="Limpiar archivo cargado"
+              >
+                ✕ Limpiar
+              </button>
+            )}
           </div>
           <div className="overflow-x-auto mt-4">
             <TableUploadSalaries salaries={salaries} />

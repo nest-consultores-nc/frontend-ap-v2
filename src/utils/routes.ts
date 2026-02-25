@@ -12,9 +12,10 @@ import {
   ArrowUpOnSquareIcon,
   DocumentPlusIcon,
   ChatBubbleLeftRightIcon,
+  DocumentIcon,
   //PencilSquareIcon,
 } from '@heroicons/react/24/outline'
-import { InformationCircleIcon } from '@heroicons/react/24/outline'
+
 import { Edit} from 'lucide-react'
 
 
@@ -46,8 +47,8 @@ export const ADMIN_LINKS_GROUPED = [
     title: 'Finanzas',
     links: [
       { name: 'Registrar Desembolsos', href: '/dashboard/registrar-desembolsos', icon: ArrowUpOnSquareIcon },
-      { name: 'Registrar Ingresos', href: '/dashboard/registrar-ingresos', icon: ArrowDownOnSquareIcon },
-      { name: 'Registrar Sueldos', href: '/dashboard/registrar-sueldos', icon: CurrencyDollarIcon },
+      { name: 'Registrar Ingresos', href: '/dashboard/registrar-ingresos', icon: ArrowUpOnSquareIcon },
+      { name: 'Registrar Sueldos', href: '/dashboard/registrar-sueldos', icon: ArrowUpOnSquareIcon },
       { name: 'Costeo', href: '/dashboard/costeo', icon: CurrencyDollarIcon },
     ],
   },
@@ -57,6 +58,7 @@ export const ADMIN_LINKS_GROUPED = [
       { name: 'Añadir Día Libre', href: '/dashboard/dia-libre', icon: CalendarDaysIcon },
       { name: 'Editar mi Perfil', href: '/dashboard/editar-perfil', icon: UserIcon },
       { name: 'Editar Registros', href: '/dashboard/editar', icon: Edit },
+      { name: 'Reporte Automatizado', href: '/dashboard/reporte', icon: DocumentIcon },
       { name: 'Mesa de ayuda', href: '/dashboard/soporte', icon: ChatBubbleLeftRightIcon},
     ],
   },
@@ -102,6 +104,7 @@ export const DIRECTORA_EJECUTIVA_GROUPED = [
       { name: 'Añadir Día Libre', href: '/dashboard/dia-libre', icon: CalendarDaysIcon },
       { name: 'Editar mi Perfil', href: '/dashboard/editar-perfil', icon: UserIcon },
       { name: 'Editar Registros', href: '/dashboard/editar', icon: Edit },
+      { name: 'Reporte Automatizado', href: '/dashboard/reporte', icon: DocumentIcon },
       { name: 'Mesa de ayuda', href: '/dashboard/soporte', icon: ChatBubbleLeftRightIcon},
     ],
   },

@@ -1,5 +1,5 @@
 import { IDedicationsByMonth } from '../../interfaces/dedications/dedications.interfaces'
-// src/api/dedications/index.ts
+
 export * from './read'
 export * from './mutate'
 
@@ -52,7 +52,7 @@ export const fetchFromApi = async <T>(
       body: hasBody ? JSON.stringify(body ?? {}) : undefined,
     })
 
-    // Algunos DELETE pueden responder 204 sin body
+    
     const text = await response.text()
     return text ? (JSON.parse(text) as T) : ({} as T)
   } catch (error: any) {

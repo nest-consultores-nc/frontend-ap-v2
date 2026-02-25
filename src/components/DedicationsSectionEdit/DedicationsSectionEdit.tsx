@@ -15,9 +15,8 @@ export function DedicationsSectionEdit() {
   const { records, upsert, remove, duplicate, create } = useDedicationsRemoteDataset({ token })
   const { userOptions, usersById } = useUsersCatalog(token)
 
-  // catálogo de proyectos
   const [projects, setProjects] = useState<IProject[]>([])
-  const [showActiveOnly, setShowActiveOnly] = useState(true)
+  const [showActiveOnly,] = useState(true)
 
   useEffect(() => {
     if (!token) return
@@ -32,18 +31,47 @@ export function DedicationsSectionEdit() {
     return m
   }, [projects])
 
+
+  const availableUserIds = useMemo(() => {
+    const ids = new Set<number>()
+    records.forEach(r => {
+      if (r.user_id != null) ids.add(Number(r.user_id))
+    })
+    return Array.from(ids).sort((a, b) => {
+      const nameA = usersById.get(a) || ''
+      const nameB = usersById.get(b) || ''
+      return nameA.localeCompare(nameB)
+    })
+  }, [records, usersById])
+
+
+  const availableProjectIds = useMemo(() => {
+    const ids = new Set<number>()
+    records.forEach(r => {
+      if (r.project_id != null) ids.add(Number(r.project_id))
+    })
+    return Array.from(ids).sort((a, b) => {
+      const nameA = projectsById.get(a) || ''
+      const nameB = projectsById.get(b) || ''
+      return nameA.localeCompare(nameB)
+    })
+  }, [records, projectsById])
+
   const projectOptionsGrouped = useMemo(() => {
     const groups = buildProjectOptGroups(projects, showActiveOnly)
     const sep = (label: string) => ({ label: `── ${label} ──`, value: `#sep#${label}` })
     return groups.flatMap(g => [sep(g.label), ...g.options])
   }, [projects, showActiveOnly])
 
-  // filtros
-  const [query, setQuery] = useState('')
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
 
-  // selección
+  const [query, setQuery] = useState('')
+  const [filterMonth, setFilterMonth] = useState('')
+  const [filterUserId, setFilterUserId] = useState<string>('')
+  const [filterProjectId, setFilterProjectId] = useState<string>('')
+  const [filterDedicationThreshold, setFilterDedicationThreshold] = useState(0)
+  const [isDedicationFilterActive, setIsDedicationFilterActive] = useState(false)
+
+
   const [selectedId, setSelectedId] = useState<number | null>(null)
   useEffect(() => {
     if (selectedId == null) return
@@ -52,7 +80,7 @@ export function DedicationsSectionEdit() {
     if (!still) setSelectedId(null)
   }, [records, selectedId])
 
-  // scroll/resaltado (pantalla chica)
+
   const editorRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!selectedId) return
@@ -69,38 +97,49 @@ export function DedicationsSectionEdit() {
   }, [selectedId])
 
  
-  // normalizar texto
   const normalize = (s: string) =>
     s.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '')
 
-  // filtro + búsqueda
   const filtered = useMemo(() => {
-    const base = records.filter(r => {
-      if (dateFrom && r.week < dateFrom) return false
-      if (dateTo   && r.week > dateTo)   return false
-      return true
-    })
+    let base = records
+
+    if (filterMonth) {
+      base = base.filter(r => r.week === filterMonth)
+    }
+
+    if (filterUserId) {
+      base = base.filter(r => String(r.user_id) === filterUserId)
+    }
+
+    if (filterProjectId) {
+      base = base.filter(r => String(r.project_id) === filterProjectId)
+    }
+
+    if (isDedicationFilterActive) {
+      base = base.filter(r => {
+        const pct = Number(r.dedicated ?? 0)
+        return pct >= filterDedicationThreshold
+      })
+    }
+
     const q = normalize(query.trim())
     if (!q) return base
+
     return base.filter(r => {
       const userName = usersById.get(Number(r.user_id)) ?? ''
-      const projectName = projectsById.get(Number(r.project_id)) ?? r.project_name ?? ''
-      const clientName = r.client_name ?? ''
-      const haystack = [
-        String(r.id), r.week ?? '', String(r.dedicated ?? ''),
-        userName, projectName, clientName,
-      ].join(' | ')
+      const detail = r.detail ?? ''
+      const haystack = [userName, detail].join(' | ')
       return normalize(haystack).includes(q)
     })
-  }, [records, query, dateFrom, dateTo, usersById, projectsById])
+  }, [records, query, filterMonth, filterUserId, filterProjectId, filterDedicationThreshold, isDedicationFilterActive, usersById])
 
-  // seleccionado
+
   const selected = useMemo(
     () => records.find(r => r.id === selectedId) ?? null,
     [records, selectedId]
   )
 
-  // persistencia con confirmación
+
   const handlePersist = useCallback(async (data: Dedication) => {
     const missing: string[] = []
     if (!data.user_id) missing.push('Usuario')
@@ -122,7 +161,6 @@ export function DedicationsSectionEdit() {
       showCancelButton: true,
       confirmButtonText: 'Sí, guardar',
       cancelButtonText: 'Cancelar',
-      reverseButtons: true,
       focusCancel: true,
     })
     if (!res.isConfirmed) return
@@ -146,7 +184,6 @@ export function DedicationsSectionEdit() {
       showCancelButton: true,
       confirmButtonText: confirmText,
       cancelButtonText: 'Cancelar',
-      reverseButtons: true,
       focusCancel: true,
     })
 
@@ -154,7 +191,6 @@ export function DedicationsSectionEdit() {
     id == null ? (fallback ?? '—') : (map.get(Number(id)) ?? (fallback ?? '—'))
  
 
-    // ✅ Helpers sin UTC (todo en local)
     const fmtYMD = (d: Date) => {
     const y = d.getFullYear()
     const m = String(d.getMonth() + 1).padStart(2, '0')
@@ -164,12 +200,12 @@ export function DedicationsSectionEdit() {
 
     const parseYMDLocal = (ymd: string) => {
     const [y, m, d] = ymd.split('-').map(Number)
-    return new Date(y, (m ?? 1) - 1, d ?? 1) // Date(...) es local
+    return new Date(y, (m ?? 1) - 1, d ?? 1) 
     }
 
     const getMondayLocalFromYMD = (ymd: string) => {
     const d = parseYMDLocal(ymd)
-    const dow = d.getDay() || 7 // dom=0 => 7
+    const dow = d.getDay() || 7
     if (dow !== 1) d.setDate(d.getDate() - (dow - 1))
     return d
     }
@@ -180,19 +216,19 @@ export function DedicationsSectionEdit() {
     return f
     }
 
-  // columnas
+
   const columns = [
-    { key: 'id',        label: 'ID' },
-    { key: 'week',      label: 'Semana (Lun)'},
-    { key: 'project',   label: 'Proyecto' },
-    { key: 'dedicated', label: 'Dedicación (%)' },
-    { key: 'user',      label: 'Usuario' },
+    { key: 'id',        label: 'ID', width: 'w-16' },
+    { key: 'week',      label: 'Semana', width: 'w-28' },
+    { key: 'project',   label: 'Proyecto', width: 'min-w-[200px] max-w-[300px]' },
+    { key: 'dedicated', label: '%', width: 'w-16' },
+    { key: 'user',      label: 'Usuario', width: 'min-w-[150px]' },
   ] as const
 
-  // 👇 NUEVO: control del scroll horizontal del contenedor de la tabla
+
   const tableScrollRef = useRef<HTMLDivElement>(null)
-  const [canScrollLeft, setCanScrollLeft]   = useState(false)
-  const [canScrollRight, setCanScrollRight] = useState(false)
+  const [, setCanScrollLeft]   = useState(false)
+  const [, setCanScrollRight] = useState(false)
 
   const updateScrollButtons = useCallback(() => {
     const el = tableScrollRef.current
@@ -217,12 +253,6 @@ export function DedicationsSectionEdit() {
     }
   }, [updateScrollButtons])
 
-  const nudge = (dir: 'left' | 'right') => {
-    const el = tableScrollRef.current
-    if (!el) return
-    const delta = Math.round(el.clientWidth * 0.8) * (dir === 'left' ? -1 : 1)
-    el.scrollBy({ left: delta, behavior: 'smooth' })
-  }
 
 type BulkDraft = {
   id: number
@@ -235,7 +265,7 @@ type BulkDraft = {
 const [bulkDrafts, setBulkDrafts] = useState<BulkDraft[]>([])
 const [bulkBusy, setBulkBusy] = useState(false)
 
-// 2) Cuando cambia el seleccionado, armamos el grupo: mismo usuario + misma semana (lunes)
+
 useEffect(() => {
   if (!selected) {
     setBulkDrafts([])
@@ -255,14 +285,14 @@ useEffect(() => {
   setBulkDrafts(next)
 }, [selected, records])
 
-// 3) Helpers de edición para cada fila de draft
+
 const setDraftField = useCallback((rowId: number, patch: Partial<BulkDraft>) => {
   setBulkDrafts(curr => curr.map(d => (d.id === rowId ? { ...d, ...patch } : d)))
 }, [])
 
 const adjustToMondayYMD = (ymd: string) => fmtYMD(getMondayLocalFromYMD(ymd))
 
-// 4) Validaciones: suma de porcentajes y campos obligatorios
+
 const totalPct = useMemo(() => {
   return bulkDrafts.reduce((acc, d) => acc + (Number.isFinite(d.dedicated) ? Number(d.dedicated) : 0), 0)
 }, [bulkDrafts])
@@ -279,7 +309,7 @@ const bulkHasErrors = useMemo(() => {
   return false
 }, [bulkDrafts, selected, totalPct])
 
-// 5) Guardado secuencial usando el mismo upsert existente (una a una)
+
 const handleBulkSave = useCallback(async () => {
   if (!selected) return
   if (bulkHasErrors) {
@@ -294,7 +324,6 @@ const handleBulkSave = useCallback(async () => {
     showCancelButton: true,
     confirmButtonText: 'Sí, guardar grupo',
     cancelButtonText: 'Cancelar',
-    reverseButtons: true,
     focusCancel: true
   })
   if (!res.isConfirmed) return
@@ -337,24 +366,27 @@ const handleBulkSave = useCallback(async () => {
   }
 }, [bulkDrafts, bulkHasErrors, selected, upsert])
 
-// 0) Flag para ocultar la edición individual sin borrar el desarrollo
 const HIDE_SINGLE_EDIT = true
 
-// 1) Panel de edición grupal responsivo (móvil y desktop)
 const BulkEditPanel = selected ? (
-  <div className="bg-white border rounded-2xl shadow-sm p-4 sm:p-6">
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-      <h2 className="text-lg sm:text-xl font-semibold">
-        Edición grupal • Usuario: {safeGet(usersById, selected.user_id, `ID ${selected.user_id}`)} • Semana: {selected.week}
-      </h2>
-      <div className="text-sm">
-        <span className={totalPct > 100 ? 'text-red-700 font-semibold' : 'text-gray-700'}>
-          Total % semana: {totalPct}%
+  <div className="white border rounded-2xl shadow-sm p-4 sm:p-6">
+    <div className="flex flex-col gap-2">
+      <div className="flex items-start justify-between gap-3">
+        <h2 className="text-base sm:text-lg font-semibold">
+          Edición grupal
+        </h2>
+        <span className={`text-sm font-semibold shrink-0 ${totalPct > 100 ? 'text-red-700' : 'text-gray-700'}`}>
+          Total: {totalPct}%
         </span>
+      </div>
+      <div className="text-xs text-gray-600">
+        <span className="font-medium">Usuario:</span> {safeGet(usersById, selected.user_id, `ID ${selected.user_id}`)}
+        {' • '}
+        <span className="font-medium">Semana:</span> {selected.week}
       </div>
     </div>
 
-    {/* Vista móvil en tarjetas */}
+
     <div className="md:hidden mt-3 space-y-3">
       {bulkDrafts.map(row => (
         <div key={row.id} className="border rounded-xl p-3">
@@ -434,7 +466,6 @@ const BulkEditPanel = selected ? (
       )}
     </div>
 
-    {/* Vista desktop en tabla con scroll horizontal si es necesario */}
     <div className="hidden md:block mt-4">
       <div className="relative overflow-x-auto border rounded-xl">
         <table className="w-full text-sm min-w-[720px]">
@@ -448,7 +479,7 @@ const BulkEditPanel = selected ? (
           </thead>
           <tbody>
             {bulkDrafts.map(row => (
-              <tr key={row.id} className="border-t bg-white">
+              <tr key={row.id} className="border-t white">
                 <td className="px-3 py-2 tabular-nums">{row.id < 0 ? 'Nuevo' : row.id}</td>
                 <td className="px-3 py-2">
                   <select
@@ -519,88 +550,186 @@ const BulkEditPanel = selected ? (
       </div>
     </div>
 
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-4">
-      <div className="text-xs text-gray-600">
-        La agrupación de registros corresponde por usuario y semana (lunes).
+    <div className="flex flex-col gap-2 mt-4">
+      <div className="text-xs text-gray-500">
+        La agrupación corresponde a usuario y semana (lunes).
       </div>
       <button
         onClick={handleBulkSave}
         disabled={bulkBusy || bulkHasErrors || bulkDrafts.length === 0}
-        className={`w-full sm:w-auto px-3 py-2 rounded-xl border ${bulkBusy || bulkHasErrors || bulkDrafts.length === 0 ? 'bg-gray-200 text-gray-500' : 'bg-[#3E3378] text-white hover:bg-[#89CCDC] hover:text-black'}`}
+        className={`w-full px-4 py-2 rounded-xl border text-sm ${bulkBusy || bulkHasErrors || bulkDrafts.length === 0 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-[#CDEA80] text-[#303031] hover:bg-[#BDDEFF] hover:text-black'}`}
         title={totalPct > 100 ? 'La suma de porcentajes supera 100%' : 'Guardar cambios del grupo'}
       >
-        Guardar cambios del grupo
+        {bulkBusy ? 'Guardando...' : 'Guardar cambios del grupo'}
       </button>
     </div>
+
   </div>
 ) : null
+
+  const hasActiveFilters = 
+    filterMonth !== '' || 
+    filterUserId !== '' || 
+    filterProjectId !== '' || 
+    isDedicationFilterActive
+
+  const clearAllFilters = () => {
+    setFilterMonth('')
+    setFilterUserId('')
+    setFilterProjectId('')
+    setFilterDedicationThreshold(0)
+    setIsDedicationFilterActive(false)
+  }
+
 
   return (
     <div className="max-w-screen-2xl mx-auto px-3 sm:px-4 mt-8">
       <div className="grid gap-6 2xl:[grid-template-columns:minmax(20rem,1.2fr)_minmax(24rem,2fr)]">
 
-        {/* LISTA + filtros */}
-        <div className="bg-white border rounded-2xl shadow-sm p-4">
+        <div className="white border rounded-2xl shadow-sm p-4">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-3">
             <input
-              placeholder="Buscar por usuario, proyecto, cliente..."
+              placeholder="Buscar por detalle o usuario..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="w-full sm:flex-1 border rounded-xl p-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
             />
             <button
               onClick={async () => setSelectedId(await create())}
-              className="w-full sm:w-auto px-4 py-3 rounded-xl border bg-[#3E3378] text-white hover:bg-[#89CCDC] hover:text-black"
+              className="w-full sm:w-auto px-4 py-3 rounded-xl border bg-[#CDEA80] text-[#303031] hover:bg-[#BDDEFF] hover:text-black"
             >
               Nuevo
             </button>
           </div>
 
-          {/* Filtros: Semana/Fecha */}
-          {/* Filtros: con etiqueta */}
-          <div className="flex flex-wrap items-end gap-3 mb-3">
-            <div className="flex flex-col">
-              <label htmlFor="flt-desde" className="text-xs text-gray-600 mb-1">Fecha desde</label>
-              <input
-                id="flt-desde"
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="border rounded-xl p-2"
-                placeholder="YYYY-MM-DD"
-                title="Mostrar registros con semana/fecha mayor o igual a esta"
-                aria-label="Fecha desde"
-              />
+
+            <div className="flex flex-col gap-3 mb-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="flex flex-col">
+                  <label htmlFor="flt-week" className="text-xs text-gray-600 mb-1">Semana (Lunes)</label>
+                  <input
+                    id="flt-week"
+                    type="date"
+                    value={filterMonth}
+                    onChange={(e) => {
+                      const raw = e.target.value
+                      if (raw && /^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+                        const monday = adjustToMondayYMD(raw)
+                        setFilterMonth(monday)
+                      } else {
+                        setFilterMonth('')
+                      }
+                    }}
+                    className="border rounded-xl p-2 text-sm"
+                    title="Filtrar por semana (lunes)"
+                    step={7}
+                    min="2020-01-06"
+                  />
+                </div>
+
+                <div className="flex flex-col">
+                  <label htmlFor="flt-user" className="text-xs text-gray-600 mb-1">Usuario</label>
+                  <select
+                    id="flt-user"
+                    value={filterUserId}
+                    onChange={(e) => setFilterUserId(e.target.value)}
+                    className="border rounded-xl p-2 text-sm"
+                    title="Filtrar por usuario"
+                  >
+                    <option value="">Todos los usuarios</option>
+                    {availableUserIds.map(uid => (
+                      <option key={uid} value={String(uid)}>
+                        {usersById.get(uid) || `ID ${uid}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+
+                <div className="flex flex-col">
+                  <label htmlFor="flt-project" className="text-xs text-gray-600 mb-1">Proyecto</label>
+                  <select
+                    id="flt-project"
+                    value={filterProjectId}
+                    onChange={(e) => setFilterProjectId(e.target.value)}
+                    className="border rounded-xl p-2 text-sm"
+                    title="Filtrar por proyecto"
+                  >
+                    <option value="">Todos los proyectos</option>
+                    {availableProjectIds.map(pid => (
+                      <option key={pid} value={String(pid)}>
+                        {projectsById.get(pid) || `ID ${pid}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3">
+                <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs text-gray-600 font-medium">
+                      Filtrar dedicaciones con mínimo de
+                    </label>
+                    <button
+                      onClick={() => {
+                        setIsDedicationFilterActive(!isDedicationFilterActive)
+                        if (isDedicationFilterActive) {
+                          setFilterDedicationThreshold(0)
+                        }
+                      }}
+                      className={`text-xs font-medium px-2 py-1 rounded transition-colors ${
+                        isDedicationFilterActive
+                          ? 'bg-[#CDEA80] text-[#303031] hover:bg-[#BDDEFF]'
+                          : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      }`}
+                    >
+                      {isDedicationFilterActive ? 'Activo' : 'Inactivo'}
+                    </button>
+                  </div>
+                  
+                  <div className="text-sm text-gray-700 font-semibold">
+                    {filterDedicationThreshold}%
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500 shrink-0">0%</span>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="1"
+                      value={filterDedicationThreshold}
+                      onChange={(e) => {
+                        setFilterDedicationThreshold(Number(e.target.value))
+                        setIsDedicationFilterActive(true)
+                      }}
+                      className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#CDEA80]"
+                      title="Dedicación mínima"
+                    />
+                    <span className="text-xs text-gray-500 shrink-0">100%</span>
+                  </div>
+                </div>
+              </div> 
+
+              {hasActiveFilters && (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={clearAllFilters}
+                    className="px-4 py-2 rounded-xl border bg-gray-100 hover:bg-gray-200 text-sm"
+                    title="Limpiar todos los filtros"
+                  >
+                    Limpiar filtros
+                  </button>
+                </div>
+              )}
             </div>
 
-            <div className="flex flex-col">
-              <label htmlFor="flt-hasta" className="text-xs text-gray-600 mb-1">Fecha hasta</label>
-              <input
-                id="flt-hasta"
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="border rounded-xl p-2"
-                placeholder="YYYY-MM-DD"
-                title="Mostrar registros con semana/fecha menor o igual a esta"
-                aria-label="Fecha hasta"
-              />
-            </div>
 
-            <button
-              type="button"
-              onClick={() => { setDateFrom(''); setDateTo(''); }}
-              className="px-3 py-2 rounded-xl border"
-              title="Borrar filtros aplicados"
-            >
-              Limpiar Filtros
-            </button>
-          </div>
-
-          {/* vista lista (mobile) */}
           <div className="md:hidden space-y-2">
             {filtered.map(row => (
-              <div key={row.id} className={`border rounded-xl p-3 ${row.id === selectedId ? 'bg-indigo-50/40' : 'bg-white'}`}>
+              <div key={row.id} className={`border rounded-xl p-3 ${row.id === selectedId ? 'bg-indigo-50/40' : 'white'}`}>
                 <div className="flex items-baseline justify-between gap-3">
                   <span className="text-xs text-gray-500">ID</span>
                   <span className="font-medium tabular-nums">{row.id < 0 ? 'Nuevo' : row.id}</span>
@@ -610,7 +739,7 @@ const BulkEditPanel = selected ? (
                     <div className="text-xs text-gray-500">Semana</div>
                     <div className="tabular-nums">{row.week}</div>
                   </div>
-                    {/* Cliente eliminado */}
+           
                     <div className="text-right">
                         <div className="text-xs text-gray-500">Dedicación</div>
                         <div className="font-medium tabular-nums">{Number(row.dedicated ?? 0)}%</div>
@@ -638,7 +767,7 @@ const BulkEditPanel = selected ? (
                     }}
                   >Duplicar</button>
                   <button className="underline text-red-600" onClick={async () => {
-                    const res = await Swal.fire({ title:'¿Eliminar?', text: 'Esta acción eliminará el registro de forma permanente.', icon:'warning', showCancelButton:true, confirmButtonText:'Sí, eliminar', cancelButtonText:'Cancelar', reverseButtons:true, focusCancel:true })
+                    const res = await Swal.fire({ title:'¿Eliminar?', text: 'Esta acción eliminará el registro de forma permanente.', icon:'warning', showCancelButton:true, confirmButtonText:'Sí, eliminar', cancelButtonText:'Cancelar', focusCancel:true })
                     if (!res.isConfirmed) return
                     await remove(row.id)
                     if (row.id === selectedId) setSelectedId(null)
@@ -650,13 +779,12 @@ const BulkEditPanel = selected ? (
             {filtered.length === 0 && (<div className="px-3 py-6 text-center text-gray-500 border rounded-xl">Sin resultados</div>)}
           </div>
 
-          {/* tabla (md+) */}
-          {/* tabla (md+) con header sticky y scroll vertical */}
+
           <div
             ref={tableScrollRef}
             className="hidden md:block relative overflow-x-auto overflow-y-auto border rounded-xl max-h-[65vh]"
           >
-            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white to-transparent rounded-tr-xl rounded-br-xl -z-10" />
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-[#303031]-to-transparent rounded-tr-xl rounded-br-xl -z-10" />
             <table className="w-full text-sm">
               <thead className="bg-gray-50 sticky top-0 z-30 shadow">
                 <tr>
@@ -669,8 +797,8 @@ const BulkEditPanel = selected ? (
                     </th>
                   ))}
 
-                  {/* Acciones sticky arriba + derecha con flechitas */}
-                    <th className="px-3 py-2 text-right whitespace-nowrap sticky right-0 z-20 bg-white border-l">
+     
+                    <th className="px-3 py-2 text-right whitespace-nowrap sticky right-0 z-20 bg-gray-50 border-l">
                       Acciones
                     </th>
                 </tr>
@@ -679,15 +807,13 @@ const BulkEditPanel = selected ? (
 
               <tbody>
                 {filtered.map(row => (
-                  <tr key={row.id} className={`border-t ${row.id === selectedId ? 'bg-indigo-50/40' : 'bg-white'}`}>
+                  <tr key={row.id} className={`border-t ${row.id === selectedId ? 'bg-[#CDEA80]' : 'white'}`}>
                     <td className="px-3 py-2 tabular-nums">{row.id < 0 ? 'Nuevo' : row.id}</td>
-                    <td className="px-3 py-2 tabular-nums whitespace-nowrap">{row.week}</td>
-                    <td className="px-3 py-2 whitespace-nowrap">{safeGet(projectsById, row.project_id, row.project_name)}</td>
-       
-                    <td className="px-3 py-2 tabular-nums whitespace-nowrap">{Number(row.dedicated ?? 0)}%</td>
-
-                    <td className="px-3 py-2 whitespace-nowrap">{safeGet(usersById, row.user_id, `ID ${row.user_id}`)}</td>
-                    <td className="px-3 py-2 sticky right-0 z-10 bg-white border-l">
+                      <td className="px-3 py-2 tabular-nums whitespace-nowrap">{row.week}</td>
+                      <td className="px-3 py-2 whitespace-nowrap">{safeGet(projectsById, row.project_id, row.project_name)}</td>
+                      <td className="px-3 py-2 tabular-nums whitespace-nowrap">{Number(row.dedicated ?? 0)}%</td>
+                      <td className="px-3 py-2 whitespace-nowrap">{safeGet(usersById, row.user_id, `ID ${row.user_id}`)}</td>
+                      <td className="px-3 py-2 sticky right-0 z-10 bg-white border-l">
                       <div className="flex gap-3 justify-end">
                         <button
                           className="underline text-indigo-700"
@@ -715,7 +841,7 @@ const BulkEditPanel = selected ? (
                             const res = await Swal.fire({
                               title:'¿Eliminar?', text:'Esta acción eliminará el registro de forma permanente.',
                               icon:'warning', showCancelButton:true, confirmButtonText:'Sí, eliminar',
-                              cancelButtonText:'Cancelar', reverseButtons:true, focusCancel:true,
+                              cancelButtonText:'Cancelar', focusCancel:true,
                             })
                             if (!res.isConfirmed) return
                             await remove(row.id)
@@ -741,7 +867,6 @@ const BulkEditPanel = selected ? (
       
         </div>
 
-        {/* PANEL DE EDICIÓN */}
         <div ref={editorRef} className="scroll-mt-4 sm:scroll-mt-6">
           {selected ? (
             HIDE_SINGLE_EDIT ? (
@@ -773,7 +898,7 @@ const BulkEditPanel = selected ? (
               />
             )
           ) : (
-            <div className="bg-white border rounded-2xl shadow-sm p-6 flex items-center justify-center text-gray-600">
+            <div className="white border rounded-2xl shadow-sm p-6 flex items-center justify-center text-gray-600">
               Selecciona un registro para editar o crea uno nuevo.
             </div>
           )}

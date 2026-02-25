@@ -71,18 +71,18 @@ export function ProjectsTable({ projects }: { projects: IProject[] }) {
             <th className="px-3 py-2 cursor-pointer" onClick={() => handleSort('clientName')}>
               Cliente <SortIcon columnKey="clientName" />
             </th>
-            {/* Oculta en md (notebook) para ganar espacio; aparece desde lg */}
+        
             <th className="px-3 py-2 cursor-pointer hidden lg:table-cell" onClick={() => handleSort('categoryName')}>
               Categoría <SortIcon columnKey="categoryName" />
             </th>
-            {/* Sólo en xl, aún más grande */}
+        
             <th className="px-3 py-2 cursor-pointer hidden xl:table-cell" onClick={() => handleSort('typeName')}>
               Tipo <SortIcon columnKey="typeName" />
             </th>
             <th className="px-3 py-2 cursor-pointer" onClick={() => handleSort('project_status')}>
               Estado <SortIcon columnKey="project_status" />
             </th>
-            {/* Fecha visible desde md; en sm ya tienes cards */}
+       
             <th className="px-3 py-2 cursor-pointer hidden md:table-cell" onClick={() => handleSort('createdAt')}>
               Creación <SortIcon columnKey="createdAt" />
             </th>
@@ -101,28 +101,28 @@ export function ProjectsTable({ projects }: { projects: IProject[] }) {
               createdAt,
             }) => (
               <tr key={id} className="bg-white border-b">
-                <td className="px-3 py-2 align-top whitespace-normal break-words">
+                <td className="px-3 py-2 align-top [#303031]space-normal break-words">
                   {project_name}
                 </td>
 
-                <td className="px-3 py-2 align-top whitespace-normal break-words">
+                <td className="px-3 py-2 align-top [#303031]space-normal break-words">
                   {client?.clientName || 'N/A'}
                 </td>
 
-                <td className="px-3 py-2 align-top whitespace-normal break-words hidden lg:table-cell">
+                <td className="px-3 py-2 align-top [#303031]space-normal break-words hidden lg:table-cell">
                   {category?.categoryName || 'N/A'}
                 </td>
 
-                <td className="px-3 py-2 align-top whitespace-normal break-words hidden xl:table-cell">
+                <td className="px-3 py-2 align-top [#303031]space-normal break-words hidden xl:table-cell">
                   {type?.typeName || 'N/A'}
                 </td>
 
                 <td className={`px-3 py-2 align-top ${getStatusClass(project_status)}`}>
-                  <span className="whitespace-nowrap">{project_status || 'N/A'}</span>
+                  <span className="[#303031]space-nowrap">{project_status || 'N/A'}</span>
                 </td>
 
                 <td className="px-3 py-2 align-top hidden md:table-cell">
-                  <span className="whitespace-nowrap">{formatDateTime(createdAt)}</span>
+                  <span className="[#303031]space-nowrap">{formatDateTime(createdAt)}</span>
                 </td>
 
               </tr>
@@ -134,7 +134,7 @@ export function ProjectsTable({ projects }: { projects: IProject[] }) {
 
       <div className="sm:hidden space-y-4 mt-2">
               {sortedProjects.map((project) => (
-                <div key={project.id} className="bg-white border rounded-xl shadow p-4">
+                <div key={project.id} className="white border rounded-xl shadow p-4">
                   <div className="mb-1">
                     <span className="font-semibold">Nombre del Proyecto: </span>
                     <span>{project.project_name}</span>

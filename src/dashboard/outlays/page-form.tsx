@@ -258,7 +258,7 @@ export default function OutlayPage() {
         `,
         icon: 'warning',
         confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#4f46e5',
+        confirmButtonColor: '#CDEA80',
       });
       return;
     }
@@ -288,8 +288,8 @@ export default function OutlayPage() {
       showCancelButton: true,
       confirmButtonText: 'Sí, guardar',
       cancelButtonText: 'No, volver',
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
+      confirmButtonColor: '#CDEA80',
+      cancelButtonColor: '#FF735C',
     });
     if (!isConfirmed) return;
 
@@ -308,7 +308,7 @@ export default function OutlayPage() {
           text: response.msg || 'El desembolso fue registrado correctamente.',
           icon: 'success',
           confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#3085d6',
+          confirmButtonColor: '#CDEA80',
         });
 
         setOutlayData({
@@ -358,7 +358,7 @@ export default function OutlayPage() {
           `,
           icon: 'info',
           confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#4f46e5',
+          confirmButtonColor: '#CDEA80',
         });
       },
       error: async (error) => {
@@ -372,7 +372,13 @@ export default function OutlayPage() {
     });
   };
 
-
+  const canSubmit =
+    !!outlayData.typeId &&
+    !!outlayData.projectOrCategoryId &&
+    !!sanitizeAmount(outlayData.amount) &&
+    !!outlayData.detail.trim() &&
+    !!outlayData.date &&
+    !!outlayData.temporalityId
  
 
   return (
@@ -386,7 +392,7 @@ export default function OutlayPage() {
         {/* 
   <button
     onClick={() => toggleView('upload')}
-    className={`py-2 px-4 text-white rounded-lg font-bold ${
+    className={`py-2 px-4 text-[#303031] rounded-lg font-bold ${
       viewMode === 'upload' ? 'bg-indigo-600' : 'bg-gray-400'
     }`}
   >
@@ -432,7 +438,7 @@ export default function OutlayPage() {
                         aria-checked={showActiveOnly}
                         onClick={() => setShowActiveOnly(v => !v)}
                         className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200
-                          ${showActiveOnly ? 'bg-indigo-600' : 'bg-gray-300'}`}
+                          ${showActiveOnly ? 'bg-[#CDEA80]' : 'bg-gray-300'}`}
                         title={showActiveOnly ? 'Mostrando Activos' : 'Mostrando Inactivos'}
                       >
                         <span
@@ -444,9 +450,6 @@ export default function OutlayPage() {
                       <span className="text-xs text-gray-600">Activos</span>
                     </div>
                   )}
-
-
-
 
               <label className="block text-sm font-medium leading-6 text-gray-900">
                 Seleccionar la Categoría o Proyecto
@@ -571,7 +574,12 @@ export default function OutlayPage() {
           <div className="mt-6 flex items-center justify-end gap-x-6">
             <button
               type="submit"
-              className="rounded-md bg-[#3E3378] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#89CCDC] hover:text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              disabled={!canSubmit}
+              className={`rounded-md px-3 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600
+                ${canSubmit
+                  ? 'bg-[#CDEA80] text-[#303031] hover:bg-[#BDDEFF] hover:text-black'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
             >
               Guardar
             </button>
@@ -617,11 +625,11 @@ export default function OutlayPage() {
           <div className="mt-6 flex justify-end gap-4">
             <button
               
-              className="bg-indigo-600 font-bold text-white px-4 py-2 rounded"
+              className="bg-indigo-600 font-bold text-[#303031] px-4 py-2 rounded"
             >
               Descargar Formato
             </button>
-            <button className="bg-gray-400 font-bold text-white px-4 py-2 rounded">
+            <button className="bg-gray-400 font-bold text-[#303031] px-4 py-2 rounded">
               Guardar
             </button>
           </div>

@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react'
 import { ITableDedications } from '../../interfaces/dedications/dedications.interfaces'
 import { TableBodyHistoryDedications } from '../TableBodyHistoryDedications/TableBodyHistoryDedications'
 
-
 function parseFecha(fecha: string | Date): Date {
   if (fecha instanceof Date) return fecha
 
@@ -85,15 +84,15 @@ export function TableHistoryDedications({
 
         return (
           <div key={year} className="mb-6 border rounded-md shadow">
-            {/* Año */}
+          
             <button
               onClick={() => toggleExpandYear(year)}
-              className="w-full text-left px-4 py-2 text-[#303031] bg-[#89CCDC] font-semibold"
+              className="w-full text-left px-4 py-2 text-[#303031] bg-[#CDEA80] font-semibold"
             >
               {expandedYears[year] ? '▼' : ''} {year}
             </button>
 
-            {/* Lista de meses */}
+       
             {expandedYears[year] && (
               <div className="pl-4 pr-4">
                 {sortedByMonthDesc.map((dedication) => {

@@ -1,6 +1,4 @@
-// Imports
 import { useEffect, useState } from 'react'
-
 import { getSalaries } from '../api/salaries/read'
 import { addSalary, updateSalary, deleteSalary } from '../api/salaries/mutate'
 

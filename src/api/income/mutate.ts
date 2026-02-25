@@ -1,11 +1,10 @@
-// src/api/income/mutate.ts
 import { fetchFromApi } from '.'
-import type { IIncome } from '../../interfaces/income/income.interface' // <-- tu interfaz
+import type { IIncome } from '../../interfaces/income/income.interface'
 
-// DTO que espera el backend (camelCase y números)
+
 type BackendIncomeDTO = {
   amount: number
-  date: string                 // 'YYYY-MM-DD'
+  date: string           
   detail: string
   temporalityId: number
   projectId: number | null
@@ -20,17 +19,16 @@ function mapToBackendDTO(i: IIncome): BackendIncomeDTO {
     return Number.isFinite(n) ? n : null
   }
 
-  const amount = toNum(i.amount)                   // string -> number | null
-  const uf = toNum(i.uf)                           // string -> number | null
+  const amount = toNum(i.amount)                
   const projectId = i.project_id == null ? null : Number(i.project_id)
   const temporalityId = Number(i.temporalities_id)
 
-  // Normaliza fecha a 'YYYY-MM-01' si viene 'YYYY-MM'
+ 
   const date = (i.date?.length === 7)
     ? `${i.date}-01`
     : String(i.date ?? '').slice(0, 10)
 
-  // ✅ definir detailNorm antes de usarlo
+
   const detailNorm = (i.detail ?? '').toString().trim()
 
     const ES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
@@ -42,7 +40,7 @@ function mapToBackendDTO(i: IIncome): BackendIncomeDTO {
     return `${ES[idx]}-${y.slice(-2)}`
     }
 
-    // Deriva YM desde date si month viene vacío
+
     const ymFromDate = (() => {
     const raw = String(i.date ?? '')
     if (/^\d{4}-\d{2}$/.test(raw)) return raw
@@ -51,7 +49,7 @@ function mapToBackendDTO(i: IIncome): BackendIncomeDTO {
     })()
 
     const ym = (i.month && i.month.trim() !== '') ? i.month : ymFromDate
-    const monthOut = toMonYYYY(ym)  // 👈 'oct-2025'
+    const monthOut = toMonYYYY(ym)  
 
     return {
     amount: amount ?? 0,
@@ -59,8 +57,8 @@ function mapToBackendDTO(i: IIncome): BackendIncomeDTO {
     detail: detailNorm,
     temporalityId,
     projectId,
-    month: monthOut,   // 👈 ahora viaja 'oct-2025'
-    uf: uf ?? 0,
+    month: monthOut,  
+   
     }
 
 }
@@ -70,7 +68,6 @@ export const addIncome = (token: string, data: IIncome) => {
   const dto = mapToBackendDTO(data)
 
   
-  // Guardas de seguridad (evitan 500)
     if (dto.amount == null || !Number.isFinite(dto.amount) || dto.amount < 0) {
     throw new Error('Monto inválido: debe ser numérico y ≥ 0')
     }
@@ -80,7 +77,7 @@ export const addIncome = (token: string, data: IIncome) => {
   if (!dto.date) throw new Error('Fecha requerida')
   if (!dto.month) throw new Error('Mes requerido (YYYY-MM)')
 
-  // Debug visible en consola
+  
   console.debug('[POST /income-api/add-income] payload →', dto)
   return fetchFromApi<{ id: number }>('income-api/add-income', token, 'POST', dto)
 }

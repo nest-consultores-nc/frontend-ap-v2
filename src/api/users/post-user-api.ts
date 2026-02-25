@@ -1,8 +1,6 @@
 import { fetchFromApi } from '.'
 import { IUserForm } from '../../interfaces/users/users.interface'
 
-// Interfaz para la respuesta de la API
-
 export const createUserAccount = async (data: IUserForm, token: string) => {
   const response = await fetchFromApi<{
     success: boolean

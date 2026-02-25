@@ -1,33 +1,23 @@
-// src/components/IncomeSectionEdit/IncomeSectionEdit.tsx (DESPUÉS)
-// DESPUÉS
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react'
 import Swal from 'sweetalert2'
 import { EditableFormSection } from '../EditableFormSection/EditableFormSection'
 import { useIncomesRemoteDataset, Income } from '../../hooks/useIncomesRemoteDataset'
-import { useOutlayCatalogs } from '../../hooks/useOutlayCatalogs'     // 👈 reutilizamos el mismo hook
-import { getProjectLabel } from '../../utils/outlays/projectBucket'    // 👈 mismo label que usas en otras pantallas
+import { useOutlayCatalogs } from '../../hooks/useOutlayCatalogs'  
+import { getProjectLabel } from '../../utils/outlays/projectBucket' 
 import { getAllProjects } from '../../api/projects/get-projects'
 import { IProject } from '../../interfaces/projects/projects.interface'
 
-import { buildMonthOptions } from '../../utils/date/monthOptions'
-
-
 
 export function IncomeSectionEdit() {
-  // 🔐 token
+ 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') ?? '' : ''
-  // 🔗 dataset remoto (CRUD)
   const { records, upsert, remove, duplicate, create } = useIncomesRemoteDataset({ token })
 
-  // 🔎 filtros/búsqueda
   const [query, setQuery] = useState('')
-  const [filterTemporalityId, setFilterTemporalityId] = useState<number | ''>('')
-  const [dateFrom, setDateFrom] = useState('') // YYYY-MM-DD
-  const [dateTo, setDateTo] = useState('')     // YYYY-MM-DD
-
-  // 🎯 selección
+  const [filterProjectId, setFilterProjectId] = useState<number | ''>('')
+  const [filterMonth, setFilterMonth] = useState('') 
   const [selectedId, setSelectedId] = useState<number | null>(null)
-  const [showActiveOnly, setShowActiveOnly] = useState<boolean>(true)
+  
 
   useEffect(() => {
     if (selectedId == null) return
@@ -36,7 +26,6 @@ export function IncomeSectionEdit() {
     if (!still) setSelectedId(null)
   }, [records, selectedId])
 
-  // 🧭 scroll y resaltado en pantallas chicas
   const editorRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!selectedId) return
@@ -52,11 +41,7 @@ export function IncomeSectionEdit() {
     })
   }, [selectedId])
 
-  // 📚 catálogos
-// DESPUÉS: mismas temporalidades de Outlays + dataset de proyectos como en Outlays
-  const { temporalityOptions } = useOutlayCatalogs(token) // 👈 solo temporalidades
-
-
+  const { temporalityOptions } = useOutlayCatalogs(token) 
   const [projects, setProjects] = useState<IProject[]>([])
     const projectsById = useMemo(() => {
     const map = new Map<number, string>()
@@ -82,39 +67,64 @@ export function IncomeSectionEdit() {
     return list
   }, [projects])
 
-  // 🧂 normalizar texto
+
+  const uniqueProjects = useMemo(() => {
+    const projectIdsInRecords = new Set(
+      records
+        .map(r => r.project_id)
+        .filter((id): id is number => id != null)
+    );
+
+    const projectsInUse = projects.filter(p => projectIdsInRecords.has(p.id));
+
+    return projectsInUse
+      .map(p => ({ value: p.id, label: getProjectLabel(p) }))
+      .sort((a, b) => a.label.localeCompare(b.label, 'es'));
+  }, [projects, records]);
+
+
   const normalize = (s: string) =>
     s.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '')
 
-  // 🧮 filtro + búsqueda
   const filtered = useMemo(() => {
-     const base = records.filter(r => {
-      if (filterTemporalityId !== '' && Number(r.temporalities_id) !== Number(filterTemporalityId)) return false
-      if (dateFrom && r.date < dateFrom) return false
-      if (dateTo   && r.date > dateTo)   return false
-      return true
-    })
-    const q = normalize(query.trim())
-    if (!q) return base
-    return base.filter(r => {
-      const proyecto = projectsById.get(r.project_id) ?? ''
-      const haystack = [
-        String(r.id), r.detail ?? '', r.date ?? '', String(r.amount ?? ''), proyecto,
-      ].join(' | ')
-      return normalize(haystack).includes(q)
-    })
-  }, [records, query, projectsById, filterTemporalityId, dateFrom, dateTo])
 
-  // ✍️ registro seleccionado
+    const base = records.filter(r => {
+  
+      if (filterProjectId !== '' && r.project_id !== Number(filterProjectId)) return false;
+      
+   
+      if (filterMonth && r.date) {
+        const recordMonth = r.date.substring(0, 7);
+        if (recordMonth !== filterMonth) return false;
+      }
+      
+      return true;
+    });
+
+ 
+    const q = normalize(query.trim());
+    if (!q) return base;
+
+    return base.filter(r => {
+      const proyecto = projectsById.get(r.project_id) ?? '';
+      const haystack = [
+        r.detail ?? '',
+        proyecto,
+      ].join(' | ');
+      return normalize(haystack).includes(q);
+    });
+  }, [records, query, projectsById, filterProjectId, filterMonth]);
+
+
   const selected = useMemo(
     () => records.find(r => r.id === selectedId) ?? null,
     [records, selectedId]
   )
-  const monthOptions = useMemo(() => buildMonthOptions(0, 15), []) // este mes + 15 hacia adelante
+  
 
-  // 💾 persistencia con confirmación
+ 
   const handlePersist = useCallback(async (data: Income) => {
-    // validación rápida en UI antes de preguntar
+   
     const missing: string[] = []
     if (!data.temporalities_id) missing.push('Temporalidad')
     if (data.project_id == null) missing.push('Proyecto')
@@ -133,7 +143,6 @@ export function IncomeSectionEdit() {
       showCancelButton: true,
       confirmButtonText: 'Sí, guardar',
       cancelButtonText: 'Cancelar',
-      reverseButtons: true,
       focusCancel: true,
     })
     if (!res.isConfirmed) return
@@ -157,7 +166,6 @@ export function IncomeSectionEdit() {
       showCancelButton: true,
       confirmButtonText: confirmText,
       cancelButtonText: 'Cancelar',
-      reverseButtons: true,
       focusCancel: true,
     })
 
@@ -165,8 +173,6 @@ export function IncomeSectionEdit() {
   const safeGet = (map: Map<number, string>, id: number | null | undefined) =>
     id == null ? '—' : (map.get(id) ?? '—')
 
-
-    // 🔢 columnas
   const columns = [
     { key: 'id',      label: 'ID' },
     { key: 'date',    label: 'Fecha' },
@@ -175,10 +181,9 @@ export function IncomeSectionEdit() {
     { key: 'project', label: 'Proyecto' },
   ] as const
 
-  // 👇 NUEVO: control de scroll horizontal del contenedor de la tabla
   const tableScrollRef = useRef<HTMLDivElement>(null)
-  const [canScrollLeft, setCanScrollLeft]   = useState(false)
-  const [canScrollRight, setCanScrollRight] = useState(false)
+  const [, setCanScrollLeft]   = useState(false)
+  const [, setCanScrollRight] = useState(false)
 
   const updateScrollButtons = useCallback(() => {
     const el = tableScrollRef.current
@@ -203,14 +208,6 @@ export function IncomeSectionEdit() {
     }
   }, [updateScrollButtons])
 
-  const nudge = (dir: 'left' | 'right') => {
-    const el = tableScrollRef.current
-    if (!el) return
-    const delta = Math.round(el.clientWidth * 0.8) * (dir === 'left' ? -1 : 1)
-    el.scrollBy({ left: delta, behavior: 'smooth' })
-  }
-
-  // 👇 callbacks usados en la tabla (los estabas llamando)
   const onEdit = (id: number) => setSelectedId(id)
 
   const onDuplicate = async (id: number) => {
@@ -221,7 +218,6 @@ export function IncomeSectionEdit() {
       showCancelButton: true,
       confirmButtonText: 'Sí, duplicar',
       cancelButtonText: 'Cancelar',
-      reverseButtons: true,
       focusCancel: true,
     })
     if (!res.isConfirmed) return
@@ -237,7 +233,6 @@ export function IncomeSectionEdit() {
       showCancelButton: true,
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar',
-      reverseButtons: true,
       focusCancel: true,
     })
     if (!res.isConfirmed) return
@@ -250,85 +245,73 @@ export function IncomeSectionEdit() {
     return (
       <div className="max-w-screen-2xl mx-auto px-3 sm:px-4 mt-8">
         <div className="grid gap-6 2xl:grid-cols-[minmax(20rem,1.2fr)_minmax(24rem,2fr)]">
-
-        {/* LISTA + filtros */}
-        {/* LISTA + filtros */}
         <div className="bg-white border rounded-2xl shadow-sm p-4 overflow-hidden">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-3">
             <input
-              placeholder="Buscar por monto..."
+              placeholder="Buscar por detalle o proyecto..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="w-full sm:flex-1 border rounded-xl p-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
             />
             <button
               onClick={async () => setSelectedId(await create())}
-              className="w-full sm:w-auto px-4 py-3 rounded-xl border bg-[#3E3378] text-white hover:bg-[#89CCDC] hover:text-black"
+              className="w-full sm:w-auto px-4 py-3 rounded-xl border bg-[#CDEA80] text-white hover:bg-[#BDDEFF] hover:text-black"
             >
               Nuevo
             </button>
           </div>
 
-          {/* Filtros: Temporalidad + Fecha */}
-          {/* Filtros: con etiqueta clara */}
-          <div className="flex flex-wrap items-end gap-3 mb-3">
-            <div className="flex flex-col">
-              <label htmlFor="flt-temporalidad" className="text-xs text-gray-600 mb-1">Temporalidad</label>
-              <select
-                id="flt-temporalidad"
-                value={filterTemporalityId}
-                onChange={(e) => setFilterTemporalityId(e.target.value === '' ? '' : Number(e.target.value))}
-                className="border rounded-xl p-2"
-                title="Filtra por la temporalidad del ingreso"
-                aria-label="Filtro de temporalidad"
-              >
-                <option value="">Todas</option>
-                {temporalityOptions.map(op => (
-                  <option key={String(op.value)} value={String(op.value)}>{op.label}</option>
-                ))}
-              </select>
+            <div className="flex flex-wrap items-end gap-3 mb-3">
+              <div className="flex flex-col flex-1 min-w-[200px]">
+                <label htmlFor="flt-proyecto" className="text-xs text-gray-600 mb-1">
+                  Proyecto
+                </label>
+                <select
+                  id="flt-proyecto"
+                  value={filterProjectId}
+                  onChange={(e) => setFilterProjectId(e.target.value === '' ? '' : Number(e.target.value))}
+                  className="border rounded-xl p-2 text-sm"
+                  title="Filtra por proyecto del ingreso"
+                  aria-label="Filtro de proyecto"
+                >
+                  <option value="">Todos los proyectos</option>
+                  {uniqueProjects.map(proj => (
+                    <option key={proj.value} value={proj.value}>{proj.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col">
+                <label htmlFor="flt-mes" className="text-xs text-gray-600 mb-1">
+                  Mes
+                </label>
+                <input
+                  id="flt-mes"
+                  type="month"
+                  value={filterMonth}
+                  onChange={(e) => setFilterMonth(e.target.value)}
+                  className="border rounded-xl p-2 text-sm"
+                  title="Mostrar registros del mes seleccionado"
+                  aria-label="Filtro de mes"
+                />
+              </div>
+
+     
+              {(filterProjectId !== '' || filterMonth !== '') && (
+                <button
+                  type="button"
+                  onClick={() => { 
+                    setFilterProjectId(''); 
+                    setFilterMonth(''); 
+                  }}
+                  className="px-3 py-2 rounded-xl border text-sm hover:bg-gray-50"
+                  title="Borrar filtros aplicados"
+                >
+                  Limpiar Filtros
+                </button>
+              )}
             </div>
 
-            <div className="flex flex-col">
-              <label htmlFor="flt-desde" className="text-xs text-gray-600 mb-1">Fecha desde</label>
-              <input
-                id="flt-desde"
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="border rounded-xl p-2"
-                placeholder="YYYY-MM-DD"
-                title="Mostrar registros con fecha mayor o igual a esta"
-                aria-label="Fecha desde"
-              />
-            </div>
-
-            <div className="flex flex-col">
-              <label htmlFor="flt-hasta" className="text-xs text-gray-600 mb-1">Fecha hasta</label>
-              <input
-                id="flt-hasta"
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="border rounded-xl p-2"
-                placeholder="YYYY-MM-DD"
-                title="Mostrar registros con fecha menor o igual a esta"
-                aria-label="Fecha hasta"
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={() => { setFilterTemporalityId(''); setDateFrom(''); setDateTo(''); }}
-              className="px-3 py-2 rounded-xl border"
-              title="Borrar filtros aplicados"
-            >
-              Limpiar Filtros
-            </button>
-          </div>
-
-          {/* vista lista (mobile) */}
-          {/* vista lista (mobile) */}
           <div className="md:hidden space-y-2">
             {filtered.map(row => (
               <div key={row.id} className={`border rounded-xl p-3 ${row.id === selectedId ? 'bg-indigo-50/40' : 'bg-white'} overflow-hidden`}>
@@ -368,7 +351,7 @@ export function IncomeSectionEdit() {
                     }}
                   >Duplicar</button>
                   <button className="underline text-red-600" onClick={async () => {
-                    const res = await Swal.fire({ title:'¿Eliminar?', text: 'Esta acción eliminará el registro de forma permanente.', icon:'warning', showCancelButton:true, confirmButtonText:'Sí, eliminar', cancelButtonText:'Cancelar', reverseButtons:true, focusCancel:true })
+                    const res = await Swal.fire({ title:'¿Eliminar?', text: 'Esta acción eliminará el registro de forma permanente.', icon:'warning', showCancelButton:true, confirmButtonText:'Sí, eliminar', cancelButtonText:'Cancelar', focusCancel:true })
                     if (!res.isConfirmed) return
                     await remove(row.id)
                     if (row.id === selectedId) setSelectedId(null)
@@ -380,14 +363,11 @@ export function IncomeSectionEdit() {
             {filtered.length === 0 && (<div className="px-3 py-6 text-center text-gray-500 border rounded-xl">Sin resultados</div>)}
           </div>
 
-          {/* tabla (md+) */}
-          {/* tabla (md+) */}
-          {/* tabla (md+) con header sticky y scroll vertical */}
           <div
             ref={tableScrollRef}
             className="hidden md:block relative overflow-x-auto overflow-y-auto border rounded-xl max-h-[65vh]"
           >
-            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white to-transparent rounded-tr-xl rounded-br-xl -z-10" />
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white-to-transparent rounded-tr-xl rounded-br-xl -z-10" />
             <table className="w-full text-sm">
 
               <thead className="bg-gray-50 sticky top-0 z-30 shadow">
@@ -400,7 +380,7 @@ export function IncomeSectionEdit() {
                       {c.label}
                     </th>
                   ))}
-                  <th className="px-3 py-2 text-right whitespace-nowrap sticky right-0 z-20 bg-white border-l">
+                  <th className="px-3 py-2 text-right whitespace-nowrap sticky right-0 z-20 bg-gray-50 border-l">
                     Acciones
                   </th>
                 </tr>
@@ -408,13 +388,13 @@ export function IncomeSectionEdit() {
 
               <tbody>
                 {filtered.map(row => (
-                  <tr key={row.id} className={`border-t ${row.id === selectedId ? 'bg-indigo-50/40' : 'bg-white'}`}>
+                  <tr key={row.id} className={`border-t ${row.id === selectedId ? 'bg-indigo-50' : 'bg-white'}`}>
                     <td className="px-3 py-2 tabular-nums">{row.id < 0 ? 'Nuevo' : row.id}</td>
                     <td className="px-3 py-2 tabular-nums whitespace-nowrap">{row.date}</td>
                     <td className="px-3 py-2 whitespace-nowrap"><span className="line-clamp-1">{row.detail}</span></td>
                     <td className="px-3 py-2 tabular-nums whitespace-nowrap">${Number(row.amount ?? 0).toFixed(0)}</td>
                     <td className="px-3 py-2 whitespace-nowrap">{safeGet(projectsById, row.project_id)}</td>
-                      <td className="px-3 py-2 sticky right-0 z-10 bg-white border-l">
+                      <td className={`px-3 py-2 sticky right-0 z-10 border-l ${row.id === selectedId ? 'bg-indigo-50' : 'bg-white'}`}>
                         <div className="flex gap-3 justify-end">
                           <button className="underline text-indigo-700" onClick={() => onEdit(row.id)} title="Editar">Editar</button>
                           <button className="underline" onClick={() => onDuplicate(row.id)} title="Duplicar">Duplicar</button>
@@ -434,7 +414,7 @@ export function IncomeSectionEdit() {
        
         </div>
 
-        {/* PANEL DE EDICIÓN */}
+
         <div ref={editorRef} className="scroll-mt-4 sm:scroll-mt-6">
           {selected ? (
             <EditableFormSection<Income>
@@ -442,14 +422,14 @@ export function IncomeSectionEdit() {
                 storageKey={`incomes:${selected.id}`}
                 seed={selected}
                 onPersist={handlePersist}
-                // 👇 sincroniza month ↔ date (YYYY-MM ↔ YYYY-MM-01)
+     
                 onChange={(draft, name, value) => {
                   if (name === 'date') {
                     const raw = String(value || '')
                     const ym = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw.slice(0,7)
                             : /^\d{4}-\d{2}$/.test(raw) ? raw
                             : ''
-                    // mantenemos 'month' en el draft aunque no se muestre
+              
                     return { ...draft, date: ym ? `${ym}-01` : '', month: ym || '' } as Income
                   }
                 }}

@@ -1,4 +1,4 @@
-import { fetchFromApi } from './helpers'  // ✅ Cambiado
+import { fetchFromApi } from './helpers' 
 
 const SALARIES_BASE = 'salaries-api'
 

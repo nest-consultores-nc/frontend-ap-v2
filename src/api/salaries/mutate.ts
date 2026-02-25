@@ -1,4 +1,4 @@
-import { fetchFromApi } from './helpers'  // ✅ Cambiado
+import { fetchFromApi } from './helpers' 
 import type { ISalaries } from '../../interfaces/salaries/salaries.interface'
  
 const SALARIES_BASE = 'salaries-api'

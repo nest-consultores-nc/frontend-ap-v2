@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Swal from 'sweetalert2'
 import { IProject } from '../../interfaces/projects/projects.interface'
 import {
   IDedicationsByUserId,
@@ -175,9 +176,26 @@ export default function Dedications() {
   }
 
   const handleEditDedication = (dedication: IDedicationsByUserId) => {
+  
+    const weekFormatted = (() => {
+      const raw = dedication.week
+      if (!raw) return ''
+      
+      const dateOnly = raw.split('T')[0]
+      
+      if (/^\d{2}-\d{2}-\d{4}$/.test(dateOnly)) {
+        return dateOnly 
+      } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+        const [y, m, d] = dateOnly.split('-')
+        return `${d}-${m}-${y}` 
+      }
+      return dateOnly
+    })()
+    
     setEditingDedication({
       ...dedication,
-      week: convertDateFormat(dedication.week),
+      dedicated: dedication.dedicated,
+      week: weekFormatted,
     })
   }
 
@@ -185,13 +203,18 @@ export default function Dedications() {
     updatedDedication: IDedicationsByUserId
   ) => {
     try {
+
+      const [day, month, year] = updatedDedication.week.split('-')
+      const formattedWeek = `${year}-${month}-${day}`
+      
       const dedicationUpdateData = {
         id: updatedDedication.id,
-        week: convertDateFormat(updatedDedication.week),
-        dedicated: updatedDedication.dedicated / 100,
+        week: formattedWeek,
+        dedicated: updatedDedication.dedicated / 100, 
       }
 
       const response = await editDedicationQuery(dedicationUpdateData, token)
+ 
       if (activeTab === 'registrar-horas') {
         if (response.success) {
           await fetchDataDedications()
@@ -301,8 +324,8 @@ export default function Dedications() {
   }, [alert])
 
   useEffect(() => {
-    setWeeks(getWeeksAround()); // semana actual ±2
-  }, []); // se calcula una sola vez
+    setWeeks(getWeeksAround()); 
+  }, []); 
 
   
   
@@ -315,6 +338,63 @@ export default function Dedications() {
   }
 
   const handleFinish = async () => {
+   
+    const dedicationsList = dedicationsNotConsolidated
+      .map((dedication) => {
+      
+        const formatDate = (dateStr: string) => {
+          const dateOnly = dateStr.split('T')[0]
+          if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+            const [y, m, d] = dateOnly.split('-')
+            return `${d}-${m}-${y}`
+          }
+          return dateOnly
+        }
+
+        return `
+          <div style="text-align: left; margin-bottom: 12px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+            <strong>${dedication.client_name || 'Cliente'} - ${dedication.project_name || 'Proyecto'}</strong><br/>
+            <span style="color: #666;">Dedicación: <strong>${dedication.dedicated}%</strong></span><br/>
+            <span style="color: #666;">Semana: ${formatDate(dedication.week)}</span>
+          </div>
+        `
+      })
+      .join('')
+
+    const totalDedication = dedicationsNotConsolidated.reduce(
+      (acc, d) => acc + d.dedicated,
+      0
+    )
+
+    const result = await Swal.fire({
+      title: '¿Confirmar Dedicaciones?',
+      html: `
+        <div style="text-align: left;">
+          <p style="margin-bottom: 16px; color: #555;">
+            Se consolidarán las siguientes dedicaciones:
+          </p>
+          ${dedicationsList}
+          <div style="margin-top: 16px; padding: 12px; background: #e3f2fd; border-radius: 6px; text-align: center;">
+            <strong style="font-size: 18px; color: #1976d2;">
+              Total: ${totalDedication}%
+            </strong>
+          </div>
+        </div>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#CDEA80',
+      cancelButtonColor: '#FF735C',
+      confirmButtonText: 'Sí, confirmar',
+      cancelButtonText: 'Cancelar',
+      width: '600px',
+    })
+
+
+    if (!result.isConfirmed) {
+      return
+    }
+
     const dedicationData = dedicationsNotConsolidated.map((dedication) => ({
       ...dedication,
       consolidation: 1,
@@ -329,10 +409,13 @@ export default function Dedications() {
         await fetchDataDedications()
 
         setEditingDedication(null)
-        setAlert(true)
-        setError({
-          success: true,
-          msg: response.msg || 'Dedicaciones consolidadas',
+
+        await Swal.fire({
+          title: '¡Éxito!',
+          text: response.msg || 'Dedicaciones consolidadas correctamente',
+          icon: 'success',
+          confirmButtonColor: '#CDEA80',
+          confirmButtonText: 'Aceptar',
         })
 
         setDedicationData({
@@ -343,18 +426,24 @@ export default function Dedications() {
           consolidation: 0,
         })
       } else {
-        setAlert(true)
-        setError({
-          success: false,
-          msg: response.msg || 'Error al consolidar las dedicaciones',
+
+        await Swal.fire({
+          title: 'Error',
+          text: response.msg || 'Error al consolidar las dedicaciones',
+          icon: 'error',
+          confirmButtonColor: '#FF735C',
+          confirmButtonText: 'Aceptar',
         })
       }
     } catch (error) {
       console.log(error)
-      setAlert(true)
-      setError({
-        success: false,
-        msg: 'Error al ingresar las dedicaciones',
+
+      await Swal.fire({
+        title: 'Error',
+        text: 'Error al ingresar las dedicaciones',
+        icon: 'error',
+        confirmButtonColor: '#FF735C',
+        confirmButtonText: 'Aceptar',
       })
     }
   }

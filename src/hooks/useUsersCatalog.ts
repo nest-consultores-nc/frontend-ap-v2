@@ -1,10 +1,8 @@
-// NUEVO
 import { useEffect, useMemo, useState } from 'react'
-import { getAllUsers } from '../api/users'         // 👈 tu index.ts exporta esta función
+import { getAllUsers } from '../api/users'    
 import type { IUsers } from '../interfaces/users/users.interface'
 
-// Ajusta solo esta constante si tu endpoint difiere:
-const USERS_PATH = 'users-api/obtener-usuarios'               // p.ej. 'usuarios/get-users' o 'user/list'
+const USERS_PATH = 'users-api/obtener-usuarios'          
 
 export function useUsersCatalog(token: string) {
   const [users, setUsers] = useState<IUsers[]>([])
@@ -16,7 +14,7 @@ export function useUsersCatalog(token: string) {
       if (!token) { setUsers([]); return }
       setLoading(true)
       try {
-        const data = await getAllUsers(USERS_PATH, token)      // 👈 usa tu función tal cual
+        const data = await getAllUsers(USERS_PATH, token)     
         if (!cancelled) setUsers(Array.isArray(data) ? data : [])
       } catch {
         if (!cancelled) setUsers([])
@@ -28,11 +26,10 @@ export function useUsersCatalog(token: string) {
     return () => { cancelled = true }
   }, [token])
 
-  // id -> etiqueta legible
   const usersById = useMemo(() => {
     const m = new Map<number, string>()
     for (const u of users) {
-      // intenta varios campos comunes para el label
+   
       const id = Number((u as any).id ?? (u as any).user_id)
       const label =
         (u as any).name ??
@@ -45,7 +42,6 @@ export function useUsersCatalog(token: string) {
     return m
   }, [users])
 
-  // opciones para <select>
   const userOptions = useMemo(() => {
     return users.map((u) => {
       const id = Number((u as any).id ?? (u as any).user_id)

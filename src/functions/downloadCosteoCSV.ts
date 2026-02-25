@@ -2,7 +2,6 @@ import { ICosteoMensual } from '../interfaces/costeo/costeo-mensual.interface';
 import { Datum } from '../interfaces/costeo/utilidad.interface';
 import { IDataIngresos } from '../interfaces/costeo/ingresos.interface';
 
-// Función para formatear la fecha a "yyyy-MM-dd"
 export const formatDateToISO = (date: Date | string): string => {
   if (typeof date === 'string' && date.includes('/')) {
     const [day, month, year] = date.split('/');
@@ -16,7 +15,7 @@ export const formatDateToISO = (date: Date | string): string => {
   return `${year}-${month}-${day}`;
 };
 
-// Función para formatear la fecha para el CSV sin agregar apóstrofe
+
 const formatDateForCSV = (date: Date | string): string => {
   return formatDateToISO(date);
 };
@@ -48,19 +47,18 @@ export const downloadCosteoCSV = async ({
   ingresosData,
   selectedDate,
 }: Props): Promise<void> => {
-  // Primero, obtenemos el valor de la UF de la API
+
   let ufValue: number | null = null;
 
   try {
     const response = await fetch('https://mindicador.cl/api/uf');
     const data = await response.json();
-    ufValue = data.serie[0].valor; // Asumimos que el valor más reciente es el primero
+    ufValue = data.serie[0].valor; 
   } catch (error) {
     console.error('Error fetching UF:', error);
-    return; // Si hay un error al obtener la UF, terminamos la ejecución aquí
+    return; 
   }
 
-  // Asegurarnos de que se haya obtenido el valor de la UF antes de continuar
   if (!ufValue) {
     console.error('No se pudo obtener el valor de la UF.');
     return;
@@ -69,22 +67,22 @@ export const downloadCosteoCSV = async ({
   const csvRows: string[] = [];
 
   if (costeoMensual && costeoMensual.length > 0) {
-    // Cabeceras para costeoMensual
+
     const headers = [
       'Fecha',
       'Cliente Proyecto',
-      'Costo Salario (MM$)',
-      'Costo Directo (MM$)',
-      'Costo Indirecto (MM$)',
-      'Costo Proyecto (MM$)',
+      'Costo Sueldo',
+      'Costo Directo',
+      'Costo Indirecto',
+      'Costo Proyecto',
     ];
     csvRows.push(headers.join(','));
 
     costeoMensual.forEach((row) => {
       const values = [
-        formatDateForCSV(row.date), // Formatear la fecha a YYYY-MM-DD
+        formatDateForCSV(row.date),
         row.project_client,
-        ((row.salarie_cost * ufValue) / 1_000_000).toFixed(2), // Aplica la UF
+        ((row.salarie_cost * ufValue) / 1_000_000).toFixed(2),
         ((row.direct_cost * ufValue) / 1_000_000).toFixed(2),
         ((row.indirect_cost * ufValue) / 1_000_000).toFixed(2),
         ((row.project_cost * ufValue) / 1_000_000).toFixed(2),
@@ -92,7 +90,7 @@ export const downloadCosteoCSV = async ({
       csvRows.push(values.join(','));
     });
   } else if (datumData && datumData.length > 0) {
-    // Cabeceras para datumData (utilidad)
+
     const headers = [
       'Fecha',
       'Cliente Proyecto',
@@ -104,16 +102,16 @@ export const downloadCosteoCSV = async ({
 
     datumData.forEach((row) => {
       const values = [
-        formatDateForCSV(row.date), // Formatear la fecha a YYYY-MM-DD
+        formatDateForCSV(row.date), 
         row.project_client,
-        ((row.amount * ufValue) / 1_000_000).toFixed(2), // Aplica la UF
+        ((row.amount * ufValue) / 1_000_000).toFixed(2),
         ((row.project_cost * ufValue) / 1_000_000).toFixed(2),
         ((row.utilidad * ufValue) / 1_000_000).toFixed(2),
       ];
       csvRows.push(values.join(','));
     });
   } else if (ingresosData && ingresosData.length > 0) {
-    // Cabeceras para ingresosData
+
     const headers = [
       'Fecha',
       'Detalle',
@@ -125,11 +123,11 @@ export const downloadCosteoCSV = async ({
 
     ingresosData.forEach((row) => {
       const values = [
-        formatDateForCSV(row.date), // Formatear la fecha a YYYY-MM-DD
+        formatDateForCSV(row.date), 
         row.detail,
         row.temporalities_name,
         row.project_client,
-        ((row.amount * ufValue) / 1_000_000).toFixed(2), // Aplica la UF
+        ((row.amount * ufValue) / 1_000_000).toFixed(2),
       ];
       csvRows.push(values.join(','));
     });
@@ -138,9 +136,7 @@ export const downloadCosteoCSV = async ({
     return;
   }
 
-  // Agregar BOM para UTF-8 al inicio del CSV
   const csvString = '\uFEFF' + csvRows.join('\n');
-
   const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
   const url = window.URL.createObjectURL(blob);
 

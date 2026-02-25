@@ -11,9 +11,11 @@ import {
 import { createProjectQuery } from '../../api/projects/post-projects'
 import { Alerts, InputSelect } from '../../components'
 import { useNavigate } from 'react-router-dom'
-import { isFormValid } from '../../functions/isFormValid'
+import { isProjectFormValid as isFormValid } from '../../functions/isFormValid'
 import { HeaderPages } from '../../components'
 import { checkTokenAndRedirect } from '../../functions/checkTokenAndRedirect'
+import Swal from 'sweetalert2'
+
 
 interface ProjectFormData {
   types: IType[]
@@ -88,8 +90,30 @@ export default function CreateProject() {
     })
   }
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+
+    const result = await Swal.fire({
+      title: '¿Guardar proyecto?',
+      html: `
+        <div style="text-align:left; font-size: 14px; line-height: 1.8">
+          <p><strong>Nombre:</strong> ${projectData.project_name}</p>
+          <p><strong>Descripción:</strong> ${projectData.description}</p>
+          <p><strong>Cliente:</strong> ${data.clients.find(c => c.id === Number(projectData.project_client_id))?.client_name ?? '—'}</p>
+          <p><strong>Tipo:</strong> ${data.types.find(t => t.id === Number(projectData.project_type_id))?.type_name ?? '—'}</p>
+          <p><strong>Categoría:</strong> ${data.categories.find(c => c.id === Number(projectData.project_category_id))?.category_name ?? '—'}</p>
+        </div>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, guardar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#CDEA80',
+      cancelButtonColor: '#FF735C',
+    })
+
+    if (!result.isConfirmed) return
+
     try {
       setAlert(false)
       if (projectData.project_type_id === 4) {
@@ -225,7 +249,7 @@ export default function CreateProject() {
           className={`rounded-md px-3 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 
     ${
       isFormValid(projectData)
-        ? 'bg-[#3E3378] text-white hover:bg-[#89CCDC] focus-visible:outline-indigo-600'
+        ? 'bg-[#CDEA80] text-[#303031] hover:bg-[#BDDEFF] focus-visible:outline-indigo-600'
         : 'bg-gray-400 text-gray-200 cursor-not-allowed'
     }`}
         >

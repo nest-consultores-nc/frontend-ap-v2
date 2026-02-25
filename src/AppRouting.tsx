@@ -21,6 +21,7 @@ import { SideNav } from './components'
 import { UnauthorizedPage } from './dashboard/unauthorized/page'
 import CosteoPage from './dashboard/costeo/page'
 import EditPage from './dashboard/edit/page'
+import ReportePage from './dashboard/reporte/ReportePage'
 import SoportePage from './dashboard/soporte/SoportePage'
 
 const AppLayout = () => {
@@ -72,6 +73,7 @@ const AppLayout = () => {
             <Route path="/dashboard/costeo" element={<CosteoPage />} />
             <Route path="/dashboard/dia-libre" element={<Holidays />} />
             <Route path="/dashboard/editar" element={<EditPage />} />
+            <Route path="/dashboard/reporte" element={<ReportePage />} />
             <Route path="/dashboard/soporte" element={<SoportePage />} />
             <Route path="*" element={<Navigate to="/dashboard" />} />
           </Routes>

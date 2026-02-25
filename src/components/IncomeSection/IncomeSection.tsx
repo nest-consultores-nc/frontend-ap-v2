@@ -21,13 +21,34 @@ export function IncomeSection() {
 
   const handleSubmit = async () => {
     setLoading(true);
-    setShowUploadButton(false); 
+    setShowUploadButton(false);
     try {
       const response = await getGenerarIngresos(selectedDate);
-      setIngresos(response.data);
-      setShowUploadButton(true); 
+      const data = response?.data ?? [];
+
+      if (!Array.isArray(data) || data.length === 0) {
+        setIngresos([]);
+        await Swal.fire({
+          title: 'Sin datos',
+          text: 'No se encontraron ingresos para el período seleccionado.',
+          icon: 'info',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#CDEA80',
+        });
+        return;
+      }
+
+      setIngresos(data);
+      setShowUploadButton(true);
     } catch (error) {
       console.log(error);
+      await Swal.fire({
+        title: 'Error',
+        text: 'Hubo un problema al obtener los ingresos.',
+        icon: 'error',
+        confirmButtonColor: '#FF735C',
+        confirmButtonText: 'Cerrar',
+      });
     } finally {
       setLoading(false);
     }
@@ -41,9 +62,9 @@ export function IncomeSection() {
       showCancelButton: true,
       confirmButtonText: 'Sí, cargar',
       cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#3E3378',
-      cancelButtonColor: '#6B7280',
-      reverseButtons: true,
+      confirmButtonColor: '#CDEA80',
+      cancelButtonColor: '#FF735C',
+      
     });
 
     if (!confirm.isConfirmed) return;
@@ -58,7 +79,7 @@ export function IncomeSection() {
         title: '¡Carga Exitosa!',
         text: 'Los ingresos han sido cargados con éxito.',
         icon: 'success',
-        confirmButtonColor: '#3085d6',
+        confirmButtonColor: '#CDEA80',
         confirmButtonText: 'Aceptar',
       });
     } catch (error) {
@@ -68,7 +89,7 @@ export function IncomeSection() {
         title: 'Error',
         text: 'Hubo un problema al cargar los ingresos.',
         icon: 'error',
-        confirmButtonColor: '#d33',
+        confirmButtonColor: '#FF735C',
         confirmButtonText: 'Cerrar',
       });
     } finally {
@@ -118,7 +139,6 @@ export function IncomeSection() {
           />
         </div>
 
-        {/* Button Container */}
         <div className="flex justify-center space-x-4 mt-6">
           <button
             type="button"
@@ -126,7 +146,7 @@ export function IncomeSection() {
             onClick={handleSubmit}
             className={`rounded-md px-4 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
               selectedDate && !loading
-                ? 'bg-[#3E3378] text-white hover:bg-[#89CCDC] hover:text-black focus-visible:outline-indigo-600'
+                ? 'bg-[#CDEA80] text-[[#303031]] hover:bg-[#BDDEFF] hover:text-black focus-visible:outline-indigo-600'
                 : 'bg-gray-400 text-gray-200 cursor-not-allowed'
             } w-3/5`}
           >
@@ -139,7 +159,7 @@ export function IncomeSection() {
               onClick={registrarincome}
               className={`w-64 rounded-md px-4 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
                 showUploadButton && !loading
-                  ? 'bg-[#3E3378] text-white hover:bg-[#89CCDC] hover:text-black focus-visible:outline-indigo-600'
+                  ? 'bg-[#CDEA80] text-[[#303031]] hover:bg-[#BDDEFF] hover:text-black focus-visible:outline-indigo-600'
                   : 'bg-gray-400 text-gray-200 cursor-not-allowed'
               }`}
             >
@@ -161,7 +181,7 @@ export function IncomeSection() {
           <div className="w-[100%] text-end mb-8 translate-y-12">
             <button
               onClick={handleClickDownload}
-              className="w-48 bg-[#3E3378] text-white hover:bg-[#89CCDC] hover:text-black focus-visible:outline-[#EEEBE6] mt-2 rounded-md px-1.5 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="w-48 bg-[#CDEA80] text-[[#303031]] hover:bg-[#BDDEFF] hover:text-black focus-visible:outline-[#BDDEFF] mt-2 rounded-md px-1.5 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               Descargar como CSV
             </button>

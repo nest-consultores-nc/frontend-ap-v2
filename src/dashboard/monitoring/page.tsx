@@ -150,7 +150,7 @@ export default function MonitoringPage() {
 
              
             <button
-              className="w-full px-6 py-4 font-medium text-gray-900 bg-[#89CCDC] border-[#EEEBE6] text-left focus:outline-none hover:bg-[#4D3F92] hover:text-white transition-colors"
+              className="w-full px-6 py-4 font-medium text-gray-900 bg-[#CDEA80] border-[#BDDEFF] text-left focus:outline-none hover:bg-[#BDDEFF] hover:text-[#303031] transition-colors"
               onClick={() => toggleUser(dedication.user)}
             >
               {dedication.user}
@@ -161,8 +161,8 @@ export default function MonitoringPage() {
             {openUser === dedication.user && (
               <>
          
-                <table className="hidden sm:table w-full text-sm text-left border border-[#EEEBE6] rounded-md shadow">
-                  <thead className="text-xs text-[#303031] uppercase bg-[#D6ECF2]">
+                <table className="hidden sm:table w-full text-sm text-left border border-[#EDEBE5] rounded-md shadow">
+                  <thead className="text-xs text-[[#303031]] uppercase bg-[#EDEBE5]">
                     <tr>
                       <th scope="col" className="px-6 py-3">Nombre Proyecto</th>
                       <th scope="col" className="px-6 py-3">Cliente</th>
@@ -172,7 +172,7 @@ export default function MonitoringPage() {
                   </thead>
                   <tbody>
                     {dedication.dedications.map((project) => (
-                      <tr key={project.id} className="border-t border-[#E2E2E2] bg-white hover:bg-[#F5FAFC] transition-colors">
+                      <tr key={project.id} className="border-t border-[#303031] hover:bg-[#EDEBE5] transition-colors">
                         <td className="px-6 py-4 font-medium">{project.project_name}</td>
                         <td className="px-6 py-4">{project.client_name}</td>
                         <td className="px-6 py-4">
@@ -191,7 +191,7 @@ export default function MonitoringPage() {
                   {dedication.dedications.map((project, index) => (
                     <div
                       key={project.id ?? index}
-                      className="rounded-lg border border-gray-200 p-4 bg-white shadow-sm"
+                      className="rounded-lg border border-gray-200 p-4 shadow-sm"
                     >
                
                       <div className="text-xs text-gray-500 mb-1">Semana</div>

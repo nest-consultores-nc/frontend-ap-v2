@@ -21,14 +21,34 @@ export function CosteoMensualSection() {
 
   const handleSubmit = async () => {
     setLoading(true);
-    setShowUploadButton(false); 
+    setShowUploadButton(false);
     try {
       const response = await getGenerarCosteoMensual(selectedDate);
-      console.log(response);
-      setCosteoMensual(response);
-      setShowUploadButton(true);  
+      const data = Array.isArray(response) ? response : (response ?? []);
+
+      if (!Array.isArray(data) || data.length === 0) {
+        setCosteoMensual([]);
+        await Swal.fire({
+          title: 'Sin datos',
+          text: 'No se encontró costeo mensual para el período seleccionado.',
+          icon: 'info',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#CDEA80',
+        });
+        return;
+      }
+
+      setCosteoMensual(data);
+      setShowUploadButton(true);
     } catch (error) {
       console.log(error);
+      await Swal.fire({
+        title: 'Sin datos',
+        text: 'No se encontró costeo mensual para el período seleccionado.',
+        icon: 'info',
+        confirmButtonColor: '#FF735C',
+        confirmButtonText: 'Cerrar',
+      });
     } finally {
       setLoading(false);
     }
@@ -42,9 +62,9 @@ export function CosteoMensualSection() {
       showCancelButton: true,
       confirmButtonText: 'Sí, cargar',
       cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#3E3378',
-      cancelButtonColor: '#6B7280',
-      reverseButtons: true,
+      confirmButtonColor: '#CDEA80',
+      cancelButtonColor: '#FF735C',
+      
     });
 
     if (!confirm.isConfirmed) return;
@@ -59,7 +79,7 @@ export function CosteoMensualSection() {
         title: '¡Carga Exitosa!',
         text: 'El costeo mensual ha sido cargado con éxito.',
         icon: 'success',
-        confirmButtonColor: '#3085d6',
+        confirmButtonColor: '#CDEA80',
         confirmButtonText: 'Aceptar',
       });
     } catch (error) {
@@ -69,7 +89,7 @@ export function CosteoMensualSection() {
         title: 'Error',
         text: 'Hubo un problema al cargar el costeo mensual.',
         icon: 'error',
-        confirmButtonColor: '#d33',
+        confirmButtonColor: '#FF735C',
         confirmButtonText: 'Cerrar',
       });
     } finally {
@@ -87,7 +107,7 @@ export function CosteoMensualSection() {
   };
 
   return (
-    <section className="bg-white rounded-lg">
+    <section className="white rounded-lg">
       <div className="mx-auto max-w-2xl text-center mb-8 translate-y-12">
         <h2 className="text-4xl font-bold tracking-tight text-gray-900">
           Costeo Mensual
@@ -119,7 +139,7 @@ export function CosteoMensualSection() {
           />
         </div>
 
-        {/* Button Container */}
+      
         <div className="flex justify-center space-x-4 mt-6 ">
           <button
             type="button"
@@ -127,7 +147,7 @@ export function CosteoMensualSection() {
             onClick={handleSubmit}
             className={`rounded-md px-4 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
               selectedDate && !loading
-                ? 'bg-[#3E3378] text-white hover:bg-[#89CCDC] hover:text-black focus-visible:outline-indigo-600'
+                ? 'bg-[#CDEA80] text-[#303031] hover:bg-[#BDDEFF] hover:text-black focus-visible:outline-indigo-600'
                 : 'bg-gray-400 text-gray-200 cursor-not-allowed'
             } w-3/5`}
           >
@@ -140,7 +160,7 @@ export function CosteoMensualSection() {
             onClick={registrarcosteo}
             className={`w-64 rounded-md px-4 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
               showUploadButton && !loading
-                ? 'bg-[#3E3378] text-white hover:bg-[#89CCDC] hover:text-black focus-visible:outline-indigo-600'
+                ? 'bg-[#CDEA80] text-[#303031] hover:bg-[#BDDEFF] hover:text-black focus-visible:outline-indigo-600'
                 : 'bg-gray-400 text-gray-200 cursor-not-allowed'
             }`}
           >
@@ -162,7 +182,7 @@ export function CosteoMensualSection() {
           <div className="w-[100%] text-end mb-8 translate-y-12">
             <button
               onClick={handleClickDownload}
-              className="w-48 bg-[#3E3378] text-white hover:bg-[#89CCDC] hover:text-black focus-visible:outline-[#EEEBE6] mt-2 rounded-md px-1.5 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 "
+              className="w-48 bg-[#CDEA80] text-[#303031] hover:bg-[#BDDEFF] hover:text-black focus-visible:outline-[#BDDEFF] mt-2 rounded-md px-1.5 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 "
             >
               Descargar como CSV
             </button>

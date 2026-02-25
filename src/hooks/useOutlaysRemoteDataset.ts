@@ -21,7 +21,7 @@ function toBackendPayload(o: Outlay) {
 
   return {
     amount: Number(o.amount),
-    date: o.date, // 'YYYY-MM-DD'
+    date: o.date, 
     detail: o.detail ?? '',
     temporalityId: o.outlay_temporalities_id,
     typeId,
@@ -32,7 +32,6 @@ function toBackendPayload(o: Outlay) {
 export function useOutlaysRemoteDataset({ token }: Options) {
   const [records, setRecords] = useState<Outlay[]>([])
 
-  // ---- helpers de error
   const isStatus = (e: unknown, code: number) =>
     (e as any)?.status === code ||
     (e as any)?.response?.status === code ||
@@ -40,7 +39,7 @@ export function useOutlaysRemoteDataset({ token }: Options) {
   const is404 = (e: unknown) => isStatus(e, 404)
   const is409 = (e: unknown) => isStatus(e, 409)
 
-  // ---- fetchAll y carga inicial
+
   const fetchAll = useCallback(async () => {
     const res = await OutlayRead.getOutlays(token, { limit: 500, offset: 0 })
     setRecords(res.data as Outlay[])
@@ -59,7 +58,6 @@ export function useOutlaysRemoteDataset({ token }: Options) {
     return () => { mounted = false }
   }, [token])
 
-  // ---- crea draft local
   const create = () => {
     const tempId = -Date.now()
     const draft: Outlay = {
@@ -76,12 +74,12 @@ export function useOutlaysRemoteDataset({ token }: Options) {
     return tempId
   }
 
-  // ---- persistencia
+
   const createOutlay = async (o: Outlay) => {
     const payload = toBackendPayload(o)
     const res = await OutlayMutate.addOutlay(token, payload as any)
     const newId = (res as any)?.id as number
-    // Recarga todo para evitar estados inconsistentes
+
     await fetchAll()
     return newId
   }
@@ -90,7 +88,6 @@ export function useOutlaysRemoteDataset({ token }: Options) {
     if (!o.id || o.id < 1) throw new Error('No hay ID válido para actualizar.')
     const payload = toBackendPayload(o)
     await OutlayMutate.updateOutlay(token, o.id, payload as any)
-    // Mantén la UI sincronizada (recarga todo)
     await fetchAll()
     return o.id
   }
@@ -107,15 +104,15 @@ export function useOutlaysRemoteDataset({ token }: Options) {
   }
 
   const remove = async (id: number) => {
-    if (id < 0) { // draft local
+    if (id < 0) { 
       setRecords(prev => prev.filter(r => r.id !== id))
       return
     }
     await OutlayMutate.deleteOutlay(token, id)
-    await fetchAll() // asegura consistencia y evita parpadeos
+    await fetchAll() 
   }
 
-  // ---- duplicar (B2): POST + recarga completa (sin GET inmediato al nuevo id)
+
   const duplicate = async (id: number) => {
     const base = records.find(r => r.id === id)
     if (!base) return null
@@ -124,7 +121,6 @@ export function useOutlaysRemoteDataset({ token }: Options) {
     const res = await OutlayMutate.addOutlay(token, payload as any)
     const newId = (res as any)?.id as number
 
-    // Evita 404 por eventual consistency → recargar todo
     await fetchAll()
 
     return newId

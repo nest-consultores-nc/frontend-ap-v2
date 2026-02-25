@@ -3,7 +3,6 @@ import { useState, useMemo } from 'react'
 import { queryLogin } from '../../api/auth'
 import LogoAgenciaPolux from '../../assets/logo-polux-sin-fondo.png'
 
-/** Políticas */
 const COMMON = new Set([
   '123456','12345678','123456789','qwerty','password','111111','abc123','123123','000000',
 ])
@@ -32,7 +31,6 @@ export default function ResetPassword() {
   const [showPass, setShowPass] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
 
-  // Validaciones por regla (para checklist interactivo)
   const rules = useMemo(() => {
     const lenOK = password.length >= 8 && password.length <= 64
     const noSpace = password.length > 0 && !/\s/.test(password)
@@ -45,7 +43,6 @@ export default function ResetPassword() {
     return { lenOK, noSpace, notCommon, hasLower, hasUpper, hasDigit, hasSymbol, matchOK }
   }, [password, confirm])
 
-  
   const strength = useMemo(() => {
     const base = [
       rules.lenOK, rules.noSpace, rules.notCommon,
@@ -86,7 +83,7 @@ export default function ResetPassword() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        <div className="bg-white shadow-sm rounded-2xl p-6 sm:p-8">
+        <div className="white shadow-sm rounded-2xl p-6 sm:p-8">
           <img src={LogoAgenciaPolux} alt="Agencia Pólux" className="mx-auto h-14 w-auto mb-4" />
 
           <h1 className="text-xl font-semibold text-gray-900 text-center">Restablecer contraseña</h1>
@@ -103,7 +100,6 @@ export default function ResetPassword() {
           )}
 
           <form onSubmit={onSubmit} className="mt-6 space-y-5">
-            {/* Nueva contraseña */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Nueva contraseña</label>
               <div className="mt-1 relative">
@@ -115,7 +111,6 @@ export default function ResetPassword() {
                   autoComplete="new-password"
                   className="block w-full rounded-md border-2 px-3 py-2 pr-10 text-gray-900 placeholder:text-gray-400 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
-                {/* Toggle corporativo – SVG ojo, sin emoji */}
                 <button
                   type="button"
                   onClick={() => setShowPass(s => !s)}
@@ -129,7 +124,6 @@ export default function ResetPassword() {
                 </button>
               </div>
 
-              {/* Barra de fuerza */}
               <div className="mt-3">
                 <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
                   <div
@@ -146,7 +140,6 @@ export default function ResetPassword() {
               </div>
             </div>
 
-            {/* Confirmación */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Confirmar contraseña</label>
               <div className="mt-1 relative">
@@ -172,7 +165,6 @@ export default function ResetPassword() {
               </div>
             </div>
 
-            {/* Checklist de Políticas (interactivo) */}
             <div className="rounded-lg border border-gray-200 p-3">
               <p className="text-sm font-medium text-gray-700">Políticas de contraseña</p>
               <ul className="mt-2 space-y-1 text-sm">
@@ -186,14 +178,13 @@ export default function ResetPassword() {
               </ul>
             </div>
 
-            {/* Botón */}
             <button
               type="submit"
               disabled={!isFormOK}
               className={`flex w-full items-center justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm
                 ${!isFormOK
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-indigo-600 text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600'}
+                  : 'bg-indigo-600 text-[#303031] hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600'}
               `}
             >
               {loading ? (
@@ -221,12 +212,11 @@ export default function ResetPassword() {
   )
 }
 
-/** Ítem reusable del checklist (íconos SVG, corporativos) */
 function PolicyItem({ ok, text }: { ok: boolean, text: string }) {
   return (
     <li className={`flex items-center gap-2 ${ok ? 'text-green-700' : 'text-gray-600'}`}>
       <span className={`inline-flex h-4 w-4 items-center justify-center rounded-full ring-1 ${
-        ok ? 'bg-green-500 ring-green-500 text-white' : 'bg-gray-200 ring-gray-300 text-gray-500'
+        ok ? 'bg-green-500 ring-green-500 text-[#303031]' : 'bg-gray-200 ring-gray-300 text-gray-500'
       }`}>
         {ok ? (
           <svg viewBox="0 0 20 20" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="3">
