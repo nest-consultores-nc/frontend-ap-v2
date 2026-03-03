@@ -70,6 +70,7 @@ frontend-ap-v2
     │   ├── create-project
     │   ├── create-user
     │   ├── dedications
+    │   ├── disable-user
     │   ├── edit
     │   ├── edit-profile
     │   ├── finish-project
