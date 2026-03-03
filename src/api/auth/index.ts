@@ -5,7 +5,7 @@ type ApiResponse<T> = {
 }
 
 
-const getBaseUrl = (): string => {
+export const getBaseUrl = (): string => {
   const isDev = import.meta.env.DEV || import.meta.env.MODE === 'development'
 
   if (isDev) {

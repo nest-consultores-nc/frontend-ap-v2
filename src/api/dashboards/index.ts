@@ -2,12 +2,13 @@ import {
   IDashboard,
   IDashboardResponse,
 } from '../../interfaces/dashboards/dashboards.interface'
+import { getBaseUrl } from './../auth/index'
 
 export const getDedicationByNameQuery = async (
   path: string,
   token: string
 ): Promise<IDashboard> => {
-  const url = `https://agenciapolux-backend-production.up.railway.app/agencia-polux/api/v1/${path}`
+  const url = `${getBaseUrl()}/${path}`
 
   try {
     const response = await fetch(url, {

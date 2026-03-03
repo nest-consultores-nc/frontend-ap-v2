@@ -1,4 +1,5 @@
 import { IDedicationsByMonth } from '../../interfaces/dedications/dedications.interfaces'
+import { getBaseUrl } from './../auth/index'
 
 export * from './read'
 export * from './mutate'
@@ -7,7 +8,7 @@ export const getAllUsersDedicationByMonth = async (
   path: string,
   token: string
 ) => {
-  const url = `https://agenciapolux-backend-production.up.railway.app/agencia-polux/api/v1/${path}`
+  const url = `${getBaseUrl()}/${path}`
 
   try {
     const response = await fetch(url, {
@@ -39,7 +40,7 @@ export const fetchFromApi = async <T>(
   method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' = 'GET',
   body?: any
 ): Promise<T | null> => {
-  const url = `https://agenciapolux-backend-production.up.railway.app/agencia-polux/api/v1/${path}`
+  const url = `${getBaseUrl()}/${path}`
 
   try {
     const hasBody = method === 'POST' || method === 'PATCH' || method === 'PUT'

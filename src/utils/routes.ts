@@ -16,7 +16,7 @@ import {
   //PencilSquareIcon,
 } from '@heroicons/react/24/outline'
 
-import { Edit} from 'lucide-react'
+import { Edit, UserMinusIcon} from 'lucide-react'
 
 
 export const ADMIN_LINKS_GROUPED = [
@@ -41,6 +41,7 @@ export const ADMIN_LINKS_GROUPED = [
     links: [
       { name: 'Crear Cliente', href: '/dashboard/crear-cliente', icon: UserPlusIcon },
       { name: 'Crear Usuario', href: '/dashboard/crear-usuario', icon: UserPlusIcon },
+      { name: 'Deshabilitar Usuario', href: '/dashboard/deshabilitar-usuario', icon: UserMinusIcon },
     ],
   },
   {
@@ -87,6 +88,7 @@ export const DIRECTORA_EJECUTIVA_GROUPED = [
     links: [
       { name: 'Crear Cliente', href: '/dashboard/crear-cliente', icon: UserPlusIcon },
       { name: 'Crear Usuario', href: '/dashboard/crear-usuario', icon: UserPlusIcon },
+      { name: 'Deshabilitar Usuario', href: '/dashboard/deshabilitar-usuario', icon: UserMinusIcon },
     ],
   },
   {

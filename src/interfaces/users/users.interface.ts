@@ -7,6 +7,7 @@ export interface IUsers {
   updated_at: string
   user_id?: number | null
   date?: string | null
+  active: number
 }
 
 export interface IUserCSV {

@@ -23,6 +23,7 @@ import CosteoPage from './dashboard/costeo/page'
 import EditPage from './dashboard/edit/page'
 import ReportePage from './dashboard/reporte/ReportePage'
 import SoportePage from './dashboard/soporte/SoportePage'
+import DisableUser from './dashboard/disable-user/page'
 
 const AppLayout = () => {
   const context = useContext(HomeContext)
@@ -52,6 +53,7 @@ const AppLayout = () => {
             />
             <Route path="/dashboard/monitoreo" element={<MonitoringPage />} />
             <Route path="/dashboard/crear-usuario" element={<CreateUser />} />
+            <Route path="/dashboard/deshabilitar-usuario" element={<DisableUser />} />
             <Route
               path="/dashboard/eliminar-usuario"
               element={<FinishProject />}

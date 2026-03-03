@@ -1,40 +1,22 @@
 import { IUsers } from '../../interfaces/users/users.interface'
+import { getBaseUrl } from './../../../src/api/auth/index'
 
-export const getAllUsers = async (path: string, token: string) => {
-  const url = `https://agenciapolux-backend-production.up.railway.app/agencia-polux/api/v1/${path}`
-
+export const getAllUsers = async (path: string, token: string): Promise<IUsers[]> => {
   try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status} ${response.statusText}`)
-    }
-
-    const data = await response.json()
-
-    return data.users as IUsers[]
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.error('Error fetching projects:', error.message)
+    const data = await fetchFromApi<{ users: IUsers[] }>(path, token, 'GET')
+    return data.users ?? []
+  } catch {
     return []
   }
 }
+
 export const fetchFromApi = async <T>(
   path: string,
   token: string,
   method: 'GET' | 'PUT' | 'POST' | 'PATCH' = 'GET',
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   body?: any
 ): Promise<T> => {
-  const url = `https://agenciapolux-backend-production.up.railway.app/agencia-polux/api/v1/${path}`
-
-  console.log(url)
+  const url = `${getBaseUrl()}/${path}`
 
   try {
     const response = await fetch(url, {
@@ -44,10 +26,8 @@ export const fetchFromApi = async <T>(
         Authorization: `Bearer ${token}`,
       },
       body:
-        method === 'POST'
+        method === 'POST' || method === 'PATCH' || method === 'PUT'
           ? JSON.stringify(body)
-          : method === 'PATCH'
-          ? body
           : null,
     })
 
@@ -56,9 +36,26 @@ export const fetchFromApi = async <T>(
     }
 
     return response.json()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error(`Error fetching from ${path}:`, error.message)
     throw error
+  }
+}
+
+export const toggleUserStatus = async (
+  id: number,
+  token: string
+): Promise<{ success: boolean; msg: string; active?: number }> => {
+  try {
+    const data = await fetchFromApi<{ success: boolean; msg: string; active: number }>(
+      'users-api/toggle-estado',
+      token,
+      'PATCH',
+      { id }
+    )
+    return data
+  } catch (error: any) {
+    console.error('toggleUserStatus error:', error.message)
+    return { success: false, msg: 'Error de conexión' }
   }
 }

@@ -1,7 +1,8 @@
 import { IRole, IWorkday } from '../../interfaces/roles/roles.interface'
+import { getBaseUrl } from '../auth/index'
 
 export const getAllRolesAndWorkday = async (path: string, token: string) => {
-  const url = `https://agenciapolux-backend-production.up.railway.app/agencia-polux/api/v1/${path}`
+  const url = `${getBaseUrl()}/${path}`
 
   try {
     const response = await fetch(url, {

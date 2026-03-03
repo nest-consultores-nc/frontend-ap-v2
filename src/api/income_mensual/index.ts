@@ -1,3 +1,5 @@
+import { getBaseUrl } from "./../auth/index"
+
 export const fetchFromApi = async <T>(
     path: string,
     token: string,
@@ -5,7 +7,7 @@ export const fetchFromApi = async <T>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     body?: any
   ): Promise<T> => {
-    const url = `https://agenciapolux-backend-production.up.railway.app/agencia-polux/api/v1/income-mensual-api/registrar-income-mensual`
+    const url = `${getBaseUrl()}/income-mensual-api/registrar-income-mensual`
   
   
     console.log(url)

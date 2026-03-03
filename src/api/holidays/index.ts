@@ -1,10 +1,12 @@
+import { getBaseUrl } from "../auth/index";
+
 export const fetchFromApi = async <T>(
   path: string,
   token: string,
   method: 'GET' | 'POST' | 'PATCH' = 'GET',
   body?: any
 ): Promise<T> => {
-  const url = `https://agenciapolux-backend-production.up.railway.app/agencia-polux/api/v1/${path}`;
+  const url = `${getBaseUrl()}/${path}`;
 
   console.log(url);
 
