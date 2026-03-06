@@ -1,7 +1,7 @@
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { useState, useMemo } from 'react'
 import { queryLogin } from '../../api/auth'
-import LogoAgenciaPolux from '../../assets/logo-polux-sin-fondo.png'
+import Logo from '../../assets/LOGO-09.png'
 
 const COMMON = new Set([
   '123456','12345678','123456789','qwerty','password','111111','abc123','123123','000000',
@@ -84,7 +84,7 @@ export default function ResetPassword() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="white shadow-sm rounded-2xl p-6 sm:p-8">
-          <img src={LogoAgenciaPolux} alt="Agencia Pólux" className="mx-auto h-14 w-auto mb-4" />
+          <img src={Logo} alt="Polaris Bi" className="mx-auto h-26 w-auto mb-4" />
 
           <h1 className="text-xl font-semibold text-gray-900 text-center">Restablecer contraseña</h1>
           <p className="mt-1 text-sm text-gray-500 text-center">Crea una nueva contraseña para tu cuenta.</p>
@@ -206,7 +206,7 @@ export default function ResetPassword() {
           </div>
         </div>
 
-        <p className="mt-4 text-center text-xs text-gray-400">© {new Date().getFullYear()} Agencia Pólux</p>
+        <p className="mt-4 text-center text-xs text-gray-400">© {new Date().getFullYear()} Polaris BI</p>
       </div>
     </div>
   )

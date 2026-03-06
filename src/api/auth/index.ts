@@ -47,11 +47,14 @@ export const queryLogin = async <T>(
     const jsonResponse = await response.json()
 
     if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.clear()
+        window.location.href = '/iniciar-sesion'
+        return { success: false, msg: '401' }
+      }
       return {
         success: false,
-        msg:
-          jsonResponse.msg ||
-          `Error: ${response.status} ${response.statusText}`,
+        msg: jsonResponse.msg || `Error: ${response.status} ${response.statusText}`,
       }
     }
 
