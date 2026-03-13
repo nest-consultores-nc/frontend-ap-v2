@@ -1,6 +1,6 @@
 # Frontend — Pólux V2
 
-El frontend está construido con **React + Vite** y proporciona la interfaz de usuario para interactuar con la API del backend. Permite a los usuarios ingresar, editar y visualizar dedicaciones, desembolsos, ingresos, sueldos y otros datos relevantes para el costeo.
+El frontend está construido con **React + Vite** y proporciona la interfaz de usuario para interactuar con la API del backend. Permite a los usuarios ingresar, editar y visualizar dedicaciones, desembolsos, ingresos, sueldos y otros datos relevantes para el costeo. 
 
 ---
 
@@ -31,6 +31,7 @@ frontend-ap-v2
     ├── components
     │   ├── Alerts
     │   ├── ButtonsSubmits
+    │   ├── Chat
     │   ├── ConsolidationDedicationsTable
     │   ├── CosteoMensualSection
     │   ├── DedicationsSectionEdit
