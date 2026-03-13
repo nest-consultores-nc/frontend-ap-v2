@@ -24,6 +24,7 @@ import EditPage from './dashboard/edit/page'
 import ReportePage from './dashboard/reporte/ReportePage'
 import SoportePage from './dashboard/soporte/SoportePage'
 import DisableUser from './dashboard/disable-user/page'
+import { ChatButton } from './components/Chat/ChatButton'
 
 const AppLayout = () => {
   const context = useContext(HomeContext)
@@ -80,6 +81,7 @@ const AppLayout = () => {
             <Route path="*" element={<Navigate to="/dashboard" />} />
           </Routes>
         </div>
+          {auth?.role === 'admin' && <ChatButton token={auth.token} />}
       </div>
     </HomeContext.Provider>
   )
