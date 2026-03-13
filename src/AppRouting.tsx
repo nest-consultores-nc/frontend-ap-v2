@@ -81,7 +81,7 @@ const AppLayout = () => {
             <Route path="*" element={<Navigate to="/dashboard" />} />
           </Routes>
         </div>
-          {auth?.role === 'admin' && <ChatButton token={auth.token} />}
+          {(auth?.role === 'admin' || auth?.role === 'directoraejecutiva') && <ChatButton token={auth.token} />}
       </div>
     </HomeContext.Provider>
   )
