@@ -18,6 +18,7 @@ export function UtilidadSection() {
     setShowUploadButton(false); 
     try {
       const response = await getGenerarUtilidad();
+      
       setUtilidad(response.data);
       setShowUploadButton(true); 
     } catch (error) {

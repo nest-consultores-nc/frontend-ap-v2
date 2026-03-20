@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from 'react';
-import dayjs from 'dayjs';
 import { PaginationProjectsTable } from '../PaginationProjectsTable/PaginationProjectsTable';
 import { Datum } from '../../interfaces/costeo/utilidad.interface';
 import { ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/24/outline';
@@ -9,7 +8,7 @@ type SortOrder = 'asc' | 'desc';
 
 function getSortValue(item: Datum, key: SortKeys): string | number {
   if (key === 'date') {
-    return new Date(item[key]).getTime();
+    return String(item[key]);  
   }
   return item[key];
 }
@@ -38,33 +37,28 @@ export function TableResultUtilidad({ data }: { data: Datum[] }) {
 
 
  
-  function DateBadge({
-    date,
-    variant = 'pill', 
-  }: {
-    date: string | Date;
-    variant?: 'pill' | 'vertical';
-  }) {
-    const d = new Date(date);
-    const day = d.toLocaleString('es-CL', { day: '2-digit' });
+  function DateBadge({ date, variant = 'pill' }: { date: string | Date; variant?: 'pill' | 'vertical' }) {
+    const [y, m, dd] = String(date).split('-').map(Number);
+    const d = new Date(y, m - 1, dd);
+    const dayStr = d.toLocaleString('es-CL', { day: '2-digit' });
     const mon = d.toLocaleString('es-CL', { month: 'short' }).replace('.', '').toUpperCase();
-    const year = d.toLocaleString('es-CL', { year: 'numeric' });
+    const yearStr = d.toLocaleString('es-CL', { year: 'numeric' });
 
     if (variant === 'vertical') {
       return (
         <div className="shrink-0 rounded-xl bg-gray-100 text-gray-700 px-2 py-1 leading-none text-center">
           <div className="text-[10px] tracking-wide">{mon}</div>
-          <div className="text-sm font-bold tabular-nums -mt-[1px]">{day}</div>
-          <div className="text-[10px] opacity-70">{year.slice(-2)}</div>
+          <div className="text-sm font-bold tabular-nums -mt-[1px]">{dayStr}</div>
+          <div className="text-[10px] opacity-70">{yearStr.slice(-2)}</div>
         </div>
       );
     }
 
     return (
       <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
-        <span className="tabular-nums">{day}</span>&nbsp;
+        <span className="tabular-nums">{dayStr}</span>&nbsp;
         <span>{mon}</span>&nbsp;
-        <span className="opacity-70">{year}</span>
+        <span className="opacity-70">{yearStr}</span>
       </span>
     );
   }
@@ -114,10 +108,9 @@ export function TableResultUtilidad({ data }: { data: Datum[] }) {
     }
 
     if (filterMonth) {
-      const [filterYear, filterMonthNum] = filterMonth.split('-').map(Number);
       filtered = filtered.filter(item => {
-        const itemDate = dayjs(item.date);
-        return itemDate.year() === filterYear && (itemDate.month() + 1) === filterMonthNum;
+        const itemDateStr = String(item.date).slice(0, 7); 
+        return itemDateStr === filterMonth;
       });
     }
  
