@@ -114,7 +114,7 @@ export const ChatDrawer = ({ token, onClose }: ChatDrawerProps) => {
             />
             <div>
               <p className="font-semibold text-sm text-black">Asistente PolarisBI</p>
-              <p className="text-xs text-black">IA · Solo lectura</p>
+              <p className="text-xs text-black">IA · Solo lectura · Versión Beta</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
