@@ -485,26 +485,11 @@ export default function IncomesPage() {
 
             let resolvedDate = row.date && String(row.date).trim() ? String(row.date).trim() : ''
 
-              const mmmPattern = /^[a-z]{3}-\d{2}$/i
-              const ddmmyyyyPattern = /^\d{2}\/\d{2}\/\d{4}$/
-
-              if (mmmPattern.test(resolvedDate)) {
-               
-                const iso = firstDayFromMonthString(resolvedDate, 'YYYY-MM-DD')
-                if (iso) resolvedDate = iso
-              } else if (ddmmyyyyPattern.test(resolvedDate)) {
-          
-                const [day, month, year] = resolvedDate.split('/')
-                resolvedDate = `${year}-${month}-${day}`
-              } else if (!resolvedDate) {
-             
-                const iso = firstDayFromMonthString(resolvedMonth, 'YYYY-MM-DD')
-                if (iso) resolvedDate = iso
-              }
-
-          
-              if (!resolvedDate || !dayjs(resolvedDate).isValid()) {
-                errors.push('date tiene formato inválido (use DD/MM/YYYY o mmm-yy)')
+              const parsedDate = parseAnyDate(resolvedDate || resolvedMonth)
+              if (!parsedDate) {
+                errors.push('date tiene formato inválido (se aceptan: DD/MM/YYYY, YYYY-MM-DD, mmm-yy, serial Excel)')
+              } else {
+                resolvedDate = parsedDate
               }
 
           
@@ -712,6 +697,48 @@ export default function IncomesPage() {
     const { year, monthIndex } = parsed
     const d = dayjs(new Date(year, monthIndex, 1))
     return outputFormat === 'DD/MM/YYYY' ? d.format('DD/MM/YYYY') : d.format('YYYY-MM-DD')
+  }
+
+  const parseAnyDate = (raw: string | undefined | null): string | null => {
+    if (!raw) return null
+    const s = String(raw).trim()
+    if (!s) return null
+
+    // Serial numérico de Excel (ej: 45678)
+    if (/^\d{4,5}$/.test(s)) {
+      const d = dayjs(new Date(1899, 11, 30)).add(parseInt(s, 10), 'day')
+      return d.isValid() ? d.format('YYYY-MM-DD') : null
+    }
+    // mmm-yy (ej: may-26)
+    if (/^[a-z]{3}-\d{2}$/i.test(s)) {
+      return firstDayFromMonthString(s, 'YYYY-MM-DD')
+    }
+    // DD/MM/YYYY o D/M/YYYY
+    if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
+      const [d, m, y] = s.split('/')
+      const parsed = dayjs(`${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`)
+      return parsed.isValid() ? parsed.format('YYYY-MM-DD') : null
+    }
+    // DD/MM/YY
+    if (/^\d{1,2}\/\d{1,2}\/\d{2}$/.test(s)) {
+      const [d, m, y] = s.split('/')
+      const parsed = dayjs(`20${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`)
+      return parsed.isValid() ? parsed.format('YYYY-MM-DD') : null
+    }
+    // YYYY-MM-DD (ISO)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+      const parsed = dayjs(s)
+      return parsed.isValid() ? parsed.format('YYYY-MM-DD') : null
+    }
+    // DD-MM-YYYY con guiones
+    if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(s)) {
+      const [d, m, y] = s.split('-')
+      const parsed = dayjs(`${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`)
+      return parsed.isValid() ? parsed.format('YYYY-MM-DD') : null
+    }
+    // Fallback
+    const fallback = dayjs(s)
+    return fallback.isValid() ? fallback.format('YYYY-MM-DD') : null
   }
 
 
