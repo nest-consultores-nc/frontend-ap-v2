@@ -105,7 +105,7 @@ export const ChatDrawer = ({ token, onClose }: ChatDrawerProps) => {
         <div className="fixed right-0 top-0 h-[100dvh] w-full sm:w-[min(24rem,100vw)] bg-white shadow-2xl z-50 flex flex-col border-l border-gray-200">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 bg-[#CDEA80] text-white flex-shrink-0">
+        <div className="flex items-center justify-between px-4 py-3 bg-[#CDEA80] text-black flex-shrink-0">
           <div className="flex items-center gap-2">
             <img
               src={polarisbibot}
@@ -140,7 +140,7 @@ export const ChatDrawer = ({ token, onClose }: ChatDrawerProps) => {
           {loading && (
             <div className="flex justify-start mb-3">
               <div className="flex-shrink-0 w-7 h-7 rounded-full bg-[#CDEA80] flex items-center justify-center mr-2 mt-1">
-                <span className="text-white text-xs">IA</span>
+                <span className="text-black text-xs">IA</span>
               </div>
               <div className="bg-gray-100 px-4 py-3 rounded-2xl rounded-tl-sm">
                 <div className="flex gap-1 items-center h-4">
@@ -179,7 +179,7 @@ export const ChatDrawer = ({ token, onClose }: ChatDrawerProps) => {
             <button
               onClick={sendMessage}
               disabled={!input.trim() || loading}
-              className="flex-shrink-0 w-10 h-10 bg-[#CDEA80] text-white rounded-xl flex items-center justify-center hover:bg-[#BDDEFF] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="flex-shrink-0 w-10 h-10 bg-[#CDEA80] text-black rounded-xl flex items-center justify-center hover:bg-[#BDDEFF] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <svg className="w-4 h-4 rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />

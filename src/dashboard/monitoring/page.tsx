@@ -14,7 +14,8 @@ export default function MonitoringPage() {
   };
   
   const navigate = useNavigate()
-  const [loading, setLoading] = useState(false)
+  const [loadingDashboard, setLoadingDashboard] = useState(false)
+  const [loadingDedications, setLoadingDedications] = useState(false)
   const [dedications, setDedications] = useState<IDedicationsByMonth[]>([])
 
   const [dashboardUrl, setDashboardUrl] = useState<string>('')
@@ -93,7 +94,7 @@ export default function MonitoringPage() {
   useEffect(() => {
     const getDashboardByName = async () => {
       try {
-        setLoading(true)
+        setLoadingDashboard(true)
         const data = await getDedicationByNameQuery(
           'dashboards-api/get-dashboard/monitoreo',
           localStorage.getItem('token')!
@@ -102,10 +103,10 @@ export default function MonitoringPage() {
         if (data && data.url) {
           setDashboardUrl(data.url)
         }
-        setLoading(false)
+        setLoadingDashboard(false)
       } catch (error) {
         console.error(error)
-        setLoading(false)
+        setLoadingDashboard(false)
       }
     }
 
@@ -115,18 +116,18 @@ export default function MonitoringPage() {
   useEffect(() => {
     const updateDedication = async () => {
       try {
-        setLoading(true)
+        setLoadingDedications(true)
         const data = await getAllUsersDedicationByMonth(
-          '/dedicacion-api/dedicaciones-por-mes',
+          'dedicacion-api/dedicaciones-por-mes',
           localStorage.getItem('token')!
         )
-
+        console.log('RAW dedicaciones:', JSON.stringify(data))
         setDedications(data)
-        setLoading(false)
-      } catch (error) {
-        console.error(error)
-        setLoading(false)
-      }
+        setLoadingDedications(false)
+        } catch (error: any) {
+          console.error('Error al cargar dedicaciones:', error?.response?.status, error?.response?.data || error?.message)
+          setLoadingDedications(false)
+        }
     }
 
     updateDedication()
@@ -142,9 +143,11 @@ export default function MonitoringPage() {
       ></iframe>
 
 
-      {loading ? (
-        <p>Cargando...</p>
-      ) : (
+        {loadingDedications ? (
+          <p>Cargando...</p>
+        ) : dedications.length === 0 ? (
+          <p>Sin dedicaciones registradas.</p>
+        ) : (
         dedications.map((dedication) => (
           <div key={dedication.user} className="border relative sm:rounded-lg my-4 rounded-md overflow-hidden">
 

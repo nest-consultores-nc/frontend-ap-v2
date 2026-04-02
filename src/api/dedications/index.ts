@@ -8,7 +8,7 @@ export const getAllUsersDedicationByMonth = async (
   path: string,
   token: string
 ) => {
-  const url = `${getBaseUrl()}/${path}`
+  const url = `${getBaseUrl()}/${path.replace(/^\//, '')}`
 
   try {
     const response = await fetch(url, {

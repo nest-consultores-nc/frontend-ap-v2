@@ -27,12 +27,12 @@ export const ChatButton = ({ token }: ChatButtonProps) => {
       >
         {open ? (
           
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         ) : (
         
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
             />
@@ -43,7 +43,7 @@ export const ChatButton = ({ token }: ChatButtonProps) => {
    
       {!open && (
         <div className="fixed bottom-6 right-24 z-50 pointer-events-none">
-          <div className="bg-gray-800 text-white text-xs px-2.5 py-1.5 rounded-lg opacity-0 hover:opacity-100 whitespace-nowrap">
+          <div className="bg-gray-800 text-black text-xs px-2.5 py-1.5 rounded-lg opacity-0 hover:opacity-100 whitespace-nowrap">
             Asistente IA
           </div>
         </div>

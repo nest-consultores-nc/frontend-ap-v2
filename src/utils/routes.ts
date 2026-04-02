@@ -97,7 +97,7 @@ export const DIRECTORA_EJECUTIVA_GROUPED = [
       { name: 'Registrar Desembolsos', href: '/dashboard/registrar-desembolsos', icon: ArrowUpOnSquareIcon },
       { name: 'Registrar Ingresos', href: '/dashboard/registrar-ingresos', icon: ArrowDownOnSquareIcon },
       { name: 'Registrar Sueldos', href: '/dashboard/registrar-sueldos', icon: CurrencyDollarIcon },
-      { name: 'Costeo', href: '/dashboard/costeo', icon: CurrencyDollarIcon },
+      
     ],
   },
   {
