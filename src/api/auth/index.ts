@@ -11,7 +11,7 @@ export const getBaseUrl = (): string => {
   if (isDev) {
     return (
       import.meta.env.VITE_LOCAL_URL_BACKEND ||
-      'https://agenciapolux-backend-production.up.railway.app/agencia-polux/api/v1'
+      'http://localhost:3002/agencia-polux/api/v1'
     )
   }
 
