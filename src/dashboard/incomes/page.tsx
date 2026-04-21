@@ -645,30 +645,9 @@ export default function IncomesPage() {
     }
   }
 
-  const onlyDigitsKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const allowed = ['Backspace','Delete','ArrowLeft','ArrowRight','Tab','Home','End'];
-    if (allowed.includes(e.key)) return;
-    if (!/^\d$/.test(e.key)) {
-      e.preventDefault();
-    }
-  };
-
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const digitsOnly = e.target.value.replace(/\D/g, '');
     setFormData(prev => ({ ...prev, amount: digitsOnly }));
-  };
-
-  const onlyDigitsPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const text = e.clipboardData.getData('text');
-    const digits = text.replace(/\D/g, '');
-    if (!digits) return;
-    const target = e.target as HTMLInputElement;
-    const { value } = target;
-    const start = target.selectionStart ?? value.length;
-    const end = target.selectionEnd ?? start;
-    const newValue = value.slice(0, start) + digits + value.slice(end);
-    setFormData(prev => ({ ...prev, amount: newValue }));
   };
 
   const parseMonthString = (monthStr: string | undefined | null) => {
