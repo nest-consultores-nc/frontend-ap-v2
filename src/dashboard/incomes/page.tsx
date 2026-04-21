@@ -659,19 +659,16 @@ export default function IncomesPage() {
   };
 
   const onlyDigitsPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
     const text = e.clipboardData.getData('text');
-    if (!/^\d*$/.test(text)) {
-      e.preventDefault();                
-      const digits = text.replace(/\D/g, '');
-      if (digits) {
-        const target = e.target as HTMLInputElement;
-        const { value } = target;
-        const start = target.selectionStart ?? value.length;
-        const end = target.selectionEnd ?? start;
-        const newValue = value.slice(0, start) + digits + value.slice(end);
-        setFormData(prev => ({ ...prev, amount: newValue }));
-      }
-    }
+    const digits = text.replace(/\D/g, '');
+    if (!digits) return;
+    const target = e.target as HTMLInputElement;
+    const { value } = target;
+    const start = target.selectionStart ?? value.length;
+    const end = target.selectionEnd ?? start;
+    const newValue = value.slice(0, start) + digits + value.slice(end);
+    setFormData(prev => ({ ...prev, amount: newValue }));
   };
 
   const parseMonthString = (monthStr: string | undefined | null) => {
@@ -863,19 +860,16 @@ export default function IncomesPage() {
             <label className="block text-sm font-medium leading-6 text-gray-900">
               Ingrese el Monto
             </label>
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="\d*"
-              autoComplete="off"
-              name="amount"
-              value={formData.amount}
-              onChange={handleAmountChange}
-              onKeyDown={onlyDigitsKeyDown}
-              onPaste={onlyDigitsPaste}
-              className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-gray-400"
-              placeholder="Ej: 300000 (solo números)"
-            />
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                name="amount"
+                value={formData.amount}
+                onChange={handleAmountChange}
+                className="outline-none mt-2 block w-full rounded-md border px-1 py-1.5 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-gray-400"
+                placeholder="Ej: 300000 (solo números)"
+              />
 
           </div>
             <div className="col-span-full">

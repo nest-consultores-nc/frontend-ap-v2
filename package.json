@@ -3,7 +3,7 @@
   "private": true,
   "version": "2.1.0",
   "type": "module",
-  "homepage": "https://staging-ap-v2.nestconsultores.cl",
+  "homepage": "https://agenciapolux.nestconsultores.cl", 
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

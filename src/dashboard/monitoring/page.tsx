@@ -14,7 +14,7 @@ export default function MonitoringPage() {
   };
   
   const navigate = useNavigate()
-  const [loadingDashboard, setLoadingDashboard] = useState(false)
+  const [, setLoadingDashboard] = useState(false);
   const [loadingDedications, setLoadingDedications] = useState(false)
   const [dedications, setDedications] = useState<IDedicationsByMonth[]>([])
 

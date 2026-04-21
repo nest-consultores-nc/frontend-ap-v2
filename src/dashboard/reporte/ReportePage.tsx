@@ -273,7 +273,7 @@ export default function ReportePage() {
 
 
             {isGenerating && (
-              <div className="rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 p-6">
+              <div className="rounded-2xl bg-gradient-to-r from-[#CDEA80] to-[#BDDEFF] p-6">
                 <div className="flex items-center gap-3">
                   <div className="flex-shrink-0 w-12 h-12 rounded-xl white/20 flex items-center justify-center">
                     <svg className="w-6 h-6 text-[#303031] animate-spin" fill="none" viewBox="0 0 24 24">
