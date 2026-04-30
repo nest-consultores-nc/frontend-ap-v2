@@ -319,7 +319,7 @@ export default function Dedications() {
   }, [alert])
 
   useEffect(() => {
-    setWeeks(getWeeksAround(undefined, 4, 2)); // ← before=4 semanas atrás
+    setWeeks(getWeeksAround(undefined, 4, 0));
   }, []);
 
   
