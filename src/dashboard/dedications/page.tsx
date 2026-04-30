@@ -137,13 +137,8 @@ export default function Dedications() {
           msg: 'Dedicación registrada correctamente',
         })
 
-        
-        setDedicatedInput('')
         setDedicationData((prev) => ({
           ...prev,
-          project_id: '',
-          week: '',
-          dedicated: 0,
           consolidation: 0,
         }))
       } else {
@@ -324,8 +319,8 @@ export default function Dedications() {
   }, [alert])
 
   useEffect(() => {
-    setWeeks(getWeeksAround()); 
-  }, []); 
+    setWeeks(getWeeksAround(undefined, 4, 2)); // ← before=4 semanas atrás
+  }, []);
 
   
   

@@ -10,7 +10,8 @@ node_modules
 dist
 dist-ssr
 *.local
-
+build.zip
+.zip
 .env
 .env.production
 .vscode/*
