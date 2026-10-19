@@ -122,11 +122,20 @@ const pct = new Intl.NumberFormat('es-CL', {
 
 const int = new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 })
 
+/** UF con todos sus decimales, tal como la entrega la fuente (p. ej. $41.183,94) */
+const ufFormat = new Intl.NumberFormat('es-CL', {
+  style: 'currency',
+  currency: 'CLP',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 4,
+})
+
 export const fmt = {
   clp: (v: number) => clpFull.format(v),
   clpShort: (v: number) => (v < 0 ? `-$${clpCompact(-v)}` : `$${clpCompact(v)}`),
   pct: (v: number | null) => (v === null || !isFinite(v) ? '—' : pct.format(v)),
   int: (v: number) => int.format(v),
+  uf: (v: number) => ufFormat.format(v),
 }
 
 const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']

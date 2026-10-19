@@ -73,7 +73,7 @@ export function FinancialDashboard() {
             <h1 className="text-xl font-semibold">Resumen financiero</h1>
             <p className="text-xs text-white/60 mt-0.5">
               Montos en pesos. Utilidad y costos convertidos con la UF del día
-              {data ? ` (${fmt.clp(data.uf.value)})` : ''}.
+              {data ? ` (${fmt.uf(data.uf.value)})` : ''}.
             </p>
             {data?.uf.fallback && (
               <p className="text-xs text-[#CDEA80] mt-1">
