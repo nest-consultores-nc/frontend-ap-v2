@@ -3,7 +3,7 @@
   "private": true,
   "version": "2.1.0",
   "type": "module",
-  "homepage": "https://agenciapolux.nestconsultores.cl", 
+  "homepage": "https://agenciapolux.nestconsultores.cl",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -16,6 +16,7 @@
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
     "docx-preview": "^0.3.7",
+    "echarts": "6.1.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.4",
     "lucide-react": "^0.541.0",
