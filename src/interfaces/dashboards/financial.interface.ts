@@ -46,7 +46,14 @@ export interface IFinCostRow {
 export interface IFinancialDashboard {
   success: boolean
   generatedAt: string
-  uf: { value: number; date: string | null }
+  uf: {
+    value: number
+    date: string | null
+    /** de dónde salió la UF (findic.cl, mindicador.cl o income_mensual) */
+    source?: string | null
+    /** true si no se pudo obtener la UF de hoy y se usó la última guardada */
+    fallback?: boolean
+  }
   calendar: { start: string | null; end: string | null }
   projects: IFinProject[]
   clients: IFinClient[]

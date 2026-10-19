@@ -75,6 +75,12 @@ export function FinancialDashboard() {
               Montos en pesos. Utilidad y costos convertidos con la UF del día
               {data ? ` (${fmt.clp(data.uf.value)})` : ''}.
             </p>
+            {data?.uf.fallback && (
+              <p className="text-xs text-[#CDEA80] mt-1">
+                No se pudo obtener la UF de hoy: se usa la última registrada
+                {data.uf.date ? ` (${data.uf.date.split('-').reverse().join('-')})` : ''}.
+              </p>
+            )}
           </div>
           <RefreshStatus loading={loading} updatedAt={updatedAt} onRefresh={refresh} />
         </div>
