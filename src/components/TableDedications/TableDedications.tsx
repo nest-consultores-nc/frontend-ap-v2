@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { IDedicationsByUserId } from '../../interfaces/dedications/dedications.interfaces'
 import { CancelIcon, CheckIcon, DeleteIcon, EditIcon } from '../../assets'
+import { formatWeekWithLabel } from '../../functions/getWeeksAround'
 
 interface Props {
   weeks: string[]
@@ -69,30 +70,21 @@ export function TableDedications({
   }
 
 
+  // El backend ya entrega la semana como "DD-MM-AAAA"; se normaliza por si llega en ISO.
   function displayWeekForCard(raw: string): string {
     if (!raw) return ''
-
-  
     const dateOnly = raw.split('T')[0]
-    let ddmm = ''
-    if (/^\d{2}-\d{2}-\d{4}$/.test(dateOnly)) {
-      ddmm = dateOnly
-    } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
       const [y, m, d] = dateOnly.split('-')
-      ddmm = `${d}-${m}-${y}`
-    } else {
-      ddmm = dateOnly
+      return `${d}-${m}-${y}`
     }
-
-    if (weeks?.includes(ddmm)) return ddmm
-
-    const [d, m, y] = ddmm.split('-').map(Number)
-    if (!Number.isFinite(d) || !Number.isFinite(m) || !Number.isFinite(y)) return ddmm
-    const dt = new Date(Date.UTC(y, m - 1, d))
-    dt.setUTCDate(dt.getUTCDate() - 1)
-    const pad = (n: number) => String(n).padStart(2, '0')
-    return `${pad(dt.getUTCDate())}-${pad(dt.getUTCMonth() + 1)}-${dt.getUTCFullYear()}`
+    return dateOnly
   }
+
+  // Si la semana guardada no está en el rango del selector, se agrega para que
+  // el selector no salte a otra semana al editar.
+  const editWeekOptions =
+    editDate && !weeks.includes(editDate) ? [editDate, ...weeks] : weeks
 
 
   const detectDifferentWeeks = (): string[] | null => {
@@ -208,19 +200,14 @@ export function TableDedications({
                   onChange={(e) => setEditDate(e.target.value)}
                   className="border rounded px-2 py-1 w-full"
                 >
-                  {weeks.map((week, index) => (
-                    <option key={index} value={week}>
-                      {week}
+                  {editWeekOptions.map((week) => (
+                    <option key={week} value={week}>
+                      {formatWeekWithLabel(week)}
                     </option>
                   ))}
                 </select>
               ) : (
-                (() => {
-                  const [day, month, year] = dedication.week.split('-').map(Number);
-                  const date = new Date(year, month - 1, day);
-                  date.setDate(date.getDate() - 1); 
-                  return `${('0' + date.getDate()).slice(-2)}-${('0' + (date.getMonth() + 1)).slice(-2)}-${date.getFullYear()}`;
-                })()
+                formatWeekWithLabel(displayWeekForCard(dedication.week))
               )}
             </td>
               <td className="px-6 py-4 flex justify-center space-x-2">
@@ -294,12 +281,12 @@ export function TableDedications({
                     onChange={(e) => setEditDate(e.target.value)}
                     className="border rounded px-2 py-1 w-full"
                   >
-                    {weeks.map((week, index) => (
-                      <option key={index} value={week}>{week}</option>
+                    {editWeekOptions.map((week) => (
+                      <option key={week} value={week}>{formatWeekWithLabel(week)}</option>
                     ))}
                   </select>
                 ) : (
-                  displayWeekForCard(dedication.week)   
+                  formatWeekWithLabel(displayWeekForCard(dedication.week))
                 )}
               </div>
 

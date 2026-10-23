@@ -17,7 +17,10 @@ import {
   getDedicationsNotConsolidated,
   getHistoryDedicationsByUserId,
 } from '../../api/dedications/get-dedications'
-import { getWeeksAround } from '../../functions/getWeeksAround'
+import {
+  formatWeekWithLabel,
+  getWeeksAround,
+} from '../../functions/getWeeksAround'
 import {
   Alerts,
   ButtonsSubmits,
@@ -220,14 +223,6 @@ export default function Dedications() {
             success: true,
             msg: 'Dedicación actualizada correctamente',
           })
-
-          setDedicationData({
-            user_id: userId,
-            project_id: '',
-            week: '',
-            dedicated: 0,
-            consolidation: 0,
-          })
         } else {
           throw new Error(response.msg)
         }
@@ -350,7 +345,7 @@ export default function Dedications() {
           <div style="text-align: left; margin-bottom: 12px; padding: 10px; background: #f8f9fa; border-radius: 6px;">
             <strong>${dedication.client_name || 'Cliente'} - ${dedication.project_name || 'Proyecto'}</strong><br/>
             <span style="color: #666;">Dedicación: <strong>${dedication.dedicated}%</strong></span><br/>
-            <span style="color: #666;">Semana: ${formatDate(dedication.week)}</span>
+            <span style="color: #666;">Semana: ${formatWeekWithLabel(formatDate(dedication.week))}</span>
           </div>
         `
       })
@@ -512,9 +507,9 @@ export default function Dedications() {
                 <option value="" disabled>
                   Seleccione la semana
                 </option>
-                {weeks.map((week, index) => (
-                  <option key={index} value={week}>
-                    {week}
+                {weeks.map((week) => (
+                  <option key={week} value={week}>
+                    {formatWeekWithLabel(week)}
                   </option>
                 ))}
               </select>

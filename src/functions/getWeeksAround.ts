@@ -39,3 +39,25 @@ function parseDDMMYYYY(s: string): Date {
 function formatDate(date: Date): string {
   return `${('0' + date.getDate()).slice(-2)}-${('0' + (date.getMonth() + 1)).slice(-2)}-${date.getFullYear()}`;
 }
+
+/**
+ * Etiqueta relativa de una semana "DD-MM-AAAA" respecto a la semana actual.
+ * Ej: "semana actual", "semana pasada", "hace 3 semanas".
+ */
+export function getWeekLabel(week: string): string {
+  if (!/^\d{2}-\d{2}-\d{4}$/.test(week)) return ''
+  const current = toMonday(new Date())
+  const target = toMonday(parseDDMMYYYY(week))
+  const diff = Math.round((current.getTime() - target.getTime()) / (7 * 24 * 60 * 60 * 1000))
+  if (diff === 0) return 'semana actual'
+  if (diff === 1) return 'semana pasada'
+  if (diff > 1) return `hace ${diff} semanas`
+  if (diff === -1) return 'próxima semana'
+  return `en ${-diff} semanas`
+}
+
+/** Fecha con su etiqueta relativa: "19-10-2026 - semana actual". */
+export function formatWeekWithLabel(week: string): string {
+  const label = getWeekLabel(week)
+  return label ? `${week} - ${label}` : week
+}
